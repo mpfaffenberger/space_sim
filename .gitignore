@@ -39,3 +39,35 @@
 
 # debug information files
 *.dwo
+
+# ============================================================
+# Project-specific (new_privateer / space_sim)
+# ============================================================
+
+# Build outputs
+build/
+build-*/
+cmake-build-*/
+
+# Generated shader headers (sokol-shdc output)
+src/generated/
+*.glsl.h
+
+# Editor / IDE
+.vscode/
+.idea/
+*.code-workspace
+*.swp
+compile_commands.json
+
+# OS cruft
+.DS_Store
+._*
+
+# Generated skyboxes (regenerated on demand by tools/gen_skybox.sh).
+# Keep 'troy' so the binary has a default cubemap out of the box.
+assets/skybox/*
+!assets/skybox/troy/
+
+# runtime logs
+*.log

@@ -1,0 +1,18 @@
+{
+  "seed": "troy",
+  "resolution": 1024,
+  "prefix": "troy",
+  "faces": {
+    "right":  "troy_right.png",
+    "left":   "troy_left.png",
+    "top":    "troy_top.png",
+    "bottom": "troy_bottom.png",
+    "front":  "troy_front.png",
+    "back":   "troy_back.png"
+  },
+  "sun": {
+    "present": true,
+    "direction": [0.665549, -0.428658, -0.610980],
+    "color":     [0.226266, 0.506857, 0.408395]
+  }
+}
