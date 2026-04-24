@@ -20,6 +20,8 @@
 #include "sokol_gfx.h"
 #include "HandmadeMath.h"
 
+#include <functional>
+
 struct RenderTargets;
 
 struct PostProcess {
@@ -48,9 +50,16 @@ struct PostProcess {
 
     // Composite scene + bloom + flare to the swapchain. `sun_world_pos` and
     // `view_proj` are used to project the sun into NDC for the flare.
+    //
+    // `extra_pass_draw` (if set) is invoked INSIDE the swapchain pass just
+    // before sg_end_pass, so callers can piggyback extra draws (HUD text,
+    // Dear ImGui, whatever) without opening a second swapchain pass —
+    // Metal aggressively flickers when you acquire two drawables per frame.
+    using ExtraPassDraw = std::function<void()>;
     void composite_to_swapchain(const RenderTargets& rt,
                                 HMM_Vec3 sun_world_pos,
                                 const HMM_Mat4& view_proj,
                                 HMM_Vec3 flare_tint,
-                                int fb_w, int fb_h) const;
+                                int fb_w, int fb_h,
+                                const ExtraPassDraw& extra_pass_draw = {}) const;
 };

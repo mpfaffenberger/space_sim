@@ -50,7 +50,8 @@ void PostProcess::composite_to_swapchain(const RenderTargets& rt,
                                          HMM_Vec3 sun_world_pos,
                                          const HMM_Mat4& view_proj,
                                          HMM_Vec3 flare_tint,
-                                         int fb_w, int fb_h) const {
+                                         int fb_w, int fb_h,
+                                         const ExtraPassDraw& extra_pass_draw) const {
     // Project the sun into clip / NDC. Disable the flare when the sun is
     // behind the camera or far off-screen, so we don't get ghost images
     // sliding in from the edge of the viewport.
@@ -89,9 +90,10 @@ void PostProcess::composite_to_swapchain(const RenderTargets& rt,
     sg_apply_uniforms(UB_post_composite_params, SG_RANGE(u));
 
     sg_draw(0, 3, 1);
-    // HUD is drawn in the same swapchain pass so we avoid an extra
-    // begin/end pass pair. Text is untouched by bloom since it lands
-    // AFTER the composite draw, straight on the final color buffer.
+    // HUD and any caller-supplied draws share this same swapchain pass —
+    // an extra begin/end pair would cost us a second drawable acquire
+    // and Metal punishes that with flicker.
     sdtx_draw();
+    if (extra_pass_draw) extra_pass_draw();
     sg_end_pass();
 }

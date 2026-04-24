@@ -1,0 +1,26 @@
+[15:47:34] === Batch starting: 2 specs -> /Users/mpfaffenberger/code/new_privateer/assets/sprites ===
+[15:47:34] [1/2] mining_base.png generating: a gritty industrial deep-space mining station seen from a three-quarte...
+[15:47:35] [1/2] mining_base.png FAIL: RuntimeError: OpenAI image API error 400: {
+  "error": {
+    "message": "Billing hard limit has been reached.",
+    "type": "billing_limit_user_error",
+    "param": null,
+    "code": "billing_hard_limit_reached"
+  }
+}
+[15:47:35] [2/2] mining_base_lights.png generating: an emissive lights overlay matching a gritty industrial deep-space min...
+[15:47:36] [2/2] mining_base_lights.png FAIL: RuntimeError: OpenAI image API error 400: {
+  "error": {
+    "message": "Billing hard limit has been reached.",
+    "type": "billing_limit_user_error",
+    "param": null,
+    "code": "billing_hard_limit_reached"
+  }
+}
+[15:47:36] === Batch done in 2.0s: 0 generated, 0 skipped, 2 failed ===
+[15:50:09] === Batch starting: 2 specs -> /Users/mpfaffenberger/code/new_privateer/assets/sprites ===
+[15:50:09] [1/2] mining_base.png generating: a gritty industrial deep-space mining station seen from a three-quarte...
+[15:50:49] [1/2] mining_base.png OK (40.5s)
+[15:50:49] [2/2] mining_base_lights.png generating: an emissive lights overlay matching a gritty industrial deep-space min...
+[15:51:23] [2/2] mining_base_lights.png OK (34.1s)
+[15:51:23] === Batch done in 74.6s: 2 generated, 0 skipped, 0 failed ===

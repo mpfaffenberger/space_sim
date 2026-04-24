@@ -1,0 +1,25 @@
+{
+  "total": 2,
+  "generated": 2,
+  "skipped": 0,
+  "failed": 0,
+  "elapsed_seconds": 74.6,
+  "output_dir": "/Users/mpfaffenberger/code/new_privateer/assets/sprites",
+  "log_path": "/Users/mpfaffenberger/code/new_privateer/assets/sprites/batch_log.txt",
+  "results": [
+    {
+      "index": 1,
+      "status": "generated",
+      "filename": "mining_base.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/sprites/mining_base.png",
+      "elapsed_seconds": 40.47
+    },
+    {
+      "index": 2,
+      "status": "generated",
+      "filename": "mining_base_lights.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/sprites/mining_base_lights.png",
+      "elapsed_seconds": 34.13
+    }
+  ]
+}

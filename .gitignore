@@ -71,3 +71,12 @@ assets/skybox/*
 
 # runtime logs
 *.log
+
+# Imported ship meshes from ../privateer_wcu. Derived from Origin/EA game
+# assets — local use only, regenerate with tools/import_wcu_meshes.sh.
+assets/meshes/
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key

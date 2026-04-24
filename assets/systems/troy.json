@@ -1,0 +1,104 @@
+{
+  // Troy — humanity's first colonised system. Yellow dwarf star, a single
+  // equatorial asteroid belt, the standard tutorial sector. No parked
+  // ships for now: the showcase fleet that lived here was a dev exercise
+  // for the mesh/texture/sizing pipeline, not part of the real world.
+  "name":        "Troy",
+  "description": "Sol-like G-type system. Stable, well-mapped. Good asteroid mining around the secondary belt.",
+  "skybox_seed": "troy",
+  "star":        { "preset": "yellow" },
+
+  "asteroid_fields": [
+    {
+      "center":      [3000, -200, 24000],
+      "half_extent": [4000,  800,  4000],
+      "count":       300,
+      "base_radius": 45,
+      "seed":        2766780957
+    }
+  ],
+
+  // Three points of interest for the Troy system:
+  //   • Two mining bases bracketing the asteroid field — one Confed,
+    //     one off-colour pirate variant to hint at a contested belt.
+  //   • A single agricultural planet a long way out — the system's
+  //     breadbasket, procedurally textured so we don't ship a PNG of it.
+  "placed_meshes": [
+    // Mining base #1: Confed-aligned, near the north edge of the belt.
+    {
+      "obj":           "meshes/ships/mining_base.obj",
+      "position":      [1500, 400, 25500],
+      "euler_deg":     [0, 45, 180],
+      "length_meters": 1200,
+      "spec":          0.55
+    },
+    // Mining base #2: pirate-flavoured, south side of the belt. Same
+    // skeleton mesh as the Confed one but with a warm-red tint for the
+    // "unfriendly jurisdiction" vibe until we wire faction colours.
+    {
+      "obj":           "meshes/ships/pirate_base.obj",
+      "position":      [4500, -300, 22500],
+      "euler_deg":     [0, 200, 180],
+      "length_meters": 1100,
+      "tint":          [1.15, 0.80, 0.70],
+      "spec":          0.45
+    },
+    // Agricultural planet (Helen) — 50 km diameter, far to the west.
+    // Geometry is a proper full icosphere (tools/gen_icosphere.py) —
+    // WCU's `sphereatm.bfxm` is actually only a hemisphere, so we ship
+    // our own. Surface is runtime-generated from fractal noise via the
+    // `texture_preset` field, so there's nothing to ship on disk.
+    {
+      "obj":            "meshes/planets/sphere.obj",
+      "position":       [-500000, -1500, 8000],
+      "euler_deg":      [0, 0, 0],
+      "length_meters":  50000,
+      "texture_preset": "agricultural",
+      // Zero spec — a planet is a matte Lambertian body, not chrome.
+      // Even a small spec value (0.05) × sharp highlight (pow(N·H,64))
+      // was giving a bright spot that slid across the surface with the
+      // camera, and bloom amplified that into a visible moving blob.
+      "spec":           0.0,
+      // Two-sided rendering — during debugging we found the icosphere
+      // rendered cleaner this way at certain camera angles, and the
+      // perf cost is negligible for a single planet. Keep it.
+      "double_sided":   true,
+      // Dark night side, no rim — atmosphere owns the silhouette.
+      "ambient_floor":  0.15,
+      "rim_strength":   0.0,
+      // Thick scattering atmosphere — the shell is 6% taller than the
+      // planet, rendered over the surface with Rayleigh-ish sky colour
+      // + a Mie-ish warm forward-scatter peak (see atmosphere.glsl).
+      // Tune strength up for "gas giant haze", down for "Mars thin".
+      // Thick scattering atmosphere with a baseline haze floor so the
+      // nadir view (looking straight down) sees atmospheric tinting,
+      // not just clean surface. Strength lowered a touch because the
+      // haze now covers the whole planet face, not just the silhouette.
+      "atmosphere": {
+        "thickness": 0.06,
+        "color":     [0.45, 0.68, 1.00],
+        "strength":  0.5
+      }
+    }
+  ],
+
+  // Sprite billboards (np-0kv). Each entry resolves to <sprite>.png for
+  // the hull art, optional <sprite>_lights.png for a static emissive
+  // overlay, and <sprite>.lights.json for animated lights authored by
+  // the in-engine light editor (F2). `length_meters` drives billboard
+  // world size the same way it does for meshes.
+  "placed_sprites": [
+    // Experimental sprite mining base, parked next to the 3D Confed
+    // mining base at (1500, 400, 25500) for A/B comparison. Offset
+    // +3000u along X so both fit in one camera shot.
+    {
+      "sprite":        "sprites/mining_base",
+      "position":      [4500, 400, 25500],
+      "length_meters": 1200
+    }
+  ],
+
+  "player_start": {
+    "position": [0, 0, 30000]
+  }
+}

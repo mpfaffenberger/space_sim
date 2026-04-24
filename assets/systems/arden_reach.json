@@ -1,0 +1,44 @@
+{
+  // Arden Reach — an uncatalogued green-spectrum star deep in the Clarke
+  // Sector's unmapped reaches. Stellar spectroscopy says "impossible",
+  // navigators say "we're here now". Three stacked asteroid streams
+  // suggest something tore a moon apart, a long time ago.
+  "name":        "Arden Reach",
+  "description": "A green-spectrum G-type anomaly in Clarke 5518. Three orbital debris streams. No catalogued installations. Proceed with caution.",
+  "skybox_seed": "sector_5518",
+  "star":        { "preset": "green" },
+
+  "asteroid_fields": [
+    {                              // inner stream — tight, fast-looking
+      "center":      [2000, 0, 16000],
+      "half_extent": [4000, 400, 6000],
+      "count":       380,
+      "base_radius": 50,
+      "size_min":    0.5,
+      "size_max":    1.8,
+      "seed":        424242
+    },
+    {                              // middle stream — offset, chunkier
+      "center":      [-4000, 500, 22000],
+      "half_extent": [4500, 600, 4500],
+      "count":       260,
+      "base_radius": 80,
+      "size_min":    0.7,
+      "size_max":    2.4,
+      "seed":        991237
+    },
+    {                              // outer stream — huge scattered slabs
+      "center":      [6000, -400, 28000],
+      "half_extent": [6000, 900, 5000],
+      "count":       120,
+      "base_radius": 140,
+      "size_min":    0.8,
+      "size_max":    3.6,
+      "seed":        135813
+    }
+  ],
+
+  "player_start": {
+    "position": [0, 0, 34000]
+  }
+}

@@ -106,4 +106,4 @@ echo "[gen_skybox] seed='${SEED}'  res=${RES}  flags=${EXTRA[*]:-<none>}"
     "${EXTRA[@]}"
 
 echo "[gen_skybox] done. launch with:"
-echo "  ./build/new_privateer --seed ${SEED}"
+echo "  ./build/new_privateer --system <name>     (where assets/systems/<name>.json has \"skybox_seed\": \"${SEED}\")"

@@ -1,0 +1,31 @@
+{
+  // Gliese 581 — failed civilization around a cooling red dwarf.
+  // Two debris fields: an inner dense shell, and an outer scattered ring.
+  "name":        "Gliese 581",
+  "description": "Dim red-dwarf system. Ancient civilization left behind a ring of debris; stellar activity is low enough that navigation by eye still works.",
+  "skybox_seed": "sector_4774",
+  "star":        { "preset": "red" },
+
+  "asteroid_fields": [
+    {                              // dense inner shell
+      "center":      [0, 0, 18000],
+      "half_extent": [5500, 500, 5500],
+      "count":       450,
+      "base_radius": 55,
+      "seed":        12345
+    },
+    {                              // sparse outer ring, bigger rocks
+      "center":      [-9000, 200, 22000],
+      "half_extent": [2500,  300, 2500],
+      "count":       80,
+      "base_radius": 95,
+      "size_min":    0.6,
+      "size_max":    3.2,
+      "seed":        67890
+    }
+  ],
+
+  "player_start": {
+    "position": [0, 0, 30000]
+  }
+}

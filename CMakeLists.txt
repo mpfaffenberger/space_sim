@@ -65,6 +65,11 @@ compile_shader(sun)
 compile_shader(sun_glow)
 compile_shader(sun_gas)
 compile_shader(dust)
+compile_shader(asteroid)
+compile_shader(mesh)
+compile_shader(atmosphere)
+compile_shader(sprite)
+compile_shader(sprite_spot)
 compile_shader(post_blur)
 compile_shader(post_composite)
 
@@ -82,6 +87,18 @@ else()
     set(SOKOL_IMPL_SRC src/sokol_impl.mm)
 endif()
 
+# Dear ImGui — pulled into third_party/imgui/ by hand (see commit log). We
+# compile it in unity-of-sorts: the 4 core .cpp files get added to the
+# target and sokol_imgui.h is header-only (included once with IMPL macro
+# from debug_panel.cpp).
+set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/third_party/imgui)
+set(IMGUI_SRC
+    ${IMGUI_DIR}/imgui.cpp
+    ${IMGUI_DIR}/imgui_draw.cpp
+    ${IMGUI_DIR}/imgui_tables.cpp
+    ${IMGUI_DIR}/imgui_widgets.cpp
+)
+
 add_executable(new_privateer
     src/main.cpp
     src/camera.cpp
@@ -94,6 +111,22 @@ add_executable(new_privateer
     src/postprocess.cpp
     src/postprocess_composite.cpp
     src/star_presets.cpp
+    src/mesh.cpp
+    src/mesh_cache.cpp
+    src/material.cpp
+    src/asteroid.cpp
+    src/json.cpp
+    src/obj_loader.cpp
+    src/system_def.cpp
+    src/mesh_render.cpp
+    src/mesh_render_atmosphere.cpp
+    src/sprite.cpp
+    src/sprite_light_editor.cpp
+    src/planet_texture.cpp
+    src/debug_panel.cpp
+    src/dev_remote.cpp
+    src/dev_remote_macos.mm
+    ${IMGUI_SRC}
     ${SOKOL_IMPL_SRC}
     ${SHADER_OUTPUTS}
 )
@@ -112,6 +145,14 @@ target_include_directories(new_privateer PRIVATE
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/src/generated
     ${CMAKE_SOURCE_DIR}/third_party
+    ${IMGUI_DIR}
+)
+
+# Dear ImGui is a big codebase that triggers lots of unused-function /
+# unused-parameter warnings under -Wall -Wextra. We trust upstream, so
+# silence those *just for the imgui TUs* — our own code stays strict.
+set_source_files_properties(${IMGUI_SRC} PROPERTIES
+    COMPILE_OPTIONS "-w"
 )
 
 target_compile_definitions(new_privateer PRIVATE ${SOKOL_BACKEND})

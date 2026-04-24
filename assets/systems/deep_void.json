@@ -1,0 +1,15 @@
+{
+  // Deep Void — exotic purple pulsar with no planets, no belt, nothing
+  // but the star itself and the jump-point you came in through. Great
+  // for flying pure cruise lines at absurd speeds.
+  "name":        "Deep Void",
+  "description": "An anomalous purple stellar remnant with no recorded bodies in its Hill sphere. Empty and fast.",
+  "skybox_seed": "deep_void",
+  "star":        { "preset": "purple" },
+
+  "asteroid_fields": [],
+
+  "player_start": {
+    "position": [0, 0, 35000]
+  }
+}
