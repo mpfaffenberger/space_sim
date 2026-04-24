@@ -1,0 +1,59 @@
+{
+  // Crimson Veil — a red dwarf drowned in nebular dust. The whole sector
+  // is lit by a dim scarlet glow that washes across every rock, every
+  // girder, every piece of orbital junk. Perfect backdrop for the
+  // mining-base sprite to stand out in silhouette and then bloom
+  // back with its own navigation lights as you get close.
+  //
+  // Game-feel brief: player spawns ~7,000u away from the station,
+  // dead ahead, so the sprite fills most of the screen immediately.
+  // The belt wraps the station on all sides — small, dense, cluttered,
+  // so cruising in feels like threading through debris rather than
+  // flying across an empty parade ground.
+  "name":        "Crimson Veil",
+  "description": "A red dwarf shrouded in dust. One mining outpost, one dense debris belt, nothing else on the charts. Smuggler-friendly.",
+  "skybox_seed": "nebula_red",
+  "star":        { "preset": "red" },
+
+  "asteroid_fields": [
+    {
+      // Debris cloud wrapping the mining base. Smaller asteroids than
+      // Troy's belt so nav feels tighter and more industrial. Centered
+      // on the station so it sits inside the debris.
+      "center":      [2000, 0, 5000],
+      "half_extent": [3000, 600, 3000],
+      "count":       220,
+      "base_radius": 32,
+      "size_min":    0.6,
+      "size_max":    1.8,
+      "seed":        1847291003
+    }
+  ],
+
+  "placed_sprites": [
+    // The only point of interest in the system. Uses the same
+    // mining_base sprite + hand-authored lights sidecar as Troy —
+    // one piece of art, two systems, zero extra work. Positioned at
+    // LOWER Z than player spawn because the default camera orientation
+    // (yaw=0) looks in the -Z direction, so lower-Z objects are "ahead".
+    // Offset +2000 on X so the station doesn't eclipse the sun (which
+    // sits at world origin) from the player's spawn angle.
+    {
+      "sprite":        "sprites/mining_base",
+      "position":      [2000, 0, 5000],
+      "length_meters": 1200
+    }
+  ],
+
+  // Player spawns 2,500u in front of the station — close enough to see
+  // the hull detail and the navigation lights blinking, far enough that
+  // the whole sprite fits comfortably in the frame. Offset +250u on Y
+  // so we're looking slightly down at the station's top face (reads the
+  // docking arms + radar dish silhouette better than dead-level).
+  // Default yaw=0 → looking -Z → station dead ahead; the red dwarf sits
+  // further back and slightly off-axis, framed behind the station's
+  // right side for that classic Privateer-box-art mood.
+  "player_start": {
+    "position": [2000, 250, 7500]
+  }
+}

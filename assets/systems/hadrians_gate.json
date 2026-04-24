@@ -1,0 +1,56 @@
+{
+  // Hadrian's Gate — a blue-supergiant-flanked frontier outpost far out
+  // along the galactic arm. Officially a Confed jurisdiction; in
+  // practice it's where the paperwork stops caring. The mining base
+  // here is the only civilised structure in about 40,000 klicks.
+  //
+  // Design brief (contrast with Crimson Veil):
+  //   * SUN SMALL, not looming — player spawns ~40,000u from origin so
+  //     the blue star reads as a distant cold pinpoint, not a furnace.
+  //   * COOL palette — blue star + "pyrenees" skybox (cold grey-blue
+  //     galactic cloud cover) to contrast with Crimson Veil's warmth.
+  //   * NO nebular fog — this is open, austere, empty space. Distance
+  //     makes the outpost feel remote and alone.
+  "name":        "Hadrian's Gate",
+  "description": "Blue-supergiant frontier sector. One civilian outpost at the edge of Confed patrol range. Beyond the gate, you're on your own.",
+  "skybox_seed": "pyrenees",
+  "star":        { "preset": "blue" },
+
+  "asteroid_fields": [
+    {
+      // Sparser field than Crimson Veil — reads as "drifting debris the
+      // station is mining" rather than "claustrophobic belt". Large
+      // rocks, fewer of them, spread wider so the outpost has breathing
+      // room and the player can maneuver without constant collision
+      // avoidance.
+      "center":      [25000, 0, 30000],
+      "half_extent": [5000, 800, 5000],
+      "count":       140,
+      "base_radius": 60,
+      "size_min":    0.8,
+      "size_max":    2.4,
+      "seed":        3921048517
+    }
+  ],
+
+  "placed_sprites": [
+    // Confed-aligned mining outpost, far from origin so the sun reads
+    // small on the skybox. Same sprite + lights sidecar as Troy and
+    // Crimson Veil — proving the asset pipeline is fully data-driven
+    // (one PNG + one JSON lights file → deployed in three systems).
+    {
+      "sprite":        "sprites/mining_base",
+      "position":      [25000, 0, 30000],
+      "length_meters": 1200
+    }
+  ],
+
+  // Player spawns 4,000u in front of the station along -Z, slightly
+  // above the equatorial plane. At ~44,000u from world origin the blue
+  // star appears as a small bright pinpoint on the skybox with minimal
+  // bloom — the station and its lights get to be the main character,
+  // not the sun. Default yaw=0 → looking -Z → station dead ahead.
+  "player_start": {
+    "position": [25000, 300, 34000]
+  }
+}

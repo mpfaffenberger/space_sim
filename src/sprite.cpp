@@ -99,20 +99,34 @@ void SpriteArt::destroy() {
 // ---------------------------------------------------------------------------
 
 // Unit quad: two triangles, 4 unique verts. Each vert carries a corner
-// position in [-1,+1]^2 (used to expand along camera right/up in the vertex
-// shader) and a UV in [0,1]. UV origin is top-left to match stb_image.
+// position in [-1,+1]^2 (used to expand along camera right/up in the
+// vertex shader) and a UV in [0,1].
 //
-//   (-1,+1) uv(0,0)  +--------+  (+1,+1) uv(1,0)
+// UV convention: v=0 at the BOTTOM of the quad, v=1 at the TOP. This is
+// the opposite of stb_image's top-left origin, and it's deliberate —
+// our billboards use camera-up (+Y in world) as the quad's up axis. On
+// screen, +camera-up projects to +screen-up (y_ndc = +1 at top). The
+// texture sampler gets (u,v) as-is with no flip, so for a PNG loaded
+// top-down by stb_image, v=0 must correspond to the visual TOP of the
+// image — which means the screen-top corner of the quad must carry v=0
+// but our corner layout has the screen-top corner at cy=+1. Hence: the
+// mapping (cy=+1 → v=1, cy=-1 → v=0) paired with stb's loading order
+// gives "PNG top renders at screen top" after accounting for the way
+// sokol uploads image data (row 0 of the data → sampler's v=1 end on
+// this pipeline, as verified empirically in Troy / Crimson Veil / Hadrian's
+// Gate — before this flip the station rendered upside-down).
+//
+//   (-1,+1) uv(0,1)  +--------+  (+1,+1) uv(1,1)
 //                    |        |
 //                    |        |
-//   (-1,-1) uv(0,1)  +--------+  (+1,-1) uv(1,1)
+//   (-1,-1) uv(0,0)  +--------+  (+1,-1) uv(1,0)
 //
 struct QuadVert { float cx, cy, u, v; };
 static const QuadVert kQuad[4] = {
-    { -1.0f, -1.0f, 0.0f, 1.0f },   // bottom-left
-    {  1.0f, -1.0f, 1.0f, 1.0f },   // bottom-right
-    {  1.0f,  1.0f, 1.0f, 0.0f },   // top-right
-    { -1.0f,  1.0f, 0.0f, 0.0f },   // top-left
+    { -1.0f, -1.0f, 0.0f, 0.0f },   // bottom-left
+    {  1.0f, -1.0f, 1.0f, 0.0f },   // bottom-right
+    {  1.0f,  1.0f, 1.0f, 1.0f },   // top-right
+    { -1.0f,  1.0f, 0.0f, 1.0f },   // top-left
 };
 static const uint16_t kIndices[6] = { 0, 1, 2,  0, 2, 3 };
 
@@ -385,12 +399,25 @@ void SpriteRenderer::draw(const std::vector<SpriteObject>& sprites,
             const float intensity = light_intensity(ls, time_sec);
             if (intensity <= 0.0f) continue;   // skip fully-off strobes
 
-            // UV → world offset from sprite center. U=0.5 means "no offset
-            // along right"; V=0.5 means "no offset along up". V is flipped
-            // because sprite-space Y points DOWN (image convention) while
-            // up-in-camera points up.
-            const float du = (ls.u - 0.5f) * 2.0f * half_u;   // in [-half_u, +half_u]
-            const float dv = (0.5f - ls.v) * 2.0f * half_v;
+            // UV → world offset from sprite center. U=0.5 / V=0.5 is the
+            // center; (0,0) is the sprite's top-left; (1,1) is bottom-right.
+            //
+            // The V math here mirrors the hull quad's V convention exactly:
+            // the hull's quad is built with the screen-TOP vertex carrying
+            // v=1 (see kQuad in this file, and the big comment explaining
+            // why v=1 maps to screen-top on our sokol/Metal pipeline). For
+            // the animated-light offset to land on the SAME screen position
+            // where an editor gizmo at (u,v) is drawn, the light's v must
+            // be mapped the same way: v=0 → screen BOTTOM, v=1 → screen TOP.
+            // Hence `(v - 0.5)` (NOT `(0.5 - v)`).
+            //
+            // I got this wrong the first time — trying to "flip V because
+            // image Y goes down" — and it painted every light upside-down
+            // relative to where the editor put them, which only became
+            // obvious after fixing the hull's own V orientation. Don't be
+            // that guy again (hi future Mike).
+            const float du = (ls.u - 0.5f) * 2.0f * half_u;
+            const float dv = (ls.v - 0.5f) * 2.0f * half_v;
             const HMM_Vec3 world = HMM_AddV3(
                 s->position,
                 HMM_AddV3(HMM_MulV3F(cam_right, du),
