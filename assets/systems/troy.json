@@ -1,104 +1,114 @@
 {
-  // Troy — humanity's first colonised system. Yellow dwarf star, a single
-  // equatorial asteroid belt, the standard tutorial sector. No parked
-  // ships for now: the showcase fleet that lived here was a dev exercise
-  // for the mesh/texture/sizing pipeline, not part of the real world.
+  // Troy — humanity's first colonised system. Yellow dwarf star, classic
+  // tutorial sector. Nav layout below is taken from the WCU wiki
+  // (https://www.wcnews.com/wcpedia/Troy) and scaled by × 10/3 to match
+  // our engine's world units. We tried 10× first (Helen too distant),
+  // then raw WCU (player swimming in the sun); 10/3 is the sweet spot
+  // — Nav 8 ends up ~117 k from origin (sun reads as a comfortable
+  // distant disc) and Helen ends up ~138 k from spawn (subtends a
+  // chunky-but-not-overwhelming ~20° as a 50 km billboard).
+  //
+  // ⚠️ Coordinate convention note: the WCU wiki uses (X, Y_depth, Z_up)
+  // — i.e. its Y is forward/back and its Z is vertical. Our engine is
+  // (X, Y_up, Z_depth) where +Y is up and -Z is forward. The numbers
+  // below are stored in OUR convention; in the table we list the wiki
+  // ordering on the left and the engine-space coords (after Y↔Z swap)
+  // on the right so it's easy to cross-check.
+  //
+  //   Nav | wiki (raw) Y_depth Z_up  | engine (×10/3) X Y_up Z_depth | What
+  //   ----+-------------------------+------------------------------+-----------------------------------
+  //    1  |  100000   40000    20000 |  100000   66667   133333    | Jump Point → Pyrenees    [stub]
+  //    2  |  200000  -40000        0 |  200000 -133333        0    | Achilles Mining Base     ← sprite
+  //    3  |  100000   40000   -40000 |  100000  133333  -133333    | Jump Point → Pender's    [stub]
+  //    4  |  166667  -60000   -40000 |  166667 -133333  -200000    | Hector Mining Base       ← sprite
+  //    5  |  150000  -30000   -20000 |  150000 -100000   -66667    | Jump Point → Regallis    [stub]
+  //    6  |  166667  -20000    30000 |  166667  -66667   100000    | Helen Agricultural Planet ← sprite (billboard planet)
+  //    7  |       0       0    45000 |       0       0   150000    | Jump Point → War         [stub]
+  //    8  |   50000  -30000    10000 |   50000 -100000    33333    | (you are here / spawn)
+  //
+  // Jump points (1, 3, 5, 7) currently have no in-engine representation
+  // — parked as future work. Once jump-point sprites + travel mechanics
+  // land, we'll wire each Nav into the system loader as a typed entity.
   "name":        "Troy",
-  "description": "Sol-like G-type system. Stable, well-mapped. Good asteroid mining around the secondary belt.",
+  "description": "Sol-like G-type system. Stable, well-mapped. Achilles and Hector mining bases work the inner belt; Helen feeds the colony from far orbit.",
   "skybox_seed": "troy",
   "star":        { "preset": "yellow" },
 
   "asteroid_fields": [
     {
-      "center":      [3000, -200, 24000],
-      "half_extent": [4000,  800,  4000],
-      "count":       300,
-      "base_radius": 45,
+      // Inner belt wrapping the line between Achilles (Nav 2) and Hector
+      // (Nav 4). After the wiki Y↔Z swap, both stations sit at Y_up =
+      // -133333 (same vertical plane) and are separated mostly along Z
+      // (Achilles z=0, Hector z=-200000), so the belt's center is the
+      // midpoint of those two and the thickness lives in Z.
+      "center":      [183333, -133333, -100000],
+      "half_extent": [27000,    17000,  100000],
+      "count":       320,
+      "base_radius": 120,
       "seed":        2766780957
     }
   ],
 
-  // Three points of interest for the Troy system:
-  //   • Two mining bases bracketing the asteroid field — one Confed,
-    //     one off-colour pirate variant to hint at a contested belt.
-  //   • A single agricultural planet a long way out — the system's
-  //     breadbasket, procedurally textured so we don't ship a PNG of it.
-  "placed_meshes": [
-    // Mining base #1: Confed-aligned, near the north edge of the belt.
-    {
-      "obj":           "meshes/ships/mining_base.obj",
-      "position":      [1500, 400, 25500],
-      "euler_deg":     [0, 45, 180],
-      "length_meters": 1200,
-      "spec":          0.55
-    },
-    // Mining base #2: pirate-flavoured, south side of the belt. Same
-    // skeleton mesh as the Confed one but with a warm-red tint for the
-    // "unfriendly jurisdiction" vibe until we wire faction colours.
-    {
-      "obj":           "meshes/ships/pirate_base.obj",
-      "position":      [4500, -300, 22500],
-      "euler_deg":     [0, 200, 180],
-      "length_meters": 1100,
-      "tint":          [1.15, 0.80, 0.70],
-      "spec":          0.45
-    },
-    // Agricultural planet (Helen) — 50 km diameter, far to the west.
-    // Geometry is a proper full icosphere (tools/gen_icosphere.py) —
-    // WCU's `sphereatm.bfxm` is actually only a hemisphere, so we ship
-    // our own. Surface is runtime-generated from fractal noise via the
-    // `texture_preset` field, so there's nothing to ship on disk.
-    {
-      "obj":            "meshes/planets/sphere.obj",
-      "position":       [-500000, -1500, 8000],
-      "euler_deg":      [0, 0, 0],
-      "length_meters":  50000,
-      "texture_preset": "agricultural",
-      // Zero spec — a planet is a matte Lambertian body, not chrome.
-      // Even a small spec value (0.05) × sharp highlight (pow(N·H,64))
-      // was giving a bright spot that slid across the surface with the
-      // camera, and bloom amplified that into a visible moving blob.
-      "spec":           0.0,
-      // Two-sided rendering — during debugging we found the icosphere
-      // rendered cleaner this way at certain camera angles, and the
-      // perf cost is negligible for a single planet. Keep it.
-      "double_sided":   true,
-      // Dark night side, no rim — atmosphere owns the silhouette.
-      "ambient_floor":  0.15,
-      "rim_strength":   0.0,
-      // Thick scattering atmosphere — the shell is 6% taller than the
-      // planet, rendered over the surface with Rayleigh-ish sky colour
-      // + a Mie-ish warm forward-scatter peak (see atmosphere.glsl).
-      // Tune strength up for "gas giant haze", down for "Mars thin".
-      // Thick scattering atmosphere with a baseline haze floor so the
-      // nadir view (looking straight down) sees atmospheric tinting,
-      // not just clean surface. Strength lowered a touch because the
-      // haze now covers the whole planet face, not just the silhouette.
-      "atmosphere": {
-        "thickness": 0.06,
-        "color":     [0.45, 0.68, 1.00],
-        "strength":  0.5
-      }
-    }
-  ],
-
-  // Sprite billboards (np-0kv). Each entry resolves to <sprite>.png for
-  // the hull art, optional <sprite>_lights.png for a static emissive
-  // overlay, and <sprite>.lights.json for animated lights authored by
-  // the in-engine light editor (F2). `length_meters` drives billboard
-  // world size the same way it does for meshes.
+  // Renderable points of interest — three sprites, no meshes. Mining
+  // bases AND the planet ride the np-0kv billboard pipeline; one PNG
+  // each, no per-instance art needed.
   "placed_sprites": [
-    // Experimental sprite mining base, parked next to the 3D Confed
-    // mining base at (1500, 400, 25500) for A/B comparison. Offset
-    // +3000u along X so both fit in one camera shot.
+    // Nav 2 — Achilles Mining Base. Confed-aligned, "north" of the belt
+    // along the Z-depth axis. 3 km long — industrial complex scale
+    // (2.5× the initial 1200 m; 6 km read as just slightly too big in
+    // flight).
     {
       "sprite":        "sprites/mining_base",
-      "position":      [4500, 400, 25500],
-      "length_meters": 1200
+      "position":      [200000, -133333, 0],
+      "length_meters": 3000
+    },
+    // Nav 4 — Hector Mining Base. "South" along Z, same Y plane as
+    // Achilles. Reuses the same sprite + lights sidecar as Achilles.
+    {
+      "sprite":        "sprites/mining_base",
+      "position":      [166667, -133333, -200000],
+      "length_meters": 3000
+    },
+    // Nav 6 — Helen Agricultural Planet. 10 km billboard sprite (504×512
+    // pixel-art subject with atmospheric rim glow baked in). Sized
+    // ~3.3× the mining bases — reads as a proper planet from medium
+    // range without dwarfing every other landmark. Flat billboard, so
+    // flying close-and-around is still a future feature (would need
+    // the icosphere mesh path).
+    {
+      "sprite":        "sprites/helen_planet",
+      "position":      [166667, -66667, 100000],
+      "length_meters": 10000
     }
   ],
 
+  // No meshes — the icosphere planet path is still in the engine but
+  // isn't used in Troy.
+  "placed_meshes": [],
+
+  // Navigation waypoints — what the in-game targeting system (press N
+  // to cycle) sees. Includes the four jump points (which have no visual
+  // representation yet) plus the renderable destinations. Position
+  // values mirror placed_sprites entries above for stations + planet;
+  // the duplication is intentional for now (sprites and nav have
+  // different lifecycles — a wreck might be a sprite without a nav,
+  // a long-range nav might be just a beacon with no sprite).
+  "nav_points": [
+    { "name": "Pyrenees Jump",      "kind": "jump",    "position": [100000,   66667,  133333] },
+    { "name": "Achilles Mining",    "kind": "station", "position": [200000, -133333,       0] },
+    { "name": "Pender's Star Jump", "kind": "jump",    "position": [100000,  133333, -133333] },
+    { "name": "Hector Mining",      "kind": "station", "position": [166667, -133333, -200000] },
+    { "name": "Regallis Jump",      "kind": "jump",    "position": [150000, -100000,  -66667] },
+    { "name": "Helen Planet",       "kind": "planet",  "position": [166667,  -66667,  100000] },
+    { "name": "War Jump",           "kind": "jump",    "position": [     0,       0,  150000] }
+  ],
+
+  // Nav 8 from the WCU wiki — the canonical 'you arrive in Troy here'
+  // spawn point. After the Y↔Z swap, spawn is at Y=-100000 (well below
+  // midplane, roughly co-planar with the mining bases at Y=-133333)
+  // and Z=33333 (slightly behind world origin in our -Z-forward
+  // convention).
   "player_start": {
-    "position": [0, 0, 30000]
+    "position": [50000, -100000, 33333]
   }
 }

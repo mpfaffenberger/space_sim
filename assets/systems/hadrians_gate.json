@@ -41,7 +41,7 @@
     {
       "sprite":        "sprites/mining_base",
       "position":      [25000, 0, 30000],
-      "length_meters": 1200
+      "length_meters": 3000
     }
   ],
 

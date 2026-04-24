@@ -52,6 +52,16 @@ PlacedSpriteDef parse_sprite(const json::Value& v) {
     return s;
 }
 
+// A nav waypoint — name, kind tag, position. Kind defaults to "nav" so a
+// minimal entry { "name": "X", "position": [...] } parses cleanly.
+NavPointDef parse_nav(const json::Value& v) {
+    NavPointDef n;
+    if (auto* p = v.find("name")) n.name = p->as_string();
+    if (auto* p = v.find("kind")) n.kind = p->as_string();
+    n.position = vec3_or(v.find("position"), n.position);
+    return n;
+}
+
 AsteroidFieldDef parse_field(const json::Value& v) {
     AsteroidFieldDef f;
     f.center      = vec3_or(v.find("center"),      f.center);
@@ -120,13 +130,20 @@ std::optional<StarSystem> load_system(const std::string& name_or_path) {
         }
     }
 
+    if (auto* navs = root.find("nav_points"); navs && navs->is_array()) {
+        for (const auto& n : navs->as_array()) {
+            s.nav_points.push_back(parse_nav(n));
+        }
+    }
+
     if (auto* ps = root.find("player_start")) {
         s.player_start = vec3_or(ps->find("position"), s.player_start);
     }
 
-    std::printf("[system] loaded '%s' — %s (skybox=%s, star=%s, fields=%zu, meshes=%zu, sprites=%zu)\n",
+    std::printf("[system] loaded '%s' — %s (skybox=%s, star=%s, fields=%zu, meshes=%zu, sprites=%zu, navs=%zu)\n",
                 path.c_str(), s.name.c_str(), s.skybox_seed.c_str(),
                 s.star_preset.c_str(), s.asteroid_fields.size(),
-                s.placed_meshes.size(), s.placed_sprites.size());
+                s.placed_meshes.size(), s.placed_sprites.size(),
+                s.nav_points.size());
     return s;
 }

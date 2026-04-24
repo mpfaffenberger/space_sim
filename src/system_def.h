@@ -111,6 +111,22 @@ struct PlacedMeshDef {
     float       atm_strength  = 1.0f;
 };
 
+// A navigation waypoint — a named point in space the player can target
+// via the in-game targeting system (press N to cycle). Lives separately
+// from `placed_sprites` / `placed_meshes` because some nav points are
+// abstract (jump points have no current visual representation) and some
+// renderable objects shouldn't be cycled through (e.g. background props).
+// We keep the schemas decoupled so authors get clean control over both.
+//
+// `kind` is a free-form string used for HUD prefixing ("STATION", "JUMP",
+// "PLANET") — kept as a string rather than an enum so adding a new kind
+// ("WRECK", "ANOMALY") doesn't require code changes.
+struct NavPointDef {
+    std::string name;                       // human-readable, shown on HUD
+    std::string kind     = "nav";           // "station" | "jump" | "planet" | ...
+    HMM_Vec3    position = { 0.0f, 0.0f, 0.0f };
+};
+
 struct StarSystem {
     std::string name         = "Unnamed";
     std::string description;
@@ -120,6 +136,7 @@ struct StarSystem {
     std::vector<AsteroidFieldDef> asteroid_fields;
     std::vector<PlacedMeshDef>    placed_meshes;
     std::vector<PlacedSpriteDef>  placed_sprites;
+    std::vector<NavPointDef>      nav_points;
 
     HMM_Vec3    player_start = { 0.0f, 0.0f, 30000.0f };
 };
