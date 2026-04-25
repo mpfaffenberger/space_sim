@@ -63,6 +63,15 @@ struct PlacedSpriteDef {
     float       length_meters = 1000.0f;
 };
 
+// A multi-view ship sprite atlas instance. `atlas` is a JSON manifest stem
+// relative to assets/, e.g. "ships/tarsus/atlas_manifest". Unlike generic
+// placed_sprites, this selects one of many authored view angles per frame.
+struct PlacedShipSpriteDef {
+    std::string atlas;
+    HMM_Vec3    position      = { 0, 0, 0 };
+    float       length_meters = 18.0f;
+};
+
 struct PlacedMeshDef {
     std::string obj_path;    // relative to assets/ (e.g. "meshes/ships/tarsus.obj")
     HMM_Vec3    position  = { 0, 0, 0 };
@@ -134,9 +143,10 @@ struct StarSystem {
     std::string star_preset  = "yellow";
 
     std::vector<AsteroidFieldDef> asteroid_fields;
-    std::vector<PlacedMeshDef>    placed_meshes;
-    std::vector<PlacedSpriteDef>  placed_sprites;
-    std::vector<NavPointDef>      nav_points;
+    std::vector<PlacedMeshDef>       placed_meshes;
+    std::vector<PlacedSpriteDef>     placed_sprites;
+    std::vector<PlacedShipSpriteDef> placed_ship_sprites;
+    std::vector<NavPointDef>         nav_points;
 
     HMM_Vec3    player_start = { 0.0f, 0.0f, 30000.0f };
 };

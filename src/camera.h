@@ -59,6 +59,11 @@ struct Camera {
 // Pitch slightly slower than yaw to discourage barrel-rolly chaos.
 float max_yaw_rate    = 1.4f;
 float max_pitch_rate  = 1.2f;
+// Roll is keyboard-driven (Q/E in main), not mouse-driven, so it
+// doesn't fight the aim-fly-by-wire vector. Peak ~115°/s — fast
+// enough to flip the horizon for a strafe-aim, slow enough that a
+// quick tap doesn't spin you out of orientation.
+float max_roll_rate   = 2.0f;
 
 // Symmetric dead-zone around screen centre, as a fraction of the
 // half-screen radius. 0.05 = ignore the inner 5 % so the player
@@ -96,6 +101,13 @@ float mouse_dead_zone = 0.05f;
 // style relative-mouse look for ship piloting (Freelancer feel:
 // where the cursor sits, the nose chases).
 void apply_mouse_aim(float off_x, float off_y, float dt);
+
+// Compose a local-frame roll (around camera-local +Z, the view-axis)
+// into the orientation. Sign convention matches the rest of the
+// quaternion path: positive `rate_sign` (e.g. +1 from E) rolls the
+// world clockwise as seen by the pilot — the same way an aircraft
+// stick-right roll feels.
+void apply_roll(float rate_sign, float dt);
 
     // Apply a thrust vector *in camera-local space* for `dt` seconds.
     //   local_dir.x = strafe right

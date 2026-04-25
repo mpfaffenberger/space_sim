@@ -121,6 +121,7 @@ add_executable(new_privateer
     src/mesh_render.cpp
     src/mesh_render_atmosphere.cpp
     src/sprite.cpp
+    src/ship_sprite.cpp
     src/sprite_light_editor.cpp
     src/planet_texture.cpp
     src/debug_panel.cpp

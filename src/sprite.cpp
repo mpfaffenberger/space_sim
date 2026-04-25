@@ -349,8 +349,8 @@ void SpriteRenderer::draw(const std::vector<SpriteObject>& sprites,
             vsp.inst_pos[3]  = s->world_size * 0.5f;   // half-extent
             vsp.inst_scale[0] = sx;
             vsp.inst_scale[1] = sy;
-            vsp.inst_scale[2] = 0.0f;
-            vsp.inst_scale[3] = 0.0f;
+            vsp.inst_scale[2] = std::cos(s->roll_rad);
+            vsp.inst_scale[3] = std::sin(s->roll_rad);
 
             fs_params_t fsp{};
             fsp.tint[0] = s->tint.X; fsp.tint[1] = s->tint.Y;

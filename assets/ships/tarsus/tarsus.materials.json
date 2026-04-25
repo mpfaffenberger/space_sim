@@ -1,0 +1,11 @@
+{
+    "materials": [
+        {
+            "name":    "tex0_0",
+            "diffuse": "diff.png",
+            "spec":    "spec.png",
+            "glow":    "glow.png",
+            "normal":  "norm.png"
+        }
+    ]
+}

@@ -71,6 +71,15 @@ void Camera::apply_mouse_aim(float off_x, float off_y, float dt) {
     // off Euler angles.
 }
 
+void Camera::apply_roll(float rate_sign, float dt) {
+    // Local-frame compose around camera +Z. Same gimbal-lock-immune
+    // pattern as compose_local() above — kept inline because roll has
+    // no pitch coupling and a per-axis helper would be one-call DRY.
+    const float roll_rad = -rate_sign * max_roll_rate * dt;  // sign: E rolls right
+    const HMM_Quat dq_roll = HMM_QFromAxisAngle_RH(HMM_V3(0.0f, 0.0f, 1.0f), roll_rad);
+    orientation = HMM_NormQ(HMM_MulQ(orientation, dq_roll));
+}
+
 void Camera::apply_thrust(HMM_Vec3 local_dir, float dt) {
     // Cruise multiplier lerps with cruise_level so engage/disengage feels
     // like a ramp, not a binary switch.

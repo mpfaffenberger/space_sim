@@ -15,6 +15,7 @@
 #include "sokol_app.h"
 
 struct PlacedMesh;
+struct ShipSpriteObject;
 struct StarSystem;
 #include <vector>
 
@@ -39,7 +40,8 @@ bool handle_event(const sapp_event* e);
 //
 //   render()  — call once per frame INSIDE the existing swapchain pass.
 //               Issues the actual draw calls.
-void build(std::vector<PlacedMesh>& placed_meshes);
+void build(std::vector<PlacedMesh>& placed_meshes,
+           std::vector<ShipSpriteObject>& ship_sprites);
 void render();
 
 } // namespace debug_panel

@@ -1,0 +1,233 @@
+[22:20:12] === Batch starting: 4 specs -> /Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites ===
+[22:20:12] [1/4] tarsus_az000_el-068_newmodel_512.png generating: Create a pixel-art spaceship sprite using the attached reference image...
+[22:20:12] [1/4] tarsus_az000_el-068_newmodel_512.png FAIL: RuntimeError: OpenAI image edit API error 400: {
+  "error": {
+    "message": "Transparent background is not supported for this model.",
+    "type": "image_generation_user_error",
+    "param": "background",
+    "code": "invalid_value"
+  }
+}
+[22:20:12] [2/4] tarsus_az045_el-068_newmodel_512.png generating: Create a pixel-art spaceship sprite using the attached reference image...
+[22:20:13] [2/4] tarsus_az045_el-068_newmodel_512.png FAIL: RuntimeError: OpenAI image edit API error 400: {
+  "error": {
+    "message": "Transparent background is not supported for this model.",
+    "type": "image_generation_user_error",
+    "param": "background",
+    "code": "invalid_value"
+  }
+}
+[22:20:13] [3/4] tarsus_az090_el-068_newmodel_512.png generating: Create a pixel-art spaceship sprite using the attached reference image...
+[22:20:13] [3/4] tarsus_az090_el-068_newmodel_512.png FAIL: RuntimeError: OpenAI image edit API error 400: {
+  "error": {
+    "message": "Transparent background is not supported for this model.",
+    "type": "image_generation_user_error",
+    "param": "background",
+    "code": "invalid_value"
+  }
+}
+[22:20:13] [4/4] tarsus_az135_el-068_newmodel_512.png generating: Create a pixel-art spaceship sprite using the attached reference image...
+[22:20:13] [4/4] tarsus_az135_el-068_newmodel_512.png FAIL: RuntimeError: OpenAI image edit API error 400: {
+  "error": {
+    "message": "Transparent background is not supported for this model.",
+    "type": "image_generation_user_error",
+    "param": "background",
+    "code": "invalid_value"
+  }
+}
+[22:20:13] === Batch done in 1.9s: 0 generated, 0 skipped, 4 failed ===
+[22:21:03] === Batch starting: 4 specs -> /Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites ===
+[22:21:03] [1/4] tarsus_az000_el-068_newmodel_512.png generating: Create a pixel-art spaceship sprite using the attached reference image...
+[22:23:19] [1/4] tarsus_az000_el-068_newmodel_512.png OK (135.8s)
+[22:23:19] [2/4] tarsus_az045_el-068_newmodel_512.png generating: Create a pixel-art spaceship sprite using the attached reference image...
+[22:26:06] === Batch starting: 2 specs -> /Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites ===
+[22:26:06] [1/2] tarsus_az000_el-068_newmodel_512.png SKIP (exists)
+[22:26:06] [2/2] tarsus_az045_el-068_newmodel_512.png generating: Create a pixel-art spaceship sprite using the attached reference image...
+[22:28:30] [2/2] tarsus_az045_el-068_newmodel_512.png OK (144.3s)
+[22:28:30] === Batch done in 144.3s: 1 generated, 1 skipped, 0 failed ===
+[22:28:42] === Batch starting: 4 specs -> /Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites ===
+[22:28:42] [1/4] tarsus_az000_el-068_newmodel_512.png SKIP (exists)
+[22:28:42] [2/4] tarsus_az045_el-068_newmodel_512.png SKIP (exists)
+[22:28:42] [3/4] tarsus_az090_el-068_newmodel_512.png generating: Create a pixel-art spaceship sprite using the attached reference image...
+[22:30:53] [3/4] tarsus_az090_el-068_newmodel_512.png OK (131.3s)
+[22:30:53] [4/4] tarsus_az135_el-068_newmodel_512.png generating: Create a pixel-art spaceship sprite using the attached reference image...
+[22:33:23] === Batch starting: 4 specs -> /Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites ===
+[22:33:23] [1/4] tarsus_az000_el-068_newmodel_512.png SKIP (exists)
+[22:33:23] [2/4] tarsus_az045_el-068_newmodel_512.png SKIP (exists)
+[22:33:23] [3/4] tarsus_az090_el-068_newmodel_512.png SKIP (exists)
+[22:33:23] [4/4] tarsus_az135_el-068_newmodel_512.png generating: Create a pixel-art spaceship sprite using the attached reference image...
+[22:35:52] [4/4] tarsus_az135_el-068_newmodel_512.png OK (148.6s)
+[22:35:52] === Batch done in 148.6s: 1 generated, 3 skipped, 0 failed ===
+[08:54:09] === Batch starting: 80 specs -> /Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites ===
+[08:54:09] [1/80] tarsus_az000_el-060_newmodel_512.png SKIP (exists)
+[08:54:09] [2/80] tarsus_az022p5_el-060_newmodel_512.png SKIP (exists)
+[08:54:09] [3/80] tarsus_az045_el-060_newmodel_512.png SKIP (exists)
+[08:54:09] [4/80] tarsus_az067p5_el-060_newmodel_512.png SKIP (exists)
+[08:54:09] [5/80] tarsus_az090_el-060_newmodel_512.png SKIP (exists)
+[08:54:09] [6/80] tarsus_az112p5_el-060_newmodel_512.png SKIP (exists)
+[08:54:09] [7/80] tarsus_az135_el-060_newmodel_512.png SKIP (exists)
+[08:54:09] [8/80] tarsus_az157p5_el-060_newmodel_512.png SKIP (exists)
+[08:54:09] [9/80] tarsus_az180_el-060_newmodel_512.png SKIP (exists)
+[08:54:09] [10/80] tarsus_az202p5_el-060_newmodel_512.png SKIP (exists)
+[08:54:09] [11/80] tarsus_az225_el-060_newmodel_512.png SKIP (exists)
+[08:54:09] [12/80] tarsus_az247p5_el-060_newmodel_512.png SKIP (exists)
+[08:54:09] [13/80] tarsus_az270_el-060_newmodel_512.png SKIP (exists)
+[08:54:09] [14/80] tarsus_az292p5_el-060_newmodel_512.png SKIP (exists)
+[08:54:09] [15/80] tarsus_az315_el-060_newmodel_512.png SKIP (exists)
+[08:54:09] [16/80] tarsus_az337p5_el-060_newmodel_512.png SKIP (exists)
+[08:54:09] [17/80] tarsus_az000_el-030_newmodel_512.png SKIP (exists)
+[08:54:09] [18/80] tarsus_az022p5_el-030_newmodel_512.png SKIP (exists)
+[08:54:09] [19/80] tarsus_az045_el-030_newmodel_512.png SKIP (exists)
+[08:54:09] [20/80] tarsus_az067p5_el-030_newmodel_512.png SKIP (exists)
+[08:54:09] [21/80] tarsus_az090_el-030_newmodel_512.png SKIP (exists)
+[08:54:09] [22/80] tarsus_az112p5_el-030_newmodel_512.png SKIP (exists)
+[08:54:09] [23/80] tarsus_az135_el-030_newmodel_512.png SKIP (exists)
+[08:54:09] [24/80] tarsus_az157p5_el-030_newmodel_512.png SKIP (exists)
+[08:54:09] [25/80] tarsus_az180_el-030_newmodel_512.png SKIP (exists)
+[08:54:09] [26/80] tarsus_az202p5_el-030_newmodel_512.png SKIP (exists)
+[08:54:09] [27/80] tarsus_az225_el-030_newmodel_512.png SKIP (exists)
+[08:54:09] [28/80] tarsus_az247p5_el-030_newmodel_512.png SKIP (exists)
+[08:54:09] [29/80] tarsus_az270_el-030_newmodel_512.png SKIP (exists)
+[08:54:09] [30/80] tarsus_az292p5_el-030_newmodel_512.png SKIP (exists)
+[08:54:09] [31/80] tarsus_az315_el-030_newmodel_512.png SKIP (exists)
+[08:54:09] [32/80] tarsus_az337p5_el-030_newmodel_512.png SKIP (exists)
+[08:54:09] [33/80] tarsus_az000_el+000_newmodel_512.png SKIP (exists)
+[08:54:09] [34/80] tarsus_az022p5_el+000_newmodel_512.png SKIP (exists)
+[08:54:09] [35/80] tarsus_az045_el+000_newmodel_512.png SKIP (exists)
+[08:54:09] [36/80] tarsus_az067p5_el+000_newmodel_512.png SKIP (exists)
+[08:54:09] [37/80] tarsus_az090_el+000_newmodel_512.png SKIP (exists)
+[08:54:09] [38/80] tarsus_az112p5_el+000_newmodel_512.png SKIP (exists)
+[08:54:09] [39/80] tarsus_az135_el+000_newmodel_512.png SKIP (exists)
+[08:54:09] [40/80] tarsus_az157p5_el+000_newmodel_512.png SKIP (exists)
+[08:54:09] [41/80] tarsus_az180_el+000_newmodel_512.png SKIP (exists)
+[08:54:09] [42/80] tarsus_az202p5_el+000_newmodel_512.png SKIP (exists)
+[08:54:09] [43/80] tarsus_az225_el+000_newmodel_512.png SKIP (exists)
+[08:54:09] [44/80] tarsus_az247p5_el+000_newmodel_512.png SKIP (exists)
+[08:54:09] [45/80] tarsus_az270_el+000_newmodel_512.png SKIP (exists)
+[08:54:09] [46/80] tarsus_az292p5_el+000_newmodel_512.png SKIP (exists)
+[08:54:09] [47/80] tarsus_az315_el+000_newmodel_512.png SKIP (exists)
+[08:54:09] [48/80] tarsus_az337p5_el+000_newmodel_512.png SKIP (exists)
+[08:54:09] [49/80] tarsus_az000_el+030_newmodel_512.png SKIP (exists)
+[08:54:09] [50/80] tarsus_az022p5_el+030_newmodel_512.png SKIP (exists)
+[08:54:09] [51/80] tarsus_az045_el+030_newmodel_512.png SKIP (exists)
+[08:54:09] [52/80] tarsus_az067p5_el+030_newmodel_512.png SKIP (exists)
+[08:54:09] [53/80] tarsus_az090_el+030_newmodel_512.png SKIP (exists)
+[08:54:09] [54/80] tarsus_az112p5_el+030_newmodel_512.png SKIP (exists)
+[08:54:09] [55/80] tarsus_az135_el+030_newmodel_512.png SKIP (exists)
+[08:54:09] [56/80] tarsus_az157p5_el+030_newmodel_512.png SKIP (exists)
+[08:54:09] [57/80] tarsus_az180_el+030_newmodel_512.png SKIP (exists)
+[08:54:09] [58/80] tarsus_az202p5_el+030_newmodel_512.png SKIP (exists)
+[08:54:09] [59/80] tarsus_az225_el+030_newmodel_512.png SKIP (exists)
+[08:54:09] [60/80] tarsus_az247p5_el+030_newmodel_512.png SKIP (exists)
+[08:54:09] [61/80] tarsus_az270_el+030_newmodel_512.png SKIP (exists)
+[08:54:09] [62/80] tarsus_az292p5_el+030_newmodel_512.png SKIP (exists)
+[08:54:09] [63/80] tarsus_az315_el+030_newmodel_512.png SKIP (exists)
+[08:54:09] [64/80] tarsus_az337p5_el+030_newmodel_512.png SKIP (exists)
+[08:54:09] [65/80] tarsus_az000_el+060_newmodel_512.png SKIP (exists)
+[08:54:09] [66/80] tarsus_az022p5_el+060_newmodel_512.png SKIP (exists)
+[08:54:09] [67/80] tarsus_az045_el+060_newmodel_512.png SKIP (exists)
+[08:54:09] [68/80] tarsus_az067p5_el+060_newmodel_512.png SKIP (exists)
+[08:54:09] [69/80] tarsus_az090_el+060_newmodel_512.png SKIP (exists)
+[08:54:09] [70/80] tarsus_az112p5_el+060_newmodel_512.png SKIP (exists)
+[08:54:09] [71/80] tarsus_az135_el+060_newmodel_512.png SKIP (exists)
+[08:54:09] [72/80] tarsus_az157p5_el+060_newmodel_512.png SKIP (exists)
+[08:54:09] [73/80] tarsus_az180_el+060_newmodel_512.png SKIP (exists)
+[08:54:09] [74/80] tarsus_az202p5_el+060_newmodel_512.png SKIP (exists)
+[08:54:09] [75/80] tarsus_az225_el+060_newmodel_512.png SKIP (exists)
+[08:54:09] [76/80] tarsus_az247p5_el+060_newmodel_512.png SKIP (exists)
+[08:54:09] [77/80] tarsus_az270_el+060_newmodel_512.png SKIP (exists)
+[08:54:09] [78/80] tarsus_az292p5_el+060_newmodel_512.png SKIP (exists)
+[08:54:09] [79/80] tarsus_az315_el+060_newmodel_512.png SKIP (exists)
+[08:54:09] [80/80] tarsus_az337p5_el+060_newmodel_512.png generating: Create a pixel-art spaceship sprite using the attached reference image...
+[08:54:43] [80/80] tarsus_az337p5_el+060_newmodel_512.png FAIL: RuntimeError: OpenAI image edit API error 500: {
+  "error": {
+    "message": "The server had an error while processing your request. Sorry about that! You can retry your request, or contact us through our help center at help.openai.com if the error persists. (Please include the request ID req_be0b48cdaf2c4d47829d396eddef9838 in your message.)",
+    "type": "server_error",
+    "param": null,
+    "code": null
+  }
+}
+[08:54:43] === Batch done in 34.4s: 0 generated, 79 skipped, 1 failed ===
+[08:55:07] === Batch starting: 80 specs -> /Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites ===
+[08:55:07] [1/80] tarsus_az000_el-060_newmodel_512.png SKIP (exists)
+[08:55:07] [2/80] tarsus_az022p5_el-060_newmodel_512.png SKIP (exists)
+[08:55:07] [3/80] tarsus_az045_el-060_newmodel_512.png SKIP (exists)
+[08:55:07] [4/80] tarsus_az067p5_el-060_newmodel_512.png SKIP (exists)
+[08:55:07] [5/80] tarsus_az090_el-060_newmodel_512.png SKIP (exists)
+[08:55:07] [6/80] tarsus_az112p5_el-060_newmodel_512.png SKIP (exists)
+[08:55:07] [7/80] tarsus_az135_el-060_newmodel_512.png SKIP (exists)
+[08:55:07] [8/80] tarsus_az157p5_el-060_newmodel_512.png SKIP (exists)
+[08:55:07] [9/80] tarsus_az180_el-060_newmodel_512.png SKIP (exists)
+[08:55:07] [10/80] tarsus_az202p5_el-060_newmodel_512.png SKIP (exists)
+[08:55:07] [11/80] tarsus_az225_el-060_newmodel_512.png SKIP (exists)
+[08:55:07] [12/80] tarsus_az247p5_el-060_newmodel_512.png SKIP (exists)
+[08:55:07] [13/80] tarsus_az270_el-060_newmodel_512.png SKIP (exists)
+[08:55:07] [14/80] tarsus_az292p5_el-060_newmodel_512.png SKIP (exists)
+[08:55:07] [15/80] tarsus_az315_el-060_newmodel_512.png SKIP (exists)
+[08:55:07] [16/80] tarsus_az337p5_el-060_newmodel_512.png SKIP (exists)
+[08:55:07] [17/80] tarsus_az000_el-030_newmodel_512.png SKIP (exists)
+[08:55:07] [18/80] tarsus_az022p5_el-030_newmodel_512.png SKIP (exists)
+[08:55:07] [19/80] tarsus_az045_el-030_newmodel_512.png SKIP (exists)
+[08:55:07] [20/80] tarsus_az067p5_el-030_newmodel_512.png SKIP (exists)
+[08:55:07] [21/80] tarsus_az090_el-030_newmodel_512.png SKIP (exists)
+[08:55:07] [22/80] tarsus_az112p5_el-030_newmodel_512.png SKIP (exists)
+[08:55:07] [23/80] tarsus_az135_el-030_newmodel_512.png SKIP (exists)
+[08:55:07] [24/80] tarsus_az157p5_el-030_newmodel_512.png SKIP (exists)
+[08:55:07] [25/80] tarsus_az180_el-030_newmodel_512.png SKIP (exists)
+[08:55:07] [26/80] tarsus_az202p5_el-030_newmodel_512.png SKIP (exists)
+[08:55:07] [27/80] tarsus_az225_el-030_newmodel_512.png SKIP (exists)
+[08:55:07] [28/80] tarsus_az247p5_el-030_newmodel_512.png SKIP (exists)
+[08:55:07] [29/80] tarsus_az270_el-030_newmodel_512.png SKIP (exists)
+[08:55:07] [30/80] tarsus_az292p5_el-030_newmodel_512.png SKIP (exists)
+[08:55:07] [31/80] tarsus_az315_el-030_newmodel_512.png SKIP (exists)
+[08:55:07] [32/80] tarsus_az337p5_el-030_newmodel_512.png SKIP (exists)
+[08:55:07] [33/80] tarsus_az000_el+000_newmodel_512.png SKIP (exists)
+[08:55:07] [34/80] tarsus_az022p5_el+000_newmodel_512.png SKIP (exists)
+[08:55:07] [35/80] tarsus_az045_el+000_newmodel_512.png SKIP (exists)
+[08:55:07] [36/80] tarsus_az067p5_el+000_newmodel_512.png SKIP (exists)
+[08:55:07] [37/80] tarsus_az090_el+000_newmodel_512.png SKIP (exists)
+[08:55:07] [38/80] tarsus_az112p5_el+000_newmodel_512.png SKIP (exists)
+[08:55:07] [39/80] tarsus_az135_el+000_newmodel_512.png SKIP (exists)
+[08:55:07] [40/80] tarsus_az157p5_el+000_newmodel_512.png SKIP (exists)
+[08:55:07] [41/80] tarsus_az180_el+000_newmodel_512.png SKIP (exists)
+[08:55:07] [42/80] tarsus_az202p5_el+000_newmodel_512.png SKIP (exists)
+[08:55:07] [43/80] tarsus_az225_el+000_newmodel_512.png SKIP (exists)
+[08:55:07] [44/80] tarsus_az247p5_el+000_newmodel_512.png SKIP (exists)
+[08:55:07] [45/80] tarsus_az270_el+000_newmodel_512.png SKIP (exists)
+[08:55:07] [46/80] tarsus_az292p5_el+000_newmodel_512.png SKIP (exists)
+[08:55:07] [47/80] tarsus_az315_el+000_newmodel_512.png SKIP (exists)
+[08:55:07] [48/80] tarsus_az337p5_el+000_newmodel_512.png SKIP (exists)
+[08:55:07] [49/80] tarsus_az000_el+030_newmodel_512.png SKIP (exists)
+[08:55:07] [50/80] tarsus_az022p5_el+030_newmodel_512.png SKIP (exists)
+[08:55:07] [51/80] tarsus_az045_el+030_newmodel_512.png SKIP (exists)
+[08:55:07] [52/80] tarsus_az067p5_el+030_newmodel_512.png SKIP (exists)
+[08:55:07] [53/80] tarsus_az090_el+030_newmodel_512.png SKIP (exists)
+[08:55:07] [54/80] tarsus_az112p5_el+030_newmodel_512.png SKIP (exists)
+[08:55:07] [55/80] tarsus_az135_el+030_newmodel_512.png SKIP (exists)
+[08:55:07] [56/80] tarsus_az157p5_el+030_newmodel_512.png SKIP (exists)
+[08:55:07] [57/80] tarsus_az180_el+030_newmodel_512.png SKIP (exists)
+[08:55:07] [58/80] tarsus_az202p5_el+030_newmodel_512.png SKIP (exists)
+[08:55:07] [59/80] tarsus_az225_el+030_newmodel_512.png SKIP (exists)
+[08:55:07] [60/80] tarsus_az247p5_el+030_newmodel_512.png SKIP (exists)
+[08:55:07] [61/80] tarsus_az270_el+030_newmodel_512.png SKIP (exists)
+[08:55:07] [62/80] tarsus_az292p5_el+030_newmodel_512.png SKIP (exists)
+[08:55:07] [63/80] tarsus_az315_el+030_newmodel_512.png SKIP (exists)
+[08:55:07] [64/80] tarsus_az337p5_el+030_newmodel_512.png SKIP (exists)
+[08:55:07] [65/80] tarsus_az000_el+060_newmodel_512.png SKIP (exists)
+[08:55:07] [66/80] tarsus_az022p5_el+060_newmodel_512.png SKIP (exists)
+[08:55:07] [67/80] tarsus_az045_el+060_newmodel_512.png SKIP (exists)
+[08:55:07] [68/80] tarsus_az067p5_el+060_newmodel_512.png SKIP (exists)
+[08:55:07] [69/80] tarsus_az090_el+060_newmodel_512.png SKIP (exists)
+[08:55:07] [70/80] tarsus_az112p5_el+060_newmodel_512.png SKIP (exists)
+[08:55:07] [71/80] tarsus_az135_el+060_newmodel_512.png SKIP (exists)
+[08:55:07] [72/80] tarsus_az157p5_el+060_newmodel_512.png SKIP (exists)
+[08:55:07] [73/80] tarsus_az180_el+060_newmodel_512.png SKIP (exists)
+[08:55:07] [74/80] tarsus_az202p5_el+060_newmodel_512.png SKIP (exists)
+[08:55:07] [75/80] tarsus_az225_el+060_newmodel_512.png SKIP (exists)
+[08:55:07] [76/80] tarsus_az247p5_el+060_newmodel_512.png SKIP (exists)
+[08:55:07] [77/80] tarsus_az270_el+060_newmodel_512.png SKIP (exists)
+[08:55:07] [78/80] tarsus_az292p5_el+060_newmodel_512.png SKIP (exists)
+[08:55:07] [79/80] tarsus_az315_el+060_newmodel_512.png SKIP (exists)
+[08:55:07] [80/80] tarsus_az337p5_el+060_newmodel_512.png generating: Create a pixel-art spaceship sprite using the attached reference image...
+[08:57:48] [80/80] tarsus_az337p5_el+060_newmodel_512.png OK (161.8s)
+[08:57:48] === Batch done in 161.8s: 1 generated, 79 skipped, 0 failed ===

@@ -72,6 +72,7 @@ struct SpriteObject {
     const SpriteArt*       art = nullptr;   // non-owning; points into a cache
     HMM_Vec3               position{0, 0, 0};
     float                  world_size = 1000.0f;   // longest side in world units
+    float                  roll_rad   = 0.0f;      // in-plane billboard rotation, clockwise-ish screen roll
     HMM_Vec4               tint       {1, 1, 1, 1};// rgb tint + global alpha
     std::vector<LightSpot> lights;                 // animated glow spots
 };

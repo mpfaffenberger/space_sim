@@ -28,6 +28,7 @@
 #include "dust.h"
 #include "mesh_render.h"
 #include "sprite.h"
+#include "ship_sprite.h"
 #include "sprite_light_editor.h"
 
 #include <unordered_map>
@@ -77,6 +78,9 @@ struct AppState {
     SpriteRenderer                                       sprite_render{};
     std::unordered_map<std::string, SpriteArt>           sprite_art;
     std::vector<SpriteObject>                            placed_sprites;
+    std::unordered_map<std::string, ShipSpriteAtlas>      ship_sprite_atlases;
+    std::vector<ShipSpriteObject>                        placed_ship_sprites;
+    std::vector<SpriteObject>                            frame_sprites;
 
     // Held-key flags, indexed by sapp key code. Flight physics reads these
     // every frame so we don't rely on key-repeat timing.
@@ -86,7 +90,7 @@ struct AppState {
     // screen position drives ship yaw/pitch (Freelancer feel). false =
     // cursor is visible and the ship freezes its turn input — used
     // when the player wants to click ImGui panels. SPACE toggles.
-    bool     fly_by_wire = true;
+    bool     fly_by_wire = false;
 
     // Latest mouse position in *logical* (HiDPI-corrected) pixels,
     // populated on SAPP_EVENTTYPE_MOUSE_MOVE. We store it once and
@@ -104,6 +108,7 @@ struct AppState {
     uint64_t escape_armed_ticks = 0;
 
     std::string system_name = "troy";   // assets/systems/<name>.json
+    bool        capture_clean = false;  // hide HUD/cockpit overlay for atlas screenshots
     StarSystem  system{};
 
     // Targeting / nav-cycling. -1 = no target. Press N to advance through
@@ -213,7 +218,20 @@ void init_cb() {
     // Gate at time of writing) — those systems were authored against
     // the sun-at-origin convention and their hand-tuned spawn framings
     // would break if we silently moved the star.
-    if (!g.system.nav_points.empty()) {
+    if (g.capture_clean) {
+        // Atlas/reference capture wants boring studio lighting, not a giant
+        // nearby bloom cannon whitening every hull panel. Put a tiny dim sun
+        // far off-axis so meshes get readable directional light while the
+        // visible star/corona stays out of the crop. Boring is beautiful.
+        g.sun.position = HMM_V3(-200000.0f, 150000.0f, 200000.0f);
+        g.sun.radius = 100.0f;
+        g.sun.core_color = HMM_V3(0.70f, 0.70f, 0.70f);
+        g.sun.glow_color = HMM_V3(0.06f, 0.06f, 0.06f);
+        g.sun.corona_alpha = 0.0f;
+        g.sun.gas_strength = 0.0f;
+        g.sun.ray_strength = 0.0f;
+        std::printf("[main] capture-clean studio sun enabled\n");
+    } else if (!g.system.nav_points.empty()) {
         HMM_Vec3 sum{0.0f, 0.0f, 0.0f};
         for (const auto& nav : g.system.nav_points) {
             sum = HMM_AddV3(sum, nav.position);
@@ -370,13 +388,28 @@ void init_cb() {
         g.placed_sprites.push_back(s);
     }
 
-    // Fly-by-wire defaults: cursor hidden, ship aim active. Player
-    // toggles to free-cursor mode with SPACE for clicking ImGui.
-    // We DON'T sapp_lock_mouse — locking gives only deltas, and
-    // fly-by-wire wants absolute mouse position to read 'where the
-    // pilot is pointing'.
-    sapp_show_mouse(false);
-    g.fly_by_wire = true;
+    for (const auto& sd : g.system.placed_ship_sprites) {
+        auto [it, inserted] = g.ship_sprite_atlases.try_emplace(sd.atlas, ShipSpriteAtlas{});
+        if (inserted && !load_ship_sprite_atlas(sd.atlas, it->second, g.sprite_art)) {
+            std::fprintf(stderr, "[main] skipping ship sprite atlas '%s'\n", sd.atlas.c_str());
+            g.ship_sprite_atlases.erase(it);
+            continue;
+        }
+
+        ShipSpriteObject s{};
+        s.atlas      = &it->second;
+        s.position   = sd.position;
+        s.world_size = sd.length_meters;
+        s.tint       = HMM_V4(1.0f, 1.0f, 1.0f, 1.0f);
+        g.placed_ship_sprites.push_back(s);
+    }
+
+    // Fly-by-wire defaults OFF. Player toggles it with SPACE. This is much
+    // friendlier for tools/capture scripts and prevents the camera from
+    // drifting because the OS cursor happened to be off-centre. Amazing how
+    // not fighting the tooling makes the tooling less cursed.
+    sapp_show_mouse(true);
+    g.fly_by_wire = false;
 
     g.last_frame_ticks = stm_now();
     g.last_fps_ticks   = g.last_frame_ticks;
@@ -417,6 +450,12 @@ void frame_cb() {
     // smooths the lerp so it feels like winding up and winding down.
     g.camera.cruise_target = g.keys_down[SAPP_KEYCODE_TAB] ? 1.0f : 0.0f;
     if (g.keys_down[SAPP_KEYCODE_X]) g.camera.brake();
+    // Roll input — Q/E rotate around the view axis. Opposing keys cancel
+    // (the same once-per-axis read pattern as thrust_from_keys()).
+    float roll_input = 0.0f;
+    if (g.keys_down[SAPP_KEYCODE_Q]) roll_input -= 1.0f;
+    if (g.keys_down[SAPP_KEYCODE_E]) roll_input += 1.0f;
+    if (roll_input != 0.0f) g.camera.apply_roll(roll_input, dt);
     g.camera.apply_thrust(thrust_from_keys(), dt);
     g.camera.integrate(dt);
 
@@ -425,9 +464,6 @@ void frame_cb() {
     const float fb_w = (float)sapp_width();
     const float fb_h = (float)sapp_height();
     sdtx_canvas(fb_w * 0.5f, fb_h * 0.5f);
-    sdtx_font(0);
-    sdtx_color3f(0.7f, 1.0f, 0.9f);
-    sdtx_pos(1.0f, 1.0f);
 
     const HMM_Vec3 p = g.camera.position;
     const float speed = HMM_LenV3(g.camera.velocity);
@@ -435,20 +471,25 @@ void frame_cb() {
     const char* mode  = (g.camera.cruise_level > 0.5f)  ? "CRUISE"
                       : (g.camera.cruise_level > 0.05f) ? "SPOOL "
                       :                                   "NORMAL";
-    sdtx_printf("SPEED  %7.0f u/s\n", speed);
-    sdtx_printf("MODE   %s\n",        mode);
-    sdtx_printf("D(SUN) %7.0f u\n",   dist);
-    sdtx_printf("POS    %5.0f %5.0f %5.0f\n", p.X, p.Y, p.Z);
 
+    if (!g.capture_clean) {
+        sdtx_font(0);
+        sdtx_color3f(0.7f, 1.0f, 0.9f);
+        sdtx_pos(1.0f, 1.0f);
+        sdtx_printf("SPEED  %7.0f u/s\n", speed);
+        sdtx_printf("MODE   %s\n",        mode);
+        sdtx_printf("D(SUN) %7.0f u\n",   dist);
+        sdtx_printf("POS    %5.0f %5.0f %5.0f\n", p.X, p.Y, p.Z);
 
-    // Bottom-left: controls reminder in the second, thinner font.
-    sdtx_font(1);
-    sdtx_color3f(0.5f, 0.6f, 0.7f);
-    sdtx_pos(1.0f, fb_h * 0.5f / 8.0f - 4.0f);   // 4 lines up from bottom (one block, 4 lines)
-    sdtx_puts("W/S throttle   A/D strafe   R/F up/down\n");
-    sdtx_puts("mouse aim      SPACE toggle cursor   TAB cruise\n");
-    sdtx_puts("X brake        N cycle nav target\n");
-    sdtx_puts("CTRL+M debug   ESC x2 quit\n");
+        // Bottom-left: controls reminder in the second, thinner font.
+        sdtx_font(1);
+        sdtx_color3f(0.5f, 0.6f, 0.7f);
+        sdtx_pos(1.0f, fb_h * 0.5f / 8.0f - 4.0f);   // 4 lines up from bottom
+        sdtx_puts("W/S throttle   A/D strafe   R/F up/down\n");
+        sdtx_puts("mouse aim      SPACE toggle cursor   TAB cruise\n");
+        sdtx_puts("X brake        N cycle nav target\n");
+        sdtx_puts("CTRL+M debug   ESC x2 quit\n");
+    }
 
     // --- draw ---------------------------------------------------------------
     const float aspect   = fb_w / fb_h;
@@ -484,7 +525,9 @@ void frame_cb() {
         // additive corona still paints on top of everything. Sprites use
         // alpha blending, which needs opaque depth already in the buffer
         // so translucent edges composite correctly.
-        g.sprite_render.draw(g.placed_sprites, g.camera, aspect, time_sec);
+        g.frame_sprites = g.placed_sprites;
+        append_ship_sprites_for_camera(g.placed_ship_sprites, g.camera, g.frame_sprites);
+        g.sprite_render.draw(g.frame_sprites, g.camera, aspect, time_sec);
         g.sun.draw(g.camera, aspect, time_sec);
         sg_end_pass();
     }
@@ -495,10 +538,12 @@ void frame_cb() {
     // Build the ImGui frame OUTSIDE any pass. This is only widget state;
     // no draw calls are issued yet. Slider mutations feed back into the
     // live PlacedMesh list so changes take effect on the *next* frame.
-    debug_panel::build(g.placed_meshes);
+    debug_panel::build(g.placed_meshes, g.placed_ship_sprites);
     sprite_light_editor::build(g.placed_sprites);
-    cockpit_hud::build(g.camera, g.system, g.selected_nav,
-                       g.mouse_x, g.mouse_y, g.fly_by_wire);
+    if (!g.capture_clean) {
+        cockpit_hud::build(g.camera, g.system, g.selected_nav,
+                           g.mouse_x, g.mouse_y, g.fly_by_wire);
+    }
 
     // Pass 4: composite to swapchain with lens flare + HUD + ImGui
     // overlay — all in ONE swapchain pass (Metal only tolerates one
@@ -527,9 +572,17 @@ void frame_cb() {
                             : (g.camera.cruise_level > 0.05f) ? "spool"
                             : "normal";
         const int fps = (int)(g.frames_since / elapsed);
-        std::printf("[new_privateer] %4d fps  %6s  v=%7.1f u/s  d(sun)=%.0f  pos=(%.0f,%.0f,%.0f)\n",
-                    fps, mode, speed, dist_to_sun,
-                    p.X, p.Y, p.Z);
+        if (!g.placed_ship_sprites.empty()) {
+            const ShipSpriteObject& ship = g.placed_ship_sprites.front();
+            std::printf("[new_privateer] %4d fps  %6s  v=%7.1f u/s  d(sun)=%.0f  pos=(%.0f,%.0f,%.0f)  ship_frame=(az %.0f el %.0f)\n",
+                        fps, mode, speed, dist_to_sun,
+                        p.X, p.Y, p.Z,
+                        ship.debug_last_az_deg, ship.debug_last_el_deg);
+        } else {
+            std::printf("[new_privateer] %4d fps  %6s  v=%7.1f u/s  d(sun)=%.0f  pos=(%.0f,%.0f,%.0f)\n",
+                        fps, mode, speed, dist_to_sun,
+                        p.X, p.Y, p.Z);
+        }
         dev_remote::publish_fps(fps);
         g.last_fps_ticks = now;
         g.frames_since   = 0;
@@ -622,10 +675,12 @@ void event_cb(const sapp_event* ev) {
 sapp_desc sokol_main(int argc, char** argv) {
     std::setvbuf(stdout, nullptr, _IOLBF, 0);
 
-    for (int i = 1; i + 1 < argc; ++i) {
-        if (std::strcmp(argv[i], "--system") == 0) {
+    for (int i = 1; i < argc; ++i) {
+        if (std::strcmp(argv[i], "--system") == 0 && i + 1 < argc) {
             g.system_name = argv[i + 1];
             ++i;
+        } else if (std::strcmp(argv[i], "--capture-clean") == 0) {
+            g.capture_clean = true;
         }
     }
 

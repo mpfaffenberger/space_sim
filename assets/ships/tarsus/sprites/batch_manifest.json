@@ -1,0 +1,496 @@
+{
+  "total": 80,
+  "generated": 1,
+  "skipped": 79,
+  "failed": 0,
+  "elapsed_seconds": 161.8,
+  "output_dir": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites",
+  "log_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/batch_log.txt",
+  "results": [
+    {
+      "index": 1,
+      "status": "skipped",
+      "filename": "tarsus_az000_el-060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az000_el-060_newmodel_512.png"
+    },
+    {
+      "index": 2,
+      "status": "skipped",
+      "filename": "tarsus_az022p5_el-060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az022p5_el-060_newmodel_512.png"
+    },
+    {
+      "index": 3,
+      "status": "skipped",
+      "filename": "tarsus_az045_el-060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az045_el-060_newmodel_512.png"
+    },
+    {
+      "index": 4,
+      "status": "skipped",
+      "filename": "tarsus_az067p5_el-060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az067p5_el-060_newmodel_512.png"
+    },
+    {
+      "index": 5,
+      "status": "skipped",
+      "filename": "tarsus_az090_el-060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az090_el-060_newmodel_512.png"
+    },
+    {
+      "index": 6,
+      "status": "skipped",
+      "filename": "tarsus_az112p5_el-060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az112p5_el-060_newmodel_512.png"
+    },
+    {
+      "index": 7,
+      "status": "skipped",
+      "filename": "tarsus_az135_el-060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az135_el-060_newmodel_512.png"
+    },
+    {
+      "index": 8,
+      "status": "skipped",
+      "filename": "tarsus_az157p5_el-060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az157p5_el-060_newmodel_512.png"
+    },
+    {
+      "index": 9,
+      "status": "skipped",
+      "filename": "tarsus_az180_el-060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az180_el-060_newmodel_512.png"
+    },
+    {
+      "index": 10,
+      "status": "skipped",
+      "filename": "tarsus_az202p5_el-060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az202p5_el-060_newmodel_512.png"
+    },
+    {
+      "index": 11,
+      "status": "skipped",
+      "filename": "tarsus_az225_el-060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az225_el-060_newmodel_512.png"
+    },
+    {
+      "index": 12,
+      "status": "skipped",
+      "filename": "tarsus_az247p5_el-060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az247p5_el-060_newmodel_512.png"
+    },
+    {
+      "index": 13,
+      "status": "skipped",
+      "filename": "tarsus_az270_el-060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az270_el-060_newmodel_512.png"
+    },
+    {
+      "index": 14,
+      "status": "skipped",
+      "filename": "tarsus_az292p5_el-060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az292p5_el-060_newmodel_512.png"
+    },
+    {
+      "index": 15,
+      "status": "skipped",
+      "filename": "tarsus_az315_el-060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az315_el-060_newmodel_512.png"
+    },
+    {
+      "index": 16,
+      "status": "skipped",
+      "filename": "tarsus_az337p5_el-060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az337p5_el-060_newmodel_512.png"
+    },
+    {
+      "index": 17,
+      "status": "skipped",
+      "filename": "tarsus_az000_el-030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az000_el-030_newmodel_512.png"
+    },
+    {
+      "index": 18,
+      "status": "skipped",
+      "filename": "tarsus_az022p5_el-030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az022p5_el-030_newmodel_512.png"
+    },
+    {
+      "index": 19,
+      "status": "skipped",
+      "filename": "tarsus_az045_el-030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az045_el-030_newmodel_512.png"
+    },
+    {
+      "index": 20,
+      "status": "skipped",
+      "filename": "tarsus_az067p5_el-030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az067p5_el-030_newmodel_512.png"
+    },
+    {
+      "index": 21,
+      "status": "skipped",
+      "filename": "tarsus_az090_el-030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az090_el-030_newmodel_512.png"
+    },
+    {
+      "index": 22,
+      "status": "skipped",
+      "filename": "tarsus_az112p5_el-030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az112p5_el-030_newmodel_512.png"
+    },
+    {
+      "index": 23,
+      "status": "skipped",
+      "filename": "tarsus_az135_el-030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az135_el-030_newmodel_512.png"
+    },
+    {
+      "index": 24,
+      "status": "skipped",
+      "filename": "tarsus_az157p5_el-030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az157p5_el-030_newmodel_512.png"
+    },
+    {
+      "index": 25,
+      "status": "skipped",
+      "filename": "tarsus_az180_el-030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az180_el-030_newmodel_512.png"
+    },
+    {
+      "index": 26,
+      "status": "skipped",
+      "filename": "tarsus_az202p5_el-030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az202p5_el-030_newmodel_512.png"
+    },
+    {
+      "index": 27,
+      "status": "skipped",
+      "filename": "tarsus_az225_el-030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az225_el-030_newmodel_512.png"
+    },
+    {
+      "index": 28,
+      "status": "skipped",
+      "filename": "tarsus_az247p5_el-030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az247p5_el-030_newmodel_512.png"
+    },
+    {
+      "index": 29,
+      "status": "skipped",
+      "filename": "tarsus_az270_el-030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az270_el-030_newmodel_512.png"
+    },
+    {
+      "index": 30,
+      "status": "skipped",
+      "filename": "tarsus_az292p5_el-030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az292p5_el-030_newmodel_512.png"
+    },
+    {
+      "index": 31,
+      "status": "skipped",
+      "filename": "tarsus_az315_el-030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az315_el-030_newmodel_512.png"
+    },
+    {
+      "index": 32,
+      "status": "skipped",
+      "filename": "tarsus_az337p5_el-030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az337p5_el-030_newmodel_512.png"
+    },
+    {
+      "index": 33,
+      "status": "skipped",
+      "filename": "tarsus_az000_el+000_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az000_el+000_newmodel_512.png"
+    },
+    {
+      "index": 34,
+      "status": "skipped",
+      "filename": "tarsus_az022p5_el+000_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az022p5_el+000_newmodel_512.png"
+    },
+    {
+      "index": 35,
+      "status": "skipped",
+      "filename": "tarsus_az045_el+000_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az045_el+000_newmodel_512.png"
+    },
+    {
+      "index": 36,
+      "status": "skipped",
+      "filename": "tarsus_az067p5_el+000_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az067p5_el+000_newmodel_512.png"
+    },
+    {
+      "index": 37,
+      "status": "skipped",
+      "filename": "tarsus_az090_el+000_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az090_el+000_newmodel_512.png"
+    },
+    {
+      "index": 38,
+      "status": "skipped",
+      "filename": "tarsus_az112p5_el+000_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az112p5_el+000_newmodel_512.png"
+    },
+    {
+      "index": 39,
+      "status": "skipped",
+      "filename": "tarsus_az135_el+000_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az135_el+000_newmodel_512.png"
+    },
+    {
+      "index": 40,
+      "status": "skipped",
+      "filename": "tarsus_az157p5_el+000_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az157p5_el+000_newmodel_512.png"
+    },
+    {
+      "index": 41,
+      "status": "skipped",
+      "filename": "tarsus_az180_el+000_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az180_el+000_newmodel_512.png"
+    },
+    {
+      "index": 42,
+      "status": "skipped",
+      "filename": "tarsus_az202p5_el+000_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az202p5_el+000_newmodel_512.png"
+    },
+    {
+      "index": 43,
+      "status": "skipped",
+      "filename": "tarsus_az225_el+000_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az225_el+000_newmodel_512.png"
+    },
+    {
+      "index": 44,
+      "status": "skipped",
+      "filename": "tarsus_az247p5_el+000_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az247p5_el+000_newmodel_512.png"
+    },
+    {
+      "index": 45,
+      "status": "skipped",
+      "filename": "tarsus_az270_el+000_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az270_el+000_newmodel_512.png"
+    },
+    {
+      "index": 46,
+      "status": "skipped",
+      "filename": "tarsus_az292p5_el+000_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az292p5_el+000_newmodel_512.png"
+    },
+    {
+      "index": 47,
+      "status": "skipped",
+      "filename": "tarsus_az315_el+000_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az315_el+000_newmodel_512.png"
+    },
+    {
+      "index": 48,
+      "status": "skipped",
+      "filename": "tarsus_az337p5_el+000_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az337p5_el+000_newmodel_512.png"
+    },
+    {
+      "index": 49,
+      "status": "skipped",
+      "filename": "tarsus_az000_el+030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az000_el+030_newmodel_512.png"
+    },
+    {
+      "index": 50,
+      "status": "skipped",
+      "filename": "tarsus_az022p5_el+030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az022p5_el+030_newmodel_512.png"
+    },
+    {
+      "index": 51,
+      "status": "skipped",
+      "filename": "tarsus_az045_el+030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az045_el+030_newmodel_512.png"
+    },
+    {
+      "index": 52,
+      "status": "skipped",
+      "filename": "tarsus_az067p5_el+030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az067p5_el+030_newmodel_512.png"
+    },
+    {
+      "index": 53,
+      "status": "skipped",
+      "filename": "tarsus_az090_el+030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az090_el+030_newmodel_512.png"
+    },
+    {
+      "index": 54,
+      "status": "skipped",
+      "filename": "tarsus_az112p5_el+030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az112p5_el+030_newmodel_512.png"
+    },
+    {
+      "index": 55,
+      "status": "skipped",
+      "filename": "tarsus_az135_el+030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az135_el+030_newmodel_512.png"
+    },
+    {
+      "index": 56,
+      "status": "skipped",
+      "filename": "tarsus_az157p5_el+030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az157p5_el+030_newmodel_512.png"
+    },
+    {
+      "index": 57,
+      "status": "skipped",
+      "filename": "tarsus_az180_el+030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az180_el+030_newmodel_512.png"
+    },
+    {
+      "index": 58,
+      "status": "skipped",
+      "filename": "tarsus_az202p5_el+030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az202p5_el+030_newmodel_512.png"
+    },
+    {
+      "index": 59,
+      "status": "skipped",
+      "filename": "tarsus_az225_el+030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az225_el+030_newmodel_512.png"
+    },
+    {
+      "index": 60,
+      "status": "skipped",
+      "filename": "tarsus_az247p5_el+030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az247p5_el+030_newmodel_512.png"
+    },
+    {
+      "index": 61,
+      "status": "skipped",
+      "filename": "tarsus_az270_el+030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az270_el+030_newmodel_512.png"
+    },
+    {
+      "index": 62,
+      "status": "skipped",
+      "filename": "tarsus_az292p5_el+030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az292p5_el+030_newmodel_512.png"
+    },
+    {
+      "index": 63,
+      "status": "skipped",
+      "filename": "tarsus_az315_el+030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az315_el+030_newmodel_512.png"
+    },
+    {
+      "index": 64,
+      "status": "skipped",
+      "filename": "tarsus_az337p5_el+030_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az337p5_el+030_newmodel_512.png"
+    },
+    {
+      "index": 65,
+      "status": "skipped",
+      "filename": "tarsus_az000_el+060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az000_el+060_newmodel_512.png"
+    },
+    {
+      "index": 66,
+      "status": "skipped",
+      "filename": "tarsus_az022p5_el+060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az022p5_el+060_newmodel_512.png"
+    },
+    {
+      "index": 67,
+      "status": "skipped",
+      "filename": "tarsus_az045_el+060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az045_el+060_newmodel_512.png"
+    },
+    {
+      "index": 68,
+      "status": "skipped",
+      "filename": "tarsus_az067p5_el+060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az067p5_el+060_newmodel_512.png"
+    },
+    {
+      "index": 69,
+      "status": "skipped",
+      "filename": "tarsus_az090_el+060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az090_el+060_newmodel_512.png"
+    },
+    {
+      "index": 70,
+      "status": "skipped",
+      "filename": "tarsus_az112p5_el+060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az112p5_el+060_newmodel_512.png"
+    },
+    {
+      "index": 71,
+      "status": "skipped",
+      "filename": "tarsus_az135_el+060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az135_el+060_newmodel_512.png"
+    },
+    {
+      "index": 72,
+      "status": "skipped",
+      "filename": "tarsus_az157p5_el+060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az157p5_el+060_newmodel_512.png"
+    },
+    {
+      "index": 73,
+      "status": "skipped",
+      "filename": "tarsus_az180_el+060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az180_el+060_newmodel_512.png"
+    },
+    {
+      "index": 74,
+      "status": "skipped",
+      "filename": "tarsus_az202p5_el+060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az202p5_el+060_newmodel_512.png"
+    },
+    {
+      "index": 75,
+      "status": "skipped",
+      "filename": "tarsus_az225_el+060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az225_el+060_newmodel_512.png"
+    },
+    {
+      "index": 76,
+      "status": "skipped",
+      "filename": "tarsus_az247p5_el+060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az247p5_el+060_newmodel_512.png"
+    },
+    {
+      "index": 77,
+      "status": "skipped",
+      "filename": "tarsus_az270_el+060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az270_el+060_newmodel_512.png"
+    },
+    {
+      "index": 78,
+      "status": "skipped",
+      "filename": "tarsus_az292p5_el+060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az292p5_el+060_newmodel_512.png"
+    },
+    {
+      "index": 79,
+      "status": "skipped",
+      "filename": "tarsus_az315_el+060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az315_el+060_newmodel_512.png"
+    },
+    {
+      "index": 80,
+      "status": "generated",
+      "filename": "tarsus_az337p5_el+060_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/sprites/tarsus_az337p5_el+060_newmodel_512.png",
+      "elapsed_seconds": 161.77,
+      "reference_images": [
+        "/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/renders/tarsus_az337p5_el+060.png"
+      ],
+      "used_endpoint": "edits"
+    }
+  ]
+}

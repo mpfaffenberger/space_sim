@@ -1,0 +1,40 @@
+Create a pixel-art spaceship sprite using the attached reference image as a strict shape and pose guide.
+
+REFERENCE IMAGE (use directly as image conditioning):
+/Users/mpfaffenberger/code/new_privateer/assets/ships/tarsus/renders/tarsus_az292p5_el-060.png
+
+Subject: Tarsus-class space freighter from Wing Commander: Privateer.
+
+Requirements:
+- Preserve the silhouette, proportions, and exact viewing angle from the reference image.
+- Do NOT invent a different ship design.
+- Keep the boxy cockpit/nose, long central fuselage, twin side nacelles, and utilitarian cargo-hauler structure.
+- Preserve the outline exactly; do not overly simplify or blur the geometry.
+- Keep the ship centered and fully readable as a single clean silhouette.
+- Readable sprite first, texture detail second.
+
+Style:
+- 1993 DOS / Wing Commander: Privateer style pixel art
+- chunky pixels
+- hand-authored-looking sprite readability
+- dithered shading
+- limited palette
+- dark gunmetal / olive-gray hull
+- subtle panel breakup
+- transparent background
+
+Avoid:
+- painterly blur
+- mushy silhouette
+- rounded organic forms
+- inventing extra fins / wings / greebles
+- changing the ship proportions
+- smearing thin structures
+- starfield background or background artifacts
+
+Target:
+- master sprite quality
+- pixel grid 512 on longest side
+- palette around 40 colors
+- transparent background
+- large source sprite suitable for later downsampling into in-game atlas frames

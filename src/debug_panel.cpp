@@ -9,6 +9,7 @@
 
 #include "debug_panel.h"
 #include "mesh_render.h"   // PlacedMesh
+#include "ship_sprite.h"
 
 // Dear ImGui + sokol backend. The sokol_imgui.h header is both the
 // declaration and implementation — we define SOKOL_IMGUI_IMPL here so it
@@ -17,7 +18,12 @@
 #define SOKOL_IMGUI_IMPL
 #include "sokol_imgui.h"
 
+#include <algorithm>
 #include <cstdio>
+#include <filesystem>
+#include <fstream>
+#include <string>
+#include <unordered_map>
 
 namespace debug_panel {
 
@@ -26,6 +32,35 @@ namespace debug_panel {
 // This flag is file-scope static because there's exactly one panel and
 // persisting the intent to show/hide across frames is inherently global.
 static bool g_visible = false;
+static std::unordered_map<std::string, std::string> g_prompt_notes;
+
+static std::string basename(std::string path) {
+    const size_t slash = path.find_last_of("/");
+    if (slash != std::string::npos) path = path.substr(slash + 1);
+    return path;
+}
+
+static std::string trimmed_imgui_buffer(std::string s) {
+    const size_t nul = s.find('\0');
+    if (nul != std::string::npos) s.resize(nul);
+    return s;
+}
+
+static void save_ship_tuning(const ShipSpriteAtlas& atlas) {
+    const std::filesystem::path path = std::filesystem::path("assets") / (atlas.key + ".tuning.json");
+    std::filesystem::create_directories(path.parent_path());
+    std::ofstream out(path);
+    out << "{\n  \"ship\": \"tarsus\",\n  \"frames\": [\n";
+    for (size_t i = 0; i < atlas.frames.size(); ++i) {
+        const ShipSpriteFrame& f = atlas.frames[i];
+        out << "    { \"az\": " << f.az_deg
+            << ", \"el\": " << f.el_deg
+            << ", \"scale\": " << f.scale
+            << ", \"roll_deg\": " << f.roll_deg << " }";
+        out << (i + 1 == atlas.frames.size() ? "\n" : ",\n");
+    }
+    out << "  ]\n}\n";
+}
 
 void init() {
     simgui_desc_t d{};
@@ -58,7 +93,80 @@ static constexpr float kLengthMin  =    50.0f;
 static constexpr float kLengthMax  = 10000.0f;
 static constexpr float kPosRange   = 50000.0f;
 
-void build(std::vector<PlacedMesh>& placed_meshes) {
+static void build_atlas_inspector(std::vector<ShipSpriteObject>& ship_sprites) {
+    if (ship_sprites.empty()) return;
+
+    if (!ImGui::CollapsingHeader("Ship Sprite Atlas Inspector",
+                                 ImGuiTreeNodeFlags_DefaultOpen)) {
+        return;
+    }
+
+    ImGui::TextWrapped("Scrub atlas az/el while the camera stays fixed. Use this to find weak generated frames before spending more API money like a gremlin.");
+    ImGui::Separator();
+
+    for (int i = 0; i < (int)ship_sprites.size(); ++i) {
+        ShipSpriteObject& ship = ship_sprites[i];
+        if (!ship.atlas) continue;
+
+        ImGui::PushID(i);
+        ImGui::Checkbox("manual frame override", &ship.manual_frame_enabled);
+        ImGui::SameLine();
+        ImGui::Text("current: az %.0f  el %.0f", ship.debug_last_az_deg, ship.debug_last_el_deg);
+
+        ImGui::SliderFloat("manual az", &ship.manual_az_deg, 0.0f, 315.0f, "%.0f deg");
+        ImGui::SliderFloat("manual el", &ship.manual_el_deg, -68.0f, 68.0f, "%.0f deg");
+
+        ShipSpriteFrame* frame = const_cast<ShipSpriteFrame*>(choose_ship_sprite_frame_by_angles(
+            *ship.atlas, ship.manual_az_deg, ship.manual_el_deg));
+        if (frame && frame->art) {
+            ImGui::Text("nearest frame: az %.0f  el %.0f", frame->az_deg, frame->el_deg);
+            ImGui::SliderFloat("frame scale", &frame->scale, 0.5f, 1.8f, "%.3f");
+            ImGui::SliderFloat("frame roll", &frame->roll_deg, -20.0f, 20.0f, "%.2f deg");
+            if (ImGui::Button("save frame tuning")) {
+                save_ship_tuning(*ship.atlas);
+            }
+            ImGui::SameLine();
+            ImGui::TextDisabled("writes assets/%s.tuning.json", ship.atlas->key.c_str());
+
+            const float longest = (float)std::max(frame->art->hull_w, frame->art->hull_h);
+            const float preview_w = 260.0f * (float)frame->art->hull_w / longest;
+            const float preview_h = 260.0f * (float)frame->art->hull_h / longest;
+            ImGui::Image(simgui_imtextureid(frame->art->hull.view), ImVec2(preview_w, preview_h));
+
+            const std::string key = frame->art->name;
+            const std::filesystem::path tweak_dir = "assets/ships/tarsus/sprites/prompt_tweaks";
+            const std::filesystem::path tweak_file = tweak_dir / (basename(key) + ".txt");
+            std::string& notes = g_prompt_notes[key];
+            if (notes.empty() && std::filesystem::exists(tweak_file)) {
+                std::ifstream in(tweak_file);
+                notes.assign(std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>());
+            }
+            notes.resize(1024, '\0');
+            if (ImGui::InputTextMultiline("prompt tuning notes", notes.data(), notes.size(), ImVec2(420, 100))) {
+                const size_t nul = notes.find('\0');
+                if (nul != std::string::npos) notes.resize(nul);
+            }
+            if (ImGui::Button("save notes")) {
+                std::filesystem::create_directories(tweak_dir);
+                std::ofstream out(tweak_file);
+                out << trimmed_imgui_buffer(notes);
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("copy regenerate command")) {
+                char cmd[1200];
+                std::snprintf(cmd, sizeof(cmd),
+                    "python3 tools/batch_generate_ship_sprites.py --ship tarsus --az %.0f --el %.0f --prompt-suffix-file %s --use-pixelart-tool --clean --preview --force",
+                    frame->az_deg, frame->el_deg, tweak_file.string().c_str());
+                ImGui::SetClipboardText(cmd);
+            }
+            ImGui::TextDisabled("notes file: %s", tweak_file.string().c_str());
+        }
+        ImGui::PopID();
+    }
+}
+
+void build(std::vector<PlacedMesh>& placed_meshes,
+           std::vector<ShipSpriteObject>& ship_sprites) {
     // Always tick ImGui's frame — keeps the backend's state machine happy
     // even when no window is visible, so flipping `g_visible` mid-game
     // doesn't confuse Dear ImGui about whether a frame is in flight.
@@ -75,6 +183,8 @@ void build(std::vector<PlacedMesh>& placed_meshes) {
                      ImGuiWindowFlags_AlwaysAutoResize)) {
 
         ImGui::TextUnformatted("Live per-ship tweaks. Transcribe to JSON when happy.");
+        ImGui::Separator();
+        build_atlas_inspector(ship_sprites);
         ImGui::Separator();
 
         // One collapsible section per ship. ImGui generates a unique ID

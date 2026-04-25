@@ -36,11 +36,24 @@ out vec2 v_uv;
 void main() {
     // Half-extents along camera right/up. `inst_pos.w` is the half-length
     // of the sprite's LONGEST edge; `inst_scale.xy` shrinks the shorter
-    // edge for non-square sprites.
-    vec3 offs = cam_right.xyz * (a_corner.x * inst_pos.w * inst_scale.x)
-              + cam_up.xyz    * (a_corner.y * inst_pos.w * inst_scale.y);
+    // edge for non-square sprites. `inst_scale.zw` carries cos/sin for an
+    // optional in-plane roll, used by the atlas inspector to fix individual
+    // frames that came back a little crooked. Default cos=1, sin=0.
+    vec2 corner = a_corner;
+    float c = inst_scale.z;
+    float s = inst_scale.w;
+    corner = vec2(corner.x * c - corner.y * s,
+                  corner.x * s + corner.y * c);
+    vec3 offs = cam_right.xyz * (corner.x * inst_pos.w * inst_scale.x)
+              + cam_up.xyz    * (corner.y * inst_pos.w * inst_scale.y);
     gl_Position = view_proj * vec4(inst_pos.xyz + offs, 1.0);
-    v_uv = a_uv;
+
+    // Sokol/Metal texture origin fun: PNGs loaded through stb_image arrive
+    // visually upside-down in our billboard path. Flip V once here so every
+    // sprite authoring tool can keep the normal "top of PNG is top of ship"
+    // mental model. Do NOT flip the camera unless you enjoy debugging the
+    // universe through a haunted funhouse mirror.
+    v_uv = vec2(a_uv.x, 1.0 - a_uv.y);
 }
 @end
 

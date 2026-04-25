@@ -1,0 +1,318 @@
+{
+  "ship": "tarsus",
+  "kind": "view_sphere_sprite_atlas",
+  "forward_axis": "+Z",
+  "up_axis": "+Y",
+  "azimuth_degrees": [
+    0,
+    45,
+    90,
+    135,
+    180,
+    225,
+    270,
+    315
+  ],
+  "elevation_degrees": [
+    -67.5,
+    -22.5,
+    22.5,
+    67.5
+  ],
+  "pixel_grid": 512,
+  "palette_size": 40,
+  "samples": [
+    {
+      "az": 0,
+      "el": -67.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az000_el-068_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az000_el-068_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az000_el-068_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az000_el-068_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az000_el-068_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 45,
+      "el": -67.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az045_el-068_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az045_el-068_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az045_el-068_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az045_el-068_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az045_el-068_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 90,
+      "el": -67.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az090_el-068_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az090_el-068_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az090_el-068_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az090_el-068_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az090_el-068_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 135,
+      "el": -67.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az135_el-068_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az135_el-068_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az135_el-068_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az135_el-068_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az135_el-068_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 180,
+      "el": -67.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az180_el-068_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az180_el-068_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az180_el-068_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az180_el-068_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az180_el-068_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 225,
+      "el": -67.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az225_el-068_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az225_el-068_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az225_el-068_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az225_el-068_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az225_el-068_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 270,
+      "el": -67.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az270_el-068_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az270_el-068_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az270_el-068_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az270_el-068_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az270_el-068_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 315,
+      "el": -67.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az315_el-068_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az315_el-068_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az315_el-068_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az315_el-068_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az315_el-068_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 0,
+      "el": -22.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az000_el-022_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az000_el-022_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az000_el-022_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az000_el-022_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az000_el-022_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 45,
+      "el": -22.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az045_el-022_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az045_el-022_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az045_el-022_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az045_el-022_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az045_el-022_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 90,
+      "el": -22.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az090_el-022_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az090_el-022_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az090_el-022_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az090_el-022_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az090_el-022_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 135,
+      "el": -22.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az135_el-022_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az135_el-022_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az135_el-022_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az135_el-022_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az135_el-022_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 180,
+      "el": -22.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az180_el-022_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az180_el-022_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az180_el-022_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az180_el-022_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az180_el-022_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 225,
+      "el": -22.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az225_el-022_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az225_el-022_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az225_el-022_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az225_el-022_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az225_el-022_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 270,
+      "el": -22.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az270_el-022_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az270_el-022_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az270_el-022_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az270_el-022_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az270_el-022_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 315,
+      "el": -22.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az315_el-022_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az315_el-022_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az315_el-022_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az315_el-022_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az315_el-022_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 0,
+      "el": 22.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az000_el+022_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az000_el+022_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az000_el+022_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az000_el+022_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az000_el+022_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 45,
+      "el": 22.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az045_el+022_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az045_el+022_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az045_el+022_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az045_el+022_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az045_el+022_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 90,
+      "el": 22.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az090_el+022_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az090_el+022_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az090_el+022_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az090_el+022_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az090_el+022_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 135,
+      "el": 22.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az135_el+022_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az135_el+022_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az135_el+022_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az135_el+022_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az135_el+022_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 180,
+      "el": 22.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az180_el+022_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az180_el+022_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az180_el+022_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az180_el+022_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az180_el+022_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 225,
+      "el": 22.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az225_el+022_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az225_el+022_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az225_el+022_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az225_el+022_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az225_el+022_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 270,
+      "el": 22.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az270_el+022_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az270_el+022_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az270_el+022_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az270_el+022_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az270_el+022_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 315,
+      "el": 22.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az315_el+022_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az315_el+022_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az315_el+022_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az315_el+022_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az315_el+022_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 0,
+      "el": 67.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az000_el+068_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az000_el+068_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az000_el+068_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az000_el+068_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az000_el+068_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 45,
+      "el": 67.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az045_el+068_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az045_el+068_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az045_el+068_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az045_el+068_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az045_el+068_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 90,
+      "el": 67.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az090_el+068_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az090_el+068_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az090_el+068_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az090_el+068_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az090_el+068_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 135,
+      "el": 67.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az135_el+068_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az135_el+068_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az135_el+068_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az135_el+068_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az135_el+068_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 180,
+      "el": 67.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az180_el+068_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az180_el+068_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az180_el+068_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az180_el+068_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az180_el+068_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 225,
+      "el": 67.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az225_el+068_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az225_el+068_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az225_el+068_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az225_el+068_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az225_el+068_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 270,
+      "el": 67.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az270_el+068_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az270_el+068_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az270_el+068_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az270_el+068_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az270_el+068_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 315,
+      "el": 67.5,
+      "sprite": "ships/tarsus/sprites/tarsus_az315_el+068_newmodel_512_clean_cell.png",
+      "preview": "ships/tarsus/sprites/tarsus_az315_el+068_newmodel_512_clean_cell_on_black.png",
+      "raw": "ships/tarsus/sprites/tarsus_az315_el+068_newmodel_512.png",
+      "sprite_uncropped": "ships/tarsus/sprites/tarsus_az315_el+068_newmodel_512_clean.png",
+      "preview_uncropped": "ships/tarsus/sprites/tarsus_az315_el+068_newmodel_512_clean_on_black.png"
+    }
+  ],
+  "notes": "Generated from in-engine WCU Tarsus renders via pixelart gpt-image-2 reference conditioning; *_clean.png files have alpha matte cleanup applied.",
+  "cell_width": 1020,
+  "cell_height": 1020,
+  "framing": "fixed transparent cell; each clean sprite centered in max width/height across atlas"
+}
