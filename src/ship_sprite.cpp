@@ -198,9 +198,10 @@ void append_ship_sprites_for_camera(std::vector<ShipSpriteObject>& ships,
     //
     //   cap_U(az, el) = ( -sin(el)·sin(az),  cos(el),  -sin(el)·cos(az) )
     //
-    // Because visible atlas Y is mirrored, the fallback uses -cap_U as the
-    // image-up reference. That keeps it continuous with the main forward-axis
-    // formula near head-on frames where img collapses to zero.
+    // Visible-image up = +cap_U (world up at capture pose). The disk-flip
+    // and shader V-flip cancel each other for the perpendicular up axis,
+    // unlike the in-plane forward-axis term which only carries one mirror.
+    // So the fallback aligns +cap_U (NOT -cap_U) with cam_up. Hard-learned.
     constexpr float kMinMag2 = 0.04f; // ~12° off the degenerate axis
 
     const HMM_Vec3 world_fwd = HMM_V3(0.0f, 0.0f, 1.0f);
@@ -235,12 +236,11 @@ void append_ship_sprites_for_camera(std::vector<ShipSpriteObject>& ships,
         if (img_mag2 > kMinMag2 && scr_mag2 > kMinMag2) {
             align_roll = scr_angle - std::atan2(img_y, img_x);
         } else {
-            // Pole / head-on fallback: align mirrored cap_U with cam_up.
+            // Pole / head-on fallback: align +cap_U with cam_up.
             const HMM_Vec3 cap_up = HMM_V3(-sin_el * sin_az, cos_el,
                                            -sin_el * cos_az);
-            const HMM_Vec3 visible_img_up = HMM_MulV3F(cap_up, -1.0f);
-            const float a = HMM_DotV3(visible_img_up, cam_right);
-            const float b = HMM_DotV3(visible_img_up, cam_up);
+            const float a = HMM_DotV3(cap_up, cam_right);
+            const float b = HMM_DotV3(cap_up, cam_up);
             align_roll = std::atan2(-a, b);
         }
 
