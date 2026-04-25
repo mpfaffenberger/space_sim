@@ -16,7 +16,9 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <algorithm>   // std::clamp for the quat→euler arcsin guard
 #include <atomic>
+#include <cmath>        // std::asin / std::atan2 for telemetry conversion
 #include <condition_variable>
 #include <cstdio>
 #include <cstdlib>
@@ -370,11 +372,19 @@ void drain_commands(Camera& cam) {
                 cam.velocity = { 0, 0, 0 };   // teleport → zero inertia
             }
             if (c.has_euler) {
-                // API speaks degrees; Camera stores radians. Roll is
-                // silently dropped — the current camera doesn't have a
-                // roll axis (FPS-style pitch/yaw only).
-                cam.pitch = c.euler.X * HMM_DegToRad;
-                cam.yaw   = c.euler.Y * HMM_DegToRad;
+                // API speaks Euler angles (degrees) for human convenience;
+                // Camera now stores a quaternion. Build the equivalent
+                // orientation as q = qyaw * qpitch (matches the old
+                // ry(yaw) * rx(pitch) matrix order). Roll is folded in
+                // for full coverage even though most callers send 0.
+                const float yaw_r   = c.euler.Y * HMM_DegToRad;
+                const float pitch_r = c.euler.X * HMM_DegToRad;
+                const float roll_r  = c.euler.Z * HMM_DegToRad;
+                const HMM_Quat qy = HMM_QFromAxisAngle_RH(HMM_V3(0,1,0), yaw_r);
+                const HMM_Quat qp = HMM_QFromAxisAngle_RH(HMM_V3(1,0,0), pitch_r);
+                const HMM_Quat qr = HMM_QFromAxisAngle_RH(HMM_V3(0,0,1), roll_r);
+                cam.orientation = HMM_NormQ(
+                    HMM_MulQ(HMM_MulQ(qy, qp), qr));
             }
             break;
         case Command::Kind::Screenshot:
@@ -392,12 +402,20 @@ void drain_commands(Camera& cam) {
         }
     }
 
-    // Publish camera snapshot for /state queries (in degrees).
+    // Publish camera snapshot for /state queries. Quaternion → approximate
+    // yaw/pitch for human-readable telemetry. Computed from the forward
+    // vector: pitch = arcsin(fwd.y), yaw = atan2(-fwd.x, -fwd.z) — same
+    // sign convention as the old Euler camera so /state output is
+    // backward-compatible for callers that compare past values. Roll
+    // can be reconstructed from the up vector but isn't currently
+    // surfaced because no caller asks for it.
+    const HMM_Vec3 fwd = cam.forward();
+    const float pitch_deg = std::asin(std::clamp(fwd.Y, -1.0f, 1.0f)) * HMM_RadToDeg;
+    const float yaw_deg   = std::atan2(-fwd.X, -fwd.Z) * HMM_RadToDeg;
+
     std::lock_guard lk(g_cam_snapshot_mu);
     g_cam_pos   = cam.position;
-    g_cam_euler = { cam.pitch * HMM_RadToDeg,
-                    cam.yaw   * HMM_RadToDeg,
-                    0.0f };
+    g_cam_euler = { pitch_deg, yaw_deg, 0.0f };
 }
 
 void maybe_capture_screenshot() {

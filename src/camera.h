@@ -2,11 +2,20 @@
 // -----------------------------------------------------------------------------
 // camera.h — 6-DOF flying camera.
 //
-// Orientation stored as yaw/pitch for now (matches the mouselook we built in
-// Stage 2; roll can join as a third angle when we decide we want it). Position
-// and velocity live here because "the camera IS the ship" for this stage —
-// when we add a proper Ship struct later, Camera will become a chase-cam
-// that follows the ship's transform.
+// Orientation is a unit quaternion. Earlier (Stage 2) this was Euler
+// yaw/pitch, which gimbal-locked at vertical: try to look straight up
+// in fly-by-wire and yaw becomes degenerate (rotates around world-up
+// instead of ship-up, ship 'sticks' at the pole). Quaternion + local-
+// frame composition (orientation = orientation * delta_q) sidesteps the
+// problem entirely — full 360° pitch, no poles, free 6DOF.
+//
+// Trade-off: the ship can accumulate implicit roll if you combine
+// pitch+yaw in non-cardinal patterns (Newtonian-spaceship feel,
+// Elite/Descent style). For Freelancer's auto-level horizon we'd later
+// add a slow 'level toward world-up' correction term in integrate().
+// Position and velocity live here because "the camera IS the ship" for
+// this stage — when we add a proper Ship struct later, Camera will
+// become a chase-cam that follows the ship's transform.
 //
 // Physics model: simple Newton with exponential damping. Thrust accelerates
 // along camera-local axes; damping decays velocity when no input. This is the
@@ -17,9 +26,12 @@
 #include "HandmadeMath.h"
 
 struct Camera {
-    // ---- Orientation (radians) -----------------------------------------
-    float yaw   = 0.0f;   // around +Y
-    float pitch = 0.0f;   // around +X
+    // ---- Orientation ---------------------------------------------------
+    // Unit quaternion. Identity = looking down -Z, +Y up (engine default).
+    // All apply_* methods compose deltas in *local frame* via
+    //   orientation = orientation * delta_q
+    // which is gimbal-lock-immune by construction.
+    HMM_Quat orientation = HMM_Q(0.0f, 0.0f, 0.0f, 1.0f);
 
     // ---- World-space state ---------------------------------------------
     HMM_Vec3 position{0.0f, 0.0f, 30000.0f};   // ~30 km out from the origin sun
@@ -29,12 +41,29 @@ struct Camera {
     // Near/far ratio here is tuned for "you can see the sun from 100k out,
     // a ship at arm's length is still crisp." Log-depth or reverse-Z will
     // be the next upgrade when z-fighting bites us — for now, this works.
-    float fov_y_radians = HMM_DegToRad * 65.0f;
+    // Vertical FOV. Picked to give ~60° horizontal at 16:10 (aspect 1.6),
+    // which is the sweet spot between fish-bowl-wide (>75°) and zoomed-
+    // telephoto (<50°): no edge stretch, but enough peripheral vision
+    // that flying doesn't feel like staring through a paper-towel tube.
+    // Conversion: hfov = 2·atan(aspect · tan(vfov/2)). For 16:9 monitors
+    // (1.78) the horizontal works out to ~67°, still comfortably natural.
+    float fov_y_radians = HMM_DegToRad * 40.0f;
     float near_plane    = 1.0f;
     float far_plane     = 500000.0f;
 
     // ---- Tuning --------------------------------------------------------
     float mouse_sensitivity = 0.0025f;
+
+// Fly-by-wire turn rates (rad/s at full ±1 offset). Tuned for a
+// Freelancer-snappy feel: ~80°/s peak yaw, ~70°/s peak pitch.
+// Pitch slightly slower than yaw to discourage barrel-rolly chaos.
+float max_yaw_rate    = 1.4f;
+float max_pitch_rate  = 1.2f;
+
+// Symmetric dead-zone around screen centre, as a fraction of the
+// half-screen radius. 0.05 = ignore the inner 5 % so the player
+// can fly straight without micrometre-perfect cursor placement.
+float mouse_dead_zone = 0.05f;
     float thrust_accel      = 80.0f;    // units / s^2, normal flight
     float linear_damping    = 0.5f;     // terminal v ≈ accel / damping
 
@@ -52,10 +81,21 @@ struct Camera {
     float cruise_lerp_rate    = 3.0f;   // 1 / time-constant (s^-1)
     float cruise_thrust_mult  = 10.0f;  // at level=1
     float cruise_damp_div     = 2.5f;   // at level=1, damping /= this
-    float cruise_fov_extra    = HMM_DegToRad * 15.0f;  // widen FOV when cruising
+    // Cruise FOV pump scaled to the new base. ~25 % widen at full cruise
+    // — same proportion as the previous 65→80 mapping (40→50). Preserves
+    // the 'engine wound up' speed cue without re-introducing fish-bowl.
+    float cruise_fov_extra    = HMM_DegToRad * 10.0f;
 
     // ---- Input ---------------------------------------------------------
     void apply_mouse_delta(float dx, float dy);
+
+// Fly-by-wire aim. (off_x, off_y) is the mouse position normalised to
+// [-1, 1] from screen centre — 0 = neutral, ±1 = screen edge. Applies
+// a soft dead-zone around centre, then linearly maps the remainder
+// to angular velocity, then steps the camera by dt. Replaces FPS-
+// style relative-mouse look for ship piloting (Freelancer feel:
+// where the cursor sits, the nose chases).
+void apply_mouse_aim(float off_x, float off_y, float dt);
 
     // Apply a thrust vector *in camera-local space* for `dt` seconds.
     //   local_dir.x = strafe right

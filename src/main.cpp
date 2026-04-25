@@ -22,6 +22,7 @@
 
 #include "asteroid.h"
 #include "camera.h"
+#include "cockpit_hud.h"
 #include "debug_panel.h"
 #include "dev_remote.h"
 #include "dust.h"
@@ -41,12 +42,9 @@
 #include "system_def.h"
 
 
-#include "imgui.h"   // foreground draw list for the nav-target reticle
+#include "imgui.h"   // ImGui::GetIO() for WantCaptureMouse handoff
 
-#include <algorithm>  // std::min — used by reticle edge clamp
 #include <array>
-#include <cctype>     // std::toupper for nav-kind HUD label
-#include <cmath>      // std::atan2 / std::sqrt for nav AZ/EL
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -84,7 +82,19 @@ struct AppState {
     // every frame so we don't rely on key-repeat timing.
     std::array<bool, SAPP_MAX_KEYCODES> keys_down{};
 
-    bool     mouse_captured = false;
+    // Fly-by-wire aim mode. true = mouse cursor is hidden and its
+    // screen position drives ship yaw/pitch (Freelancer feel). false =
+    // cursor is visible and the ship freezes its turn input — used
+    // when the player wants to click ImGui panels. SPACE toggles.
+    bool     fly_by_wire = true;
+
+    // Latest mouse position in *logical* (HiDPI-corrected) pixels,
+    // populated on SAPP_EVENTTYPE_MOUSE_MOVE. We store it once and
+    // reuse it from frame_cb (for ship aim) and cockpit_hud (for
+    // drawing the on-screen aim cursor).
+    float    mouse_x = 0.0f;
+    float    mouse_y = 0.0f;
+
     uint64_t last_frame_ticks = 0;
     uint64_t last_fps_ticks   = 0;
     uint32_t frames_since     = 0;
@@ -116,8 +126,10 @@ HMM_Vec3 thrust_from_keys() {
     if (g.keys_down[SAPP_KEYCODE_S])            t.Z += 1.0f;
     if (g.keys_down[SAPP_KEYCODE_A])            t.X -= 1.0f;
     if (g.keys_down[SAPP_KEYCODE_D])            t.X += 1.0f;
-    if (g.keys_down[SAPP_KEYCODE_SPACE])        t.Y += 1.0f;
-    if (g.keys_down[SAPP_KEYCODE_LEFT_SHIFT])   t.Y -= 1.0f;
+    // SPACE used to be 'thrust up' but is now the fly-by-wire mode
+    // toggle (handled in event_cb). R/F take over up/down strafe.
+    if (g.keys_down[SAPP_KEYCODE_R])            t.Y += 1.0f;
+    if (g.keys_down[SAPP_KEYCODE_F])            t.Y -= 1.0f;
     return t;
 }
 
@@ -358,8 +370,13 @@ void init_cb() {
         g.placed_sprites.push_back(s);
     }
 
-    sapp_lock_mouse(true);
-    g.mouse_captured = true;
+    // Fly-by-wire defaults: cursor hidden, ship aim active. Player
+    // toggles to free-cursor mode with SPACE for clicking ImGui.
+    // We DON'T sapp_lock_mouse — locking gives only deltas, and
+    // fly-by-wire wants absolute mouse position to read 'where the
+    // pilot is pointing'.
+    sapp_show_mouse(false);
+    g.fly_by_wire = true;
 
     g.last_frame_ticks = stm_now();
     g.last_fps_ticks   = g.last_frame_ticks;
@@ -367,145 +384,28 @@ void init_cb() {
                 (int)sg_query_backend(), g.system.name.c_str());
 }
 
-// Always-same-size HUD reticle for the currently selected nav target.
-// Uses ImGui's foreground draw list so it lands on top of EVERYTHING
-// — scene, post-process bloom, sdtx HUD text. Must be called between
-// simgui_new_frame() and simgui_render() for the same frame.
-//
-// Two visual states:
-//   * On-screen — circle + 4-tick crosshair drawn at the projected
-//     screen position. Distance label below.
-//   * Off-screen / behind — same reticle pinned to a 40-pixel inset
-//     from the screen edge, plus a chevron pointing toward the actual
-//     target direction. When the target is BEHIND the camera we flip
-//     the indicator so the chevron points toward the screen edge the
-//     player would turn through to reach the target (treating the
-//     reticle as a 'turn this way' lead indicator, not a literal
-//     mirror of the target's position).
-static void draw_nav_reticle() {
-    if (g.selected_nav < 0 ||
-        g.selected_nav >= (int)g.system.nav_points.size()) return;
-
-    const auto&    nav    = g.system.nav_points[g.selected_nav];
-    const HMM_Vec3 target = nav.position;
-    const HMM_Vec3 d      = HMM_SubV3(target, g.camera.position);
-    const float    len    = HMM_LenV3(d);
-
-    // ImGui's drawlist coordinate space is *logical* pixels, not
-    // framebuffer pixels. On Retina / HiDPI displays the framebuffer
-    // is 2× (or more) the logical size, so a position computed in
-    // sapp_width() pixels lands far off-screen when handed to a draw-
-    // list. Convert framebuffer dims → logical via dpi_scale and do
-    // everything below in logical space (matches what simgui passed
-    // into ImGui's io.DisplaySize at simgui_new_frame time).
-    const float dpi    = sapp_dpi_scale();
-    const float fb_w   = (float)sapp_width()  / dpi;
-    const float fb_h   = (float)sapp_height() / dpi;
-    const float cx     = fb_w * 0.5f;
-    const float cy     = fb_h * 0.5f;
-    const float margin = 40.0f;        // edge inset for clamped reticle (logical px)
-
-    // Camera-relative axes. fwd > 0 ⇒ target is ahead of the camera.
-    const float fwd_dot   = HMM_DotV3(d, g.camera.forward());
-    const float right_dot = HMM_DotV3(d, g.camera.right());
-    const float up_dot    = HMM_DotV3(d, g.camera.up());
-    const bool  behind    = (fwd_dot <= 0.0f);
-
-    float sx = cx, sy = cy;
-    bool  clamped = behind;
-
-    if (!behind) {
-        // Project via the same view_proj the renderer uses, then NDC-to-
-        // pixel. NOTE: our rendering pipeline (sokol/Metal + HMM_Perspective
-        // _RH_NO) effectively flips Y relative to a textbook GL projection
-        // — same observation we made when fixing the sprite quad's V coord.
-        // So we map ndc_y → screen_y WITHOUT the customary (1 - ...) flip:
-        // world-up points to higher screen-y in this engine, and we just
-        // mirror that to land the reticle on the actual rendered geometry.
-        const float    aspect = fb_w / fb_h;
-        const HMM_Mat4 vp     = HMM_MulM4(g.camera.projection(aspect),
-                                          g.camera.view());
-        const HMM_Vec4 ph     = { target.X, target.Y, target.Z, 1.0f };
-        const HMM_Vec4 clip   = HMM_MulM4V4(vp, ph);
-        const float    ndc_x  = clip.X / clip.W;
-        const float    ndc_y  = clip.Y / clip.W;
-        sx = (ndc_x * 0.5f + 0.5f) * fb_w;
-        sy = (ndc_y * 0.5f + 0.5f) * fb_h;            // engine-specific: NO Y-flip here
-        clamped = !(sx >= margin && sx <= fb_w - margin &&
-                    sy >= margin && sy <= fb_h - margin);
-    }
-
-    if (clamped) {
-        // 2D screen-space direction toward the target (or away, if behind).
-        // Y component does NOT need a sign flip — same engine-Y-quirk as
-        // the perspective branch above (world-up → screen-down on this
-        // pipeline), so right_dot/up_dot map straight to screen dx/dy.
-        const float sign  = behind ? -1.0f : 1.0f;
-        float       dx    = sign * right_dot;
-        float       dy    = sign * up_dot;
-        const float dlen  = std::sqrt(dx * dx + dy * dy);
-        if (dlen < 1e-6f) { dx = 0.0f; dy = 1.0f; }    // dead aligned: pin bottom
-        else              { dx /= dlen; dy /= dlen; }
-        // Pin to the rectangle inset by `margin` from each edge.
-        const float max_x = cx - margin;
-        const float max_y = cy - margin;
-        const float tx    = std::abs(dx) > 1e-6f ? max_x / std::abs(dx) : 1e9f;
-        const float ty    = std::abs(dy) > 1e-6f ? max_y / std::abs(dy) : 1e9f;
-        const float t     = std::min(tx, ty);
-        sx = cx + dx * t;
-        sy = cy + dy * t;
-    }
-
-    // ---- draw -------------------------------------------------------------
-    auto*       dl    = ImGui::GetForegroundDrawList();
-    const ImU32 amber = IM_COL32(255, 217, 77, 240);
-    const float r     = 14.0f;
-
-    // Outer ring + 4 short ticks pointing inward — reads as a HUD
-    // bracket rather than a solid '+', which gets lost on busy art.
-    dl->AddCircle(ImVec2(sx, sy), r, amber, 0, 2.0f);
-    const float tick_in  = r * 0.45f;
-    const float tick_out = r * 0.85f;
-    dl->AddLine(ImVec2(sx - tick_out, sy), ImVec2(sx - tick_in, sy), amber, 2.0f);
-    dl->AddLine(ImVec2(sx + tick_in,  sy), ImVec2(sx + tick_out, sy), amber, 2.0f);
-    dl->AddLine(ImVec2(sx, sy - tick_out), ImVec2(sx, sy - tick_in), amber, 2.0f);
-    dl->AddLine(ImVec2(sx, sy + tick_in),  ImVec2(sx, sy + tick_out), amber, 2.0f);
-
-    // Off-screen / behind: chevron arrow nestled outside the ring,
-    // pointing toward where the target actually is (or where to turn).
-    if (clamped) {
-        const float sign = behind ? -1.0f : 1.0f;
-        float       dx   = sign * right_dot;
-        float       dy   = sign * up_dot;          // engine-Y quirk: no flip
-        const float dlen = std::sqrt(dx * dx + dy * dy);
-        if (dlen > 1e-6f) { dx /= dlen; dy /= dlen; }
-        const float arr_d  = r + 6.0f;
-        const float arr_t  = arr_d + 9.0f;
-        const float perp_x = -dy, perp_y = dx;
-        const ImVec2 tip { sx + dx * arr_t, sy + dy * arr_t };
-        const ImVec2 b1  { sx + dx * arr_d + perp_x * 5.0f,
-                            sy + dy * arr_d + perp_y * 5.0f };
-        const ImVec2 b2  { sx + dx * arr_d - perp_x * 5.0f,
-                            sy + dy * arr_d - perp_y * 5.0f };
-        dl->AddTriangleFilled(tip, b1, b2, amber);
-    }
-
-    // Distance label — placed on whichever side of the reticle has
-    // more room to the screen edge so it never gets clipped.
-    char buf[32];
-    if (len < 10000.0f) std::snprintf(buf, sizeof(buf), "%.0f u",   len);
-    else                std::snprintf(buf, sizeof(buf), "%.1f k u", len * 0.001f);
-    const ImVec2 ts      = ImGui::CalcTextSize(buf);
-    const bool   below_ok= (sy + r + 4.0f + ts.y) < (fb_h - 4.0f);
-    const float  label_y = below_ok ? sy + r + 4.0f : sy - r - 4.0f - ts.y;
-    dl->AddText(ImVec2(sx - ts.x * 0.5f, label_y), amber, buf);
-}
-
 void frame_cb() {
     // --- timestep -----------------------------------------------------------
     const uint64_t now = stm_now();
     const float    dt  = (float)stm_sec(stm_diff(now, g.last_frame_ticks));
     g.last_frame_ticks = now;
+
+    // --- fly-by-wire aim ----------------------------------------------------
+    // Drive yaw/pitch from the absolute mouse position. We skip when the
+    // player has popped into free-cursor mode (SPACE) and ALSO when
+    // ImGui wants the mouse (e.g. they're hovering the debug panel) —
+    // otherwise the ship would lurch every time the user reaches for a
+    // slider in CTRL+M.
+    if (g.fly_by_wire && !ImGui::GetIO().WantCaptureMouse) {
+        const float dpi = sapp_dpi_scale();
+        const float w   = (float)sapp_width()  / dpi;
+        const float h   = (float)sapp_height() / dpi;
+        const float cx  = w * 0.5f;
+        const float cy  = h * 0.5f;
+        const float off_x = (g.mouse_x - cx) / cx;
+        const float off_y = (g.mouse_y - cy) / cy;
+        g.camera.apply_mouse_aim(off_x, off_y, dt);
+    }
 
     // Drain any queued dev_remote commands into game state BEFORE
     // physics / rendering — a /camera/set that arrived this frame
@@ -540,48 +440,15 @@ void frame_cb() {
     sdtx_printf("D(SUN) %7.0f u\n",   dist);
     sdtx_printf("POS    %5.0f %5.0f %5.0f\n", p.X, p.Y, p.Z);
 
-    // Targeting block — only drawn when a nav is selected. AZ is the
-    // signed yaw from the camera's forward axis (positive = target is
-    // off to the right, ±180 = target is dead behind). EL is the signed
-    // pitch from the horizon plane (positive = above, negative = below).
-    // Both are projected from the camera-space target direction, so
-    // they're already in the player's reference frame — no mental
-    // conversion needed in flight.
-    if (g.selected_nav >= 0 && g.selected_nav < (int)g.system.nav_points.size()) {
-        const auto& nav    = g.system.nav_points[g.selected_nav];
-        const HMM_Vec3 d   = HMM_SubV3(nav.position, p);
-        const float    len = HMM_LenV3(d);
-        const HMM_Vec3 fwd = g.camera.forward();
-        const HMM_Vec3 rt  = g.camera.right();
-        const HMM_Vec3 up  = g.camera.up();
-        const float fdot = HMM_DotV3(d, fwd);
-        const float rdot = HMM_DotV3(d, rt);
-        const float udot = HMM_DotV3(d, up);
-        // atan2(right, fwd): 0=ahead, +90=right, ±180=behind. Plain
-        // radians-to-degrees with M_PI; HMM's angle macros are tied to
-        // the project's angle-unit setting and we don't want surprises.
-        constexpr float kRad2Deg = 57.2957795f;   // 180 / pi
-        const float az_deg = std::atan2(rdot, fdot) * kRad2Deg;
-        const float horiz  = std::sqrt(fdot * fdot + rdot * rdot);
-        const float el_deg = std::atan2(udot, horiz) * kRad2Deg;
-        // Kind tag uppercased on display so it pops against the name.
-        std::string kind_up = nav.kind;
-        for (char& c : kind_up) c = (char)std::toupper((unsigned char)c);
-        sdtx_color3f(1.0f, 0.85f, 0.3f);                  // amber, distinct from cyan stats
-        sdtx_printf("TARGET [%s] %s\n", kind_up.c_str(), nav.name.c_str());
-        sdtx_printf("DIST   %7.0f u\n", len);
-        sdtx_printf("AZ/EL  %+4.0f / %+3.0f\n", az_deg, el_deg);
-        sdtx_color3f(0.7f, 1.0f, 0.9f);                   // back to default cyan
-    }
 
     // Bottom-left: controls reminder in the second, thinner font.
     sdtx_font(1);
     sdtx_color3f(0.5f, 0.6f, 0.7f);
-    sdtx_pos(1.0f, fb_h * 0.5f / 8.0f - 5.0f);   // 5 lines up from bottom (added one for N)
-    sdtx_puts("W/S throttle  A/D strafe  SPC/SHIFT up/down\n");
-    sdtx_puts("TAB cruise   X brake   RMB toggle cursor\n");
-    sdtx_puts("N cycle nav target\n");
-    sdtx_puts("CTRL+M debug panel   ESC x2 quit\n");
+    sdtx_pos(1.0f, fb_h * 0.5f / 8.0f - 4.0f);   // 4 lines up from bottom (one block, 4 lines)
+    sdtx_puts("W/S throttle   A/D strafe   R/F up/down\n");
+    sdtx_puts("mouse aim      SPACE toggle cursor   TAB cruise\n");
+    sdtx_puts("X brake        N cycle nav target\n");
+    sdtx_puts("CTRL+M debug   ESC x2 quit\n");
 
     // --- draw ---------------------------------------------------------------
     const float aspect   = fb_w / fb_h;
@@ -630,7 +497,8 @@ void frame_cb() {
     // live PlacedMesh list so changes take effect on the *next* frame.
     debug_panel::build(g.placed_meshes);
     sprite_light_editor::build(g.placed_sprites);
-    draw_nav_reticle();   // foreground-list draw, no-op when no target
+    cockpit_hud::build(g.camera, g.system, g.selected_nav,
+                       g.mouse_x, g.mouse_y, g.fly_by_wire);
 
     // Pass 4: composite to swapchain with lens flare + HUD + ImGui
     // overlay — all in ONE swapchain pass (Metal only tolerates one
@@ -721,23 +589,29 @@ void event_cb(const sapp_event* ev) {
             std::printf("[nav] target → %s\n",
                         g.system.nav_points[g.selected_nav].name.c_str());
         }
+        // SPACE — toggle fly-by-wire vs free-cursor mode. Hides/shows
+        // the OS cursor in lockstep so the visual matches the input
+        // semantics without needing an extra polling check elsewhere.
+        if (ev->key_code == SAPP_KEYCODE_SPACE) {
+            g.fly_by_wire = !g.fly_by_wire;
+            sapp_show_mouse(!g.fly_by_wire);
+            std::printf("[input] fly-by-wire %s\n",
+                        g.fly_by_wire ? "ENGAGED" : "PAUSED (cursor free)");
+        }
         if ((size_t)ev->key_code < g.keys_down.size()) g.keys_down[ev->key_code] = true;
         break;
     case SAPP_EVENTTYPE_KEY_UP:
         if ((size_t)ev->key_code < g.keys_down.size()) g.keys_down[ev->key_code] = false;
         break;
-    case SAPP_EVENTTYPE_MOUSE_DOWN:
-        if (ev->mouse_button == SAPP_MOUSEBUTTON_RIGHT) {
-            g.mouse_captured = !g.mouse_captured;
-            sapp_lock_mouse(g.mouse_captured);
-        } else if (ev->mouse_button == SAPP_MOUSEBUTTON_LEFT && !g.mouse_captured) {
-            g.mouse_captured = true;
-            sapp_lock_mouse(true);
-        }
+    case SAPP_EVENTTYPE_MOUSE_MOVE: {
+        // Convert framebuffer (HiDPI) px to logical px for everything
+        // downstream — same convention as ImGui drawlist coords and
+        // sapp_width()/dpi-corrected screen size used in cockpit_hud.
+        const float dpi = sapp_dpi_scale();
+        g.mouse_x = ev->mouse_x / dpi;
+        g.mouse_y = ev->mouse_y / dpi;
         break;
-    case SAPP_EVENTTYPE_MOUSE_MOVE:
-        if (g.mouse_captured) g.camera.apply_mouse_delta(ev->mouse_dx, ev->mouse_dy);
-        break;
+    }
     default:
         break;
     }

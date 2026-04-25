@@ -7,12 +7,10 @@
 
 namespace {
 
-// camera-to-world rotation, derived from yaw then pitch. Kept in one place so
-// view() and basis accessors stay consistent.
+// camera-to-world rotation derived from the orientation quaternion.
+// Kept in one place so view() and basis accessors stay consistent.
 HMM_Mat4 world_from_camera(const Camera& c) {
-    const HMM_Mat4 ry = HMM_Rotate_RH(c.yaw,   HMM_V3(0.0f, 1.0f, 0.0f));
-    const HMM_Mat4 rx = HMM_Rotate_RH(c.pitch, HMM_V3(1.0f, 0.0f, 0.0f));
-    return HMM_MulM4(ry, rx);
+    return HMM_QToM4(c.orientation);
 }
 
 HMM_Vec3 mul_dir(const HMM_Mat4& m, HMM_Vec3 v) {
@@ -24,13 +22,53 @@ HMM_Vec3 mul_dir(const HMM_Mat4& m, HMM_Vec3 v) {
 
 // ---- input -----------------------------------------------------------------
 
-void Camera::apply_mouse_delta(float dx, float dy) {
-    yaw   -= dx * mouse_sensitivity;
-    pitch -= dy * mouse_sensitivity;
+// Compose a small rotation into the orientation, in LOCAL frame:
+//   orientation = orientation * delta
+// is the canonical "rotate around the ship's current axes" operation,
+// which is what gives us no gimbal lock. yaw_rad rotates around local
+// +Y (ship up), pitch_rad around local +X (ship right). The HMM_NormQ
+// at the end keeps the quaternion unit-length over many composes —
+// without it, floating-point drift would slowly desynchronize basis
+// vectors over a long flight.
+static void compose_local(Camera& c, float yaw_rad, float pitch_rad) {
+    const HMM_Quat dq_yaw   = HMM_QFromAxisAngle_RH(HMM_V3(0.0f, 1.0f, 0.0f), yaw_rad);
+    const HMM_Quat dq_pitch = HMM_QFromAxisAngle_RH(HMM_V3(1.0f, 0.0f, 0.0f), pitch_rad);
+    c.orientation = HMM_NormQ(
+        HMM_MulQ(HMM_MulQ(c.orientation, dq_yaw), dq_pitch));
+}
 
-    // Keep pitch just shy of straight up/down to avoid view flip.
-    constexpr float kLimit = 1.55334f;  // ~89°
-    pitch = std::clamp(pitch, -kLimit, kLimit);
+void Camera::apply_mouse_delta(float dx, float dy) {
+    // FPS-style mouselook (legacy path; kept callable but currently
+    // unused — fly-by-wire is the active input). Sign convention:
+    //   * dx > 0 (mouse right) → yaw_rad < 0 → ship turns right
+    //   * dy > 0 (mouse down)  → pitch_rad < 0 → ship pitches down
+    //                            (engine-Y quirk: + sign maps to +screen_y)
+    const float yaw_rad   = -dx * mouse_sensitivity;
+    const float pitch_rad = +dy * mouse_sensitivity;   // engine-Y flip
+    compose_local(*this, yaw_rad, pitch_rad);
+}
+
+void Camera::apply_mouse_aim(float off_x, float off_y, float dt) {
+    // Soft dead-zone with linear remap of the outside region. Inside
+    // dead_zone → exactly 0 (no drift). Outside → linear ramp to ±1.
+    const float dz_size = mouse_dead_zone;
+    auto dz = [dz_size](float x) {
+        const float a = std::abs(x);
+        if (a <= dz_size) return 0.0f;
+        const float sign = x < 0.0f ? -1.0f : 1.0f;
+        const float t    = (a - dz_size) / (1.0f - dz_size);
+        return sign * std::clamp(t, 0.0f, 1.0f);
+    };
+
+    // Sign convention matches apply_mouse_delta. Pitch flip mirrors the
+    // engine's world-up = +screen_y rendering convention (see camera.h
+    // header note + the same flip in cockpit_hud nav reticle).
+    const float yaw_rad   = -dz(off_x) * max_yaw_rate   * dt;
+    const float pitch_rad = +dz(off_y) * max_pitch_rate * dt;
+    compose_local(*this, yaw_rad, pitch_rad);
+    // No pitch clamp — quaternion + local-frame composition is happy at
+    // any angle, no pole degeneracy. This is the whole reason we moved
+    // off Euler angles.
 }
 
 void Camera::apply_thrust(HMM_Vec3 local_dir, float dt) {

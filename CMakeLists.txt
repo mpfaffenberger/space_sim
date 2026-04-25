@@ -124,6 +124,7 @@ add_executable(new_privateer
     src/sprite_light_editor.cpp
     src/planet_texture.cpp
     src/debug_panel.cpp
+    src/cockpit_hud.cpp
     src/dev_remote.cpp
     src/dev_remote_macos.mm
     ${IMGUI_SRC}
