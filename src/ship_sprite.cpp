@@ -250,6 +250,11 @@ void append_ship_sprites_for_camera(std::vector<ShipSpriteObject>& ships,
         sprite.world_size = ship.world_size * frame->scale;
         sprite.roll_rad = frame->roll_deg * kPi / 180.0f + align_roll;
         sprite.tint = ship.tint;
+        // Animated lights authored on this cell's `.lights.json` ride along
+        // with the picked frame. Copy (not reference) so the renderer's
+        // pass over `out_sprites` doesn't dangle when the next frame swaps
+        // SpriteArt pointers under us.
+        sprite.lights = frame->art->light_spots;
         out_sprites.push_back(sprite);
     }
 }

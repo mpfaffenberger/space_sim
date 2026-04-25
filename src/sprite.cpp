@@ -21,6 +21,14 @@
 #include <cstdio>
 #include <cstring>
 
+// Sidecar loader lives in sprite_light_editor.cpp so the editor and the
+// asset loader share one parser. Forward-declared here to avoid pulling
+// the UI header into core sprite code.
+namespace sprite_light_editor {
+bool load_lights_sidecar(const std::string& sprite_base_path,
+                         std::vector<LightSpot>& out);
+}
+
 // ---------------------------------------------------------------------------
 // SpriteArt — PNG loading (hull + optional lights sibling)
 // ---------------------------------------------------------------------------
@@ -76,9 +84,16 @@ bool load_sprite_art(const std::string& base_path, SpriteArt& art) {
             "they should match for correct overlay alignment\n",
             base_path.c_str(), art.hull_w, art.hull_h, lw, lh);
     }
-    std::printf("[sprite] loaded '%s'  hull=%dx%d  lights=%s\n",
+    // Animated UV-space lights are also loaded here so every consumer of
+    // SpriteArt (placed sprites, ship-sprite atlas frames, future systems)
+    // gets emissive blinky-blinky for free without each call site
+    // remembering to wire the sidecar separately.
+    sprite_light_editor::load_lights_sidecar(base_path, art.light_spots);
+
+    std::printf("[sprite] loaded '%s'  hull=%dx%d  lights=%s  spots=%zu\n",
                 base_path.c_str(), art.hull_w, art.hull_h,
-                art.lights.valid ? "yes" : "no");
+                art.lights.valid ? "yes" : "no",
+                art.light_spots.size());
     return true;
 }
 
@@ -400,28 +415,36 @@ void SpriteRenderer::draw(const std::vector<SpriteObject>& sprites,
             if (intensity <= 0.0f) continue;   // skip fully-off strobes
 
             // UV → world offset from sprite center. U=0.5 / V=0.5 is the
-            // center; (0,0) is the sprite's top-left; (1,1) is bottom-right.
+            // center; (0,0) is the sprite's top-LEFT; (1,1) is bottom-RIGHT,
+            // matching the F2 editor's storage convention which records
+            // `ls.v = mouse_uv.y` from ImGui's top-down click coordinate.
             //
-            // The V math here mirrors the hull quad's V convention exactly:
-            // the hull's quad is built with the screen-TOP vertex carrying
-            // v=1 (see kQuad in this file, and the big comment explaining
-            // why v=1 maps to screen-top on our sokol/Metal pipeline). For
-            // the animated-light offset to land on the SAME screen position
-            // where an editor gizmo at (u,v) is drawn, the light's v must
-            // be mapped the same way: v=0 → screen BOTTOM, v=1 → screen TOP.
-            // Hence `(v - 0.5)` (NOT `(0.5 - v)`).
-            //
-            // I got this wrong the first time — trying to "flip V because
-            // image Y goes down" — and it painted every light upside-down
-            // relative to where the editor put them, which only became
-            // obvious after fixing the hull's own V orientation. Don't be
-            // that guy again (hi future Mike).
+            // V flip: the editor's gizmo at v=0 sits at the TOP of the
+            // displayed image (where it intuitively belongs — that's where
+            // the user clicked). To make the rendered spot land on the
+            // SAME screen pixel the gizmo was drawn on, we must offset in
+            // the -cam_up direction when v < 0.5 (i.e. screen-down for the
+            // top half of the image). Hence `(0.5 - v)` — the previous
+            // `(v - 0.5)` formula painted every light upside-down vs the
+            // editor, which only showed up clearly with ship-atlas cells
+            // where Mike could easily compare gizmo and rendered position
+            // on the same hull feature.
             const float du = (ls.u - 0.5f) * 2.0f * half_u;
-            const float dv = (ls.v - 0.5f) * 2.0f * half_v;
+            const float dv = (0.5f - ls.v) * 2.0f * half_v;
+            // Apply the SAME in-plane roll the hull quad uses (see
+            // sprite.glsl:42-46). Without this, light spots stay locked
+            // to camera right/up while the hull rotates underneath them,
+            // producing the "red dots float off-ship as Tarsus banks"
+            // bug. Rotation matrix matches the shader's exactly:
+            //   corner = (cx*c - cy*s,  cx*s + cy*c)
+            const float roll_c = std::cos(s->roll_rad);
+            const float roll_s = std::sin(s->roll_rad);
+            const float du_r = du * roll_c - dv * roll_s;
+            const float dv_r = du * roll_s + dv * roll_c;
             const HMM_Vec3 world = HMM_AddV3(
                 s->position,
-                HMM_AddV3(HMM_MulV3F(cam_right, du),
-                          HMM_MulV3F(cam_up,    dv)));
+                HMM_AddV3(HMM_MulV3F(cam_right, du_r),
+                          HMM_MulV3F(cam_up,    dv_r)));
 
             vs_spot_params_t vsp{};
             std::memcpy(vsp.view_proj, &vp, sizeof(float) * 16);

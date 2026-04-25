@@ -384,7 +384,12 @@ void init_cb() {
         s.position   = sd.position;
         s.world_size = sd.length_meters;
         s.tint       = HMM_V4(1.0f, 1.0f, 1.0f, 1.0f);
-        sprite_light_editor::load_lights_sidecar(stem_full, s.lights);
+        // Lights are loaded once into SpriteArt by load_sprite_art(); copy
+        // them onto the instance so the F2 editor can mutate per-instance
+        // lists without touching the shared art (and so future per-instance
+        // overrides — e.g. a damaged ship missing a nav light — drop in
+        // without restructuring storage).
+        s.lights = it->second.light_spots;
         g.placed_sprites.push_back(s);
     }
 
@@ -539,7 +544,26 @@ void frame_cb() {
     // no draw calls are issued yet. Slider mutations feed back into the
     // live PlacedMesh list so changes take effect on the *next* frame.
     debug_panel::build(g.placed_meshes, g.placed_ship_sprites);
-    sprite_light_editor::build(g.placed_sprites);
+
+    // Surface every ship-sprite atlas cell as an extra editable target so
+    // F2 can author lights on individual frames (engine glow, nav strobes,
+    // etc.). Built fresh each frame because cell pointers are stable but
+    // membership in the dropdown should reflect any future hot-reload.
+    std::vector<sprite_light_editor::EditableArt> ship_cell_targets;
+    ship_cell_targets.reserve(g.ship_sprite_atlases.size() * 16);
+    for (auto& [atlas_key, atlas] : g.ship_sprite_atlases) {
+        for (auto& frame : atlas.frames) {
+            // Cells inside an atlas live in the shared `sprite_art` cache,
+            // but we don't want them shown twice if also placed standalone.
+            // Filter by name: a placed sprite's stem won't end with `_cell`.
+            if (!frame.art) continue;
+            sprite_light_editor::EditableArt e;
+            e.name = frame.art->name;
+            e.art  = const_cast<SpriteArt*>(frame.art);
+            ship_cell_targets.push_back(std::move(e));
+        }
+    }
+    sprite_light_editor::build(g.placed_sprites, ship_cell_targets);
     if (!g.capture_clean) {
         cockpit_hud::build(g.camera, g.system, g.selected_nav,
                            g.mouse_x, g.mouse_y, g.fly_by_wire);

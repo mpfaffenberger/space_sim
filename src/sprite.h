@@ -54,12 +54,21 @@ struct LightSpot {
 
 // Stored art for a single sprite (hull + lights PNG pair). Loaded once per
 // unique file path; multiple SpriteObjects can reference the same Art.
+//
+// `light_spots` are animated UV-space lights authored alongside this asset
+// in `<base>.lights.json`. They live on the ART (not the instance) because
+// they describe the cell itself, not where the cell is placed in the world.
+// Every SpriteObject using this art inherits the same animated lights —
+// crucial for ship-sprite atlases where one cell PNG is referenced by many
+// runtime billboards (and we don't want to duplicate the LightSpot list per
+// instance).
 struct SpriteArt {
-    std::string name;         // diagnostic: the basename (e.g. "mining_base")
-    TextureSlot hull;          // alpha-blended base layer
-    TextureSlot lights;        // additively-blended emissive overlay
-    int         hull_w = 0;    // pixel dims for aspect correction
-    int         hull_h = 0;
+    std::string            name;            // diagnostic + sidecar lookup key
+    TextureSlot            hull;            // alpha-blended base layer
+    TextureSlot            lights;          // additively-blended emissive overlay
+    int                    hull_w = 0;      // pixel dims for aspect correction
+    int                    hull_h = 0;
+    std::vector<LightSpot> light_spots;     // animated UV-space lights from sidecar
 
     void destroy();
 };

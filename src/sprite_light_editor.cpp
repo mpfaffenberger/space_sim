@@ -19,9 +19,11 @@
 
 #include <cmath>
 #include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <unordered_map>
 
 namespace sprite_light_editor {
 
@@ -33,13 +35,51 @@ namespace sprite_light_editor {
 // every screenshot — same rationale as debug_panel's g_visible.
 static bool g_visible = false;
 
-// Which sprite in the passed vector is being edited. `-1` before any sprite
-// exists or when the vector is empty; clamped otherwise.
+// Which entry is being edited. The editor presents a flat list:
+// indices [0, sprites.size())               → placed scene SpriteObjects
+// indices [sprites.size(), total)            → entries from extra_arts
+// `-1` before any item exists. Clamped otherwise.
 static int  g_sel_sprite = 0;
 
-// Index into the selected sprite's lights vector, or -1 if no selection.
-// Cleared when switching sprites or deleting the currently-selected light.
+// Index into the selected target's lights vector, or -1 if no selection.
+// Cleared when switching targets or deleting the currently-selected light.
 static int  g_sel_light  = -1;
+
+// ---- Auto-save state -------------------------------------------------
+// Per-target snapshot of last-saved lights, keyed by the target's STRING
+// NAME (not its address!). The earlier pointer-keyed implementation broke
+// catastrophically because main.cpp rebuilds the EditableArt vector every
+// frame, so `&extra.name` is a different address each frame even though
+// it holds the same string content. The pointer compare always succeeded
+// at "target switched" → snapshot reset every frame → user edits never
+// triggered a save (except when the heap allocator happened to reuse
+// addresses, which was random and lost authoring across hundreds of cells).
+//
+// String-keyed map fixes that AND naturally tracks all targets at once:
+// every frame we walk the full editable list, compare in-memory to
+// snapshot, save any that differ. Touching cells you're not currently
+// viewing is a non-issue because their `cur_lights` doesn't change unless
+// something modified them.
+static std::unordered_map<std::string, std::vector<LightSpot>> g_save_snapshots;
+
+static bool lights_equal(const std::vector<LightSpot>& a,
+                         const std::vector<LightSpot>& b) {
+    if (a.size() != b.size()) return false;
+    for (size_t i = 0; i < a.size(); ++i) {
+        const LightSpot& x = a[i];
+        const LightSpot& y = b[i];
+        // Field-by-field. NOT memcmp — LightSpot has trailing padding
+        // bytes after `kind` that vary based on previous stack contents,
+        // and those would defeat change-detection while looking byte-
+        // different on consecutive frames.
+        if (x.u != y.u || x.v != y.v
+         || x.color.X != y.color.X || x.color.Y != y.color.Y
+         || x.color.Z != y.color.Z
+         || x.size != y.size || x.hz != y.hz
+         || x.phase != y.phase || x.kind != y.kind) return false;
+    }
+    return true;
+}
 
 // Pixel-to-world zoom of the sprite preview. 1.0 = the PNG renders at its
 // native pixel size; higher zooms help hit small hull features (antenna
@@ -98,6 +138,10 @@ static LightKind string_to_kind(const std::string& s) {
 bool load_lights_sidecar(const std::string& sprite_base_path,
                          std::vector<LightSpot>& out) {
     const std::string path = sprite_base_path + ".lights.json";
+    // Most sprites don't have a sidecar — pre-flight the existence check
+    // ourselves so json::parse_file's "cannot open" warning is reserved
+    // for actual misconfigurations (file present but unparseable).
+    if (!std::filesystem::exists(path)) return false;
     json::Value v = json::parse_file(path);
     if (!v.is_array()) return false;
 
@@ -182,60 +226,173 @@ static const char* kKindLabels[] = { "steady", "pulse", "strobe" };
 // Per-frame UI
 // ---------------------------------------------------------------------------
 
-void build(std::vector<SpriteObject>& sprites) {
+void build(std::vector<SpriteObject>& sprites,
+           const std::vector<EditableArt>& extra_arts) {
     if (!g_visible) return;
-    if (sprites.empty()) return;
 
-    g_sel_sprite = std::max(0, std::min(g_sel_sprite, (int)sprites.size() - 1));
-    SpriteObject& sprite = sprites[g_sel_sprite];
-    if (!sprite.art) return;
+    // Unified target resolution. Each selectable item maps to (art, lights
+    // vector, sidecar stem). Placed sprites edit the instance's lights;
+    // extra arts edit the asset's `light_spots` directly so all in-world
+    // billboards using that art see the change live (essential for ship-
+    // sprite atlases where the SpriteObject is rebuilt each frame).
+    const int total = (int)sprites.size() + (int)extra_arts.size();
+    if (total == 0) return;
+    g_sel_sprite = std::max(0, std::min(g_sel_sprite, total - 1));
 
-    ImGui::SetNextWindowSize(ImVec2(900, 620), ImGuiCond_FirstUseEver);
+    auto resolve_target = [&](int idx,
+                              const SpriteArt*& out_art,
+                              std::vector<LightSpot>*& out_lights,
+                              const std::string*& out_name) {
+        if (idx < (int)sprites.size()) {
+            SpriteObject& s = sprites[idx];
+            out_art    = s.art;
+            out_lights = &s.lights;
+            out_name   = s.art ? &s.art->name : nullptr;
+        } else {
+            const EditableArt& e = extra_arts[idx - (int)sprites.size()];
+            out_art    = e.art;
+            out_lights = e.art ? &e.art->light_spots : nullptr;
+            out_name   = &e.name;
+        }
+    };
+
+    const SpriteArt*        sel_art    = nullptr;
+    std::vector<LightSpot>* sel_lights = nullptr;
+    const std::string*      sel_name   = nullptr;
+    resolve_target(g_sel_sprite, sel_art, sel_lights, sel_name);
+    if (!sel_art || !sel_lights || !sel_name) return;
+
+    ImGui::SetNextWindowSize(ImVec2(1200, 760), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin("Sprite Light Editor (F2)", &g_visible)) {
         ImGui::End();
         return;
     }
 
-    // ---- Sprite selector + action buttons -------------------------------
-    if (ImGui::BeginCombo("sprite", sprite.art->name.c_str())) {
-        for (int i = 0; i < (int)sprites.size(); ++i) {
-            if (!sprites[i].art) continue;
+    // ---- Top toolbar row ------------------------------------------------
+    // Layout: [<] [>] [\u2192\u2205] [stem dropdown] [auto-save \u25cf] [reload] [zoom]
+    // Prev/next step linearly. The "\u2192\u2205" jump button skips ahead to
+    // the next item with NO authored lights — invaluable when you've cycled
+    // through 80 cells and need to find which 11 you missed. The dropdown
+    // marks each item with \u2713 (authored, has lights) or \u00b7 (empty)
+    // so you can scan the whole atlas for gaps without leaving the popup.
+    auto step_selection = [&](int delta) {
+        g_sel_sprite = ((g_sel_sprite + delta) % total + total) % total;
+        g_sel_light  = -1;
+    };
+    auto target_lights_count = [&](int idx) -> int {
+        const SpriteArt*        art    = nullptr;
+        std::vector<LightSpot>* lights = nullptr;
+        const std::string*      name   = nullptr;
+        resolve_target(idx, art, lights, name);
+        return (lights ? (int)lights->size() : -1);
+    };
+    if (ImGui::ArrowButton("##prev", ImGuiDir_Left)) step_selection(-1);
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Previous sprite");
+    ImGui::SameLine();
+    if (ImGui::ArrowButton("##next", ImGuiDir_Right)) step_selection(+1);
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Next sprite");
+    ImGui::SameLine();
+    if (ImGui::Button("->0")) {
+        // Find next item (wrapping) with zero lights. Stops at current if
+        // nothing else is empty. Cap at `total` iterations so an all-full
+        // atlas doesn't infinite-loop.
+        for (int step = 1; step <= total; ++step) {
+            const int idx = ((g_sel_sprite + step) % total + total) % total;
+            if (target_lights_count(idx) == 0) {
+                g_sel_sprite = idx;
+                g_sel_light  = -1;
+                break;
+            }
+        }
+    }
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Jump to next sprite with no lights");
+    ImGui::SameLine();
+
+    // Tally for the toolbar status line — "57/80 authored" makes "how
+    // many cells am I really done with" answerable at a glance, instead
+    // of relying on `ls | wc -l` from a terminal.
+    int authored_count = 0;
+    for (int i = 0; i < total; ++i) {
+        if (target_lights_count(i) > 0) ++authored_count;
+    }
+
+    ImGui::SetNextItemWidth(-360.0f);   // leave room for buttons + zoom + tally
+    if (ImGui::BeginCombo("##sprite_combo", sel_name->c_str())) {
+        for (int i = 0; i < total; ++i) {
+            const SpriteArt*        art    = nullptr;
+            std::vector<LightSpot>* lights = nullptr;
+            const std::string*      name   = nullptr;
+            resolve_target(i, art, lights, name);
+            if (!art || !name) continue;
             const bool is_sel = (i == g_sel_sprite);
-            if (ImGui::Selectable(sprites[i].art->name.c_str(), is_sel)) {
+            const bool authored = (lights && !lights->empty());
+            // Prefix marker: "v" for authored, "-" for empty. Plain ASCII
+            // because the imgui default font may not have ✓/✗ glyphs.
+            char label[256];
+            std::snprintf(label, sizeof(label), "%s  %s",
+                          authored ? "[v]" : "[ ]", name->c_str());
+            if (ImGui::Selectable(label, is_sel)) {
                 g_sel_sprite = i;
-                g_sel_light  = -1;    // reset selection when changing sprite
+                g_sel_light  = -1;
             }
             if (is_sel) ImGui::SetItemDefaultFocus();
         }
         ImGui::EndCombo();
     }
     ImGui::SameLine();
-    if (ImGui::Button("save sidecar")) {
-        save_lights_sidecar(sprite.art->name, sprite.lights);
+    ImGui::TextColored(
+        authored_count == total ? ImVec4(0.4f, 1.0f, 0.4f, 1.0f)
+                                : ImVec4(1.0f, 0.85f, 0.30f, 1.0f),
+        "%d/%d", authored_count, total);
+    // No "save" button — every change auto-writes the sidecar at end of
+    // frame (see auto-save block at the bottom of build()). Status text
+    // confirms the target file path so the user knows where edits land.
+    ImGui::SameLine();
+    ImGui::TextDisabled("auto-save \xee\x9c\xa0");   // visual cue (degree mark — font-safe)
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Edits write to %s.lights.json automatically",
+                          sel_name->c_str());
     }
     ImGui::SameLine();
-    if (ImGui::Button("reload sidecar")) {
+    if (ImGui::Button("reload")) {
         std::vector<LightSpot> fresh;
-        if (load_lights_sidecar(sprite.art->name, fresh)) {
-            sprite.lights = std::move(fresh);
+        if (load_lights_sidecar(*sel_name, fresh)) {
+            *sel_lights = std::move(fresh);
             g_sel_light = -1;
+            // Sync snapshot so auto-save doesn't immediately re-write
+            // the file we just loaded from.
+            g_save_snapshots[*sel_name] = *sel_lights;
         }
     }
+    if (ImGui::IsItemHovered()) ImGui::SetTooltip("Reload from disk, dropping in-memory edits");
     ImGui::SameLine();
-    ImGui::SliderFloat("zoom", &g_zoom, 1.0f, 4.0f, "%.1fx");
+    ImGui::SetNextItemWidth(120.0f);
+    ImGui::SliderFloat("zoom", &g_zoom, 1.0f, 6.0f, "%.1fx");
 
     ImGui::Separator();
 
     // ---- Two-column layout: image on left, light list/editor on right ---
-    // Calculated so the image never forces the window wider than the user
-    // dragged it — if the window is narrower than needed, we just scroll.
-    const float img_size = sprite.art->hull_w * g_zoom;
+    // The image pane auto-fits the available content region (so a 1022-px
+    // ship cell doesn't push the right panel off-screen). Zoom slider
+    // operates ON TOP of the fit-size and triggers scrollbars when >1x.
+    std::vector<LightSpot>& cur_lights = *sel_lights;
 
-    ImGui::BeginChild("image_col", ImVec2(img_size + 20, 0),
-                      ImGuiChildFlags_Border);
+    constexpr float kRightPanelMin = 340.0f;
+    constexpr float kImageColPadding = 16.0f;
+    const ImVec2  region        = ImGui::GetContentRegionAvail();
+    const float   image_col_w   = std::max(160.0f,
+                                  region.x - kRightPanelMin - kImageColPadding);
+    const float   fit_size      = std::max(64.0f,
+                                  std::min(image_col_w, region.y - 8.0f));
+    const float   img_size      = fit_size * g_zoom;
+
+    ImGui::BeginChild("image_col",
+                      ImVec2(image_col_w, 0),
+                      ImGuiChildFlags_Border,
+                      ImGuiWindowFlags_HorizontalScrollbar);
     {
         const ImVec2 img_pos = ImGui::GetCursorScreenPos();
-        ImGui::Image(simgui_imtextureid(sprite.art->hull.view),
+        ImGui::Image(simgui_imtextureid(sel_art->hull.view),
                      ImVec2(img_size, img_size));
 
         // Click handling. Must be checked AFTER Image so the InvisibleButton
@@ -263,8 +420,8 @@ void build(std::vector<SpriteObject>& sprites) {
         int hit_light = -1;
         float hit_dist2 = hit_radius * hit_radius;
 
-        for (int i = 0; i < (int)sprite.lights.size(); ++i) {
-            const LightSpot& ls = sprite.lights[i];
+        for (int i = 0; i < (int)cur_lights.size(); ++i) {
+            const LightSpot& ls = cur_lights[i];
             const ImVec2 c{ img_pos.x + ls.u * img_size,
                             img_pos.y + ls.v * img_size };
             const ImU32 col = IM_COL32(
@@ -293,16 +450,22 @@ void build(std::vector<SpriteObject>& sprites) {
                 g_sel_light = hit_light;
             } else if (mouse_uv.x >= 0 && mouse_uv.x <= 1 &&
                        mouse_uv.y >= 0 && mouse_uv.y <= 1) {
+                // Shift-click → blue (port nav / cool accents); plain click
+                // → red (default warning/strobe colour). Color is the only
+                // axis the modifier flips — size/kind stay the same so the
+                // muscle-memory of "shift = the OTHER colour" stays simple.
+                const bool shift = ImGui::GetIO().KeyShift;
                 LightSpot ls{};
                 ls.u = mouse_uv.x;
                 ls.v = mouse_uv.y;
-                ls.color = HMM_V3(1.0f, 0.85f, 0.30f);  // warm yellow default
-                ls.size  = 60.0f;
+                ls.color = shift ? HMM_V3(0.20f, 0.55f, 1.00f)   // crisp blue
+                                 : HMM_V3(1.00f, 0.10f, 0.10f); // hot red
+                ls.size  = 5.0f;
                 ls.hz    = 0.0f;
                 ls.phase = 0.0f;
                 ls.kind  = LightKind::Steady;
-                sprite.lights.push_back(ls);
-                g_sel_light = (int)sprite.lights.size() - 1;
+                cur_lights.push_back(ls);
+                g_sel_light = (int)cur_lights.size() - 1;
             }
         }
 
@@ -311,7 +474,7 @@ void build(std::vector<SpriteObject>& sprites) {
         // light every time the user clicks nearby).
         if (g_sel_light >= 0 && image_hovered &&
             ImGui::IsMouseDragging(ImGuiMouseButton_Left, 2.0f)) {
-            LightSpot& ls = sprite.lights[g_sel_light];
+            LightSpot& ls = cur_lights[g_sel_light];
             ls.u = std::min(1.0f, std::max(0.0f, mouse_uv.x));
             ls.v = std::min(1.0f, std::max(0.0f, mouse_uv.y));
         }
@@ -323,24 +486,62 @@ void build(std::vector<SpriteObject>& sprites) {
     // ---- Right column: light list + selected-light editor ---------------
     ImGui::BeginChild("edit_col", ImVec2(0, 0), ImGuiChildFlags_Border);
     {
-        ImGui::Text("%zu light%s", sprite.lights.size(),
-                    sprite.lights.size() == 1 ? "" : "s");
+        ImGui::Text("%zu light%s", cur_lights.size(),
+                    cur_lights.size() == 1 ? "" : "s");
         ImGui::SameLine();
         if (ImGui::Button("+ add")) {
+            // Same defaults as click-spawn (kept in sync so users get a
+            // consistent first-time experience whichever entry path they
+            // use). Shift-modifier intentionally not honoured here — the
+            // button is for "give me a light I'll position later", not
+            // "give me one in this colour".
             LightSpot ls{};
             ls.u = 0.5f; ls.v = 0.5f;
-            ls.color = HMM_V3(1.0f, 0.85f, 0.30f);
-            ls.size = 60.0f;
-            sprite.lights.push_back(ls);
-            g_sel_light = (int)sprite.lights.size() - 1;
+            ls.color = HMM_V3(1.00f, 0.10f, 0.10f);
+            ls.size = 5.0f;
+            cur_lights.push_back(ls);
+            g_sel_light = (int)cur_lights.size() - 1;
         }
+
+        // ---- Extrapolation helpers ----------------------------------
+        // Authoring 80 ship-atlas cells from scratch is brutal; the
+        // common workflow is to author one cell well, then copy/mirror
+        // its lights onto the neighbouring az/el cells and tweak. These
+        // buttons grab the prev/next item's lights wholesale (replacing
+        // the current list) — "mirror X" flips u→1-u for the opposite
+        // side of the ship (e.g. authoring az=90 then mirror-copying to
+        // az=270 with the port/starboard swap baked in).
+        ImGui::Separator();
+        ImGui::TextUnformatted("copy lights from neighbour:");
+        auto copy_from = [&](int delta, bool mirror_x) {
+            if (total <= 1) return;
+            const int src_idx = ((g_sel_sprite + delta) % total + total) % total;
+            const SpriteArt*        src_art    = nullptr;
+            std::vector<LightSpot>* src_lights = nullptr;
+            const std::string*      src_name   = nullptr;
+            resolve_target(src_idx, src_art, src_lights, src_name);
+            if (!src_lights) return;
+            cur_lights = *src_lights;     // value-copy, preserves color/hz/etc
+            if (mirror_x) {
+                for (LightSpot& ls : cur_lights) ls.u = 1.0f - ls.u;
+            }
+            g_sel_light = -1;
+        };
+        if (ImGui::Button("< prev"))           copy_from(-1, false);
+        ImGui::SameLine();
+        if (ImGui::Button("next >"))           copy_from(+1, false);
+        ImGui::SameLine();
+        if (ImGui::Button("< prev (mirror X)")) copy_from(-1, true);
+        ImGui::SameLine();
+        if (ImGui::Button("next > (mirror X)")) copy_from(+1, true);
+
         ImGui::Separator();
 
         // Scrollable list — each row: color swatch + kind label + u/v.
         ImGui::BeginChild("light_list", ImVec2(0, 160),
                           ImGuiChildFlags_Border);
-        for (int i = 0; i < (int)sprite.lights.size(); ++i) {
-            LightSpot& ls = sprite.lights[i];
+        for (int i = 0; i < (int)cur_lights.size(); ++i) {
+            LightSpot& ls = cur_lights[i];
             ImGui::PushID(i);
             char label[128];
             std::snprintf(label, sizeof(label),
@@ -355,8 +556,8 @@ void build(std::vector<SpriteObject>& sprites) {
 
         ImGui::Separator();
 
-        if (g_sel_light >= 0 && g_sel_light < (int)sprite.lights.size()) {
-            LightSpot& ls = sprite.lights[g_sel_light];
+        if (g_sel_light >= 0 && g_sel_light < (int)cur_lights.size()) {
+            LightSpot& ls = cur_lights[g_sel_light];
             ImGui::Text("Selected light #%d", g_sel_light);
 
             ImGui::DragFloat("u", &ls.u, 0.002f, 0.0f, 1.0f, "%.3f");
@@ -381,7 +582,7 @@ void build(std::vector<SpriteObject>& sprites) {
 
             ImGui::Separator();
             if (ImGui::Button("delete")) {
-                sprite.lights.erase(sprite.lights.begin() + g_sel_light);
+                cur_lights.erase(cur_lights.begin() + g_sel_light);
                 g_sel_light = -1;
             }
         } else {
@@ -389,6 +590,36 @@ void build(std::vector<SpriteObject>& sprites) {
         }
     }
     ImGui::EndChild();
+
+    // -----------------------------------------------------------------
+    // Auto-save: walk EVERY editable target, save any whose lights have
+    // changed since their last snapshot. First sighting of a target seeds
+    // its snapshot from current state without saving (matches what was
+    // just loaded from disk). Walking all targets per-frame catches edits
+    // even if the user has navigated away from the cell — important
+    // because copy-from-prev mutates a cell's lights in place and the
+    // user might switch off it before this code runs.
+    //
+    // O(N_targets) per frame; N is ~85 (mining base + 80 ship cells).
+    // lights_equal is field-by-field on small vectors, microseconds total.
+    // -----------------------------------------------------------------
+    for (int i = 0; i < total; ++i) {
+        const SpriteArt*        art    = nullptr;
+        std::vector<LightSpot>* lights = nullptr;
+        const std::string*      name   = nullptr;
+        resolve_target(i, art, lights, name);
+        if (!lights || !name) continue;
+        auto it = g_save_snapshots.find(*name);
+        if (it == g_save_snapshots.end()) {
+            // First sighting — adopt current state as the baseline. The
+            // contents already match disk because load_sprite_art seeded
+            // light_spots from the sidecar at startup.
+            g_save_snapshots.emplace(*name, *lights);
+        } else if (!lights_equal(*lights, it->second)) {
+            save_lights_sidecar(*name, *lights);
+            it->second = *lights;
+        }
+    }
 
     ImGui::End();
 }
