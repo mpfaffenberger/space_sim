@@ -60,11 +60,19 @@ class SpriteJob:
     ship: str
     az: float
     el: float
-    reference: Path
+    reference: Path                          # primary per-angle render (pose/silhouette)
     raw_output: Path
     clean_output: Path
     prompt_file: Path
     prompt: str
+    canonical_refs: tuple[Path, ...] = ()    # extra style/colour guides (same for every angle)
+
+    @property
+    def all_references(self) -> list[Path]:
+        """Primary render first, canonical refs after. Generators that take a
+        list use this; the order matters because some attention models weight
+        the first reference more heavily."""
+        return [self.reference, *self.canonical_refs]
 
 
 def angle_tag(value: float) -> str:
@@ -79,19 +87,128 @@ def az_tag(value: float) -> str:
     return f"{value:05.1f}".replace(".", "p")
 
 
-def build_prompt(ship: str, reference: Path, prompt_suffix: str = "") -> str:
+# ---------------------------------------------------------------------------
+# Per-ship design briefs.
+#
+# The base prompt is generic; everything ship-specific goes here. New ships
+# get an entry in this dict — no prompt-template surgery required. If a ship
+# is missing we fall back to DEFAULT_BRIEF, which leans entirely on the
+# reference image for shape information (safer than lying about geometry).
+#
+# Fields:
+#   role        : the ship's class ("freighter", "light fighter", ...).
+#                 Goes into the "Subject:" line.
+#   silhouette  : 1–2 sentences naming the distinguishing structural
+#                 features the AI must preserve.
+#   palette     : short palette hint for hull colour bias.
+# ---------------------------------------------------------------------------
+SHIP_DESIGN_BRIEFS: dict[str, dict[str, str]] = {
+    "tarsus": {
+        "role": "space freighter",
+        "silhouette": (
+            "boxy cockpit/nose, long central fuselage, twin side nacelles, "
+            "utilitarian cargo-hauler structure"
+        ),
+        "palette": "dark gunmetal / olive-gray hull",
+    },
+    "talon": {
+        "role": "light pirate fighter",
+        "silhouette": (
+            "flat wedge-shaped main hull tapering to a pointed nose, "
+            "four short swept fins splayed outward, narrow rear engine "
+            "block with a glowing central thrust strip"
+        ),
+        "palette": (
+            "glossy white-silver hull with a blue dorsal spine stripe and red "
+            "engine-bell accents — match the canonical reference sheet exactly"
+        ),
+    },
+}
+
+DEFAULT_BRIEF: dict[str, str] = {
+    "role": "spacecraft",
+    "silhouette": "the exact shape shown in the reference image — defer to the reference for every structural detail",
+    "palette": "dark gunmetal hull",
+}
+
+# ---------------------------------------------------------------------------
+# Per-ship canonical reference imagery.
+#
+# Paths to one or more PNG files showing the ship's CANONICAL look (multiple
+# angles, source-of-truth colours/materials). These get attached to every
+# sprite generation alongside the per-angle render. The per-angle render
+# dictates pose & silhouette; the canonical refs dictate paint scheme,
+# material finish, and overall design fidelity.
+#
+# Paths are repo-relative and resolved at job-build time. Missing files are
+# silently skipped (with a one-line warning) so a ship without canonical
+# imagery still works — it just falls back to render-only conditioning.
+# ---------------------------------------------------------------------------
+CANONICAL_REFS: dict[str, tuple[str, ...]] = {
+    "talon": ("assets/ships/talon/canonical_reference.png",),
+}
+
+# Single source of truth for the per-spec extra_style string. Used by the
+# pixelart batch tool to bias both the model and the style classifier.
+EXTRA_STYLE = (
+    "sleek futuristic spaceship pixel art; glossy polished aerospace alloy "
+    "hull (think F-22, B-2, mirrored chrome) with paper-thin panel seams; "
+    "clean and showroom-fresh; NEVER stone, brick, mortar, masonry, granite, "
+    "or sandstone; preserve silhouette from the primary reference exactly"
+)
+
+
+def resolve_canonical_refs(ship: str, repo_root: Path) -> tuple[Path, ...]:
+    """Resolve per-ship canonical reference paths. Missing files are dropped
+    with a one-line warning so the rest of the batch still runs — a ship
+    without canonical imagery just gets render-only conditioning."""
+    out: list[Path] = []
+    for rel in CANONICAL_REFS.get(ship, ()):
+        p = (repo_root / rel).resolve()
+        if p.is_file():
+            out.append(p)
+        else:
+            print(f"  ! canonical ref missing for {ship!r}: {p}", file=sys.stderr)
+    return tuple(out)
+
+
+def build_prompt(ship: str, reference: Path, canonical_refs: tuple[Path, ...] = (),
+                 prompt_suffix: str = "") -> str:
     pretty_ship = ship.replace("_", " ").title()
+    brief = SHIP_DESIGN_BRIEFS.get(ship, DEFAULT_BRIEF)
+
+    # Reference-images section. The PRIMARY render dictates pose+silhouette;
+    # CANONICAL refs (when present) dictate paint scheme & material finish.
+    # Splitting them in the prompt prevents the model from copying the
+    # canonical's POSE (which would collapse all 80 sprites to the same
+    # angle) or the primary's COLOURS (which are stale WCU stone-textures).
+    if canonical_refs:
+        canon_lines = "\n".join(f"  - {p}" for p in canonical_refs)
+        ref_block = (
+            f"REFERENCE IMAGES:\n"
+            f"  PRIMARY (this exact angle — match silhouette and pose 1:1):\n"
+            f"  - {reference}\n"
+            f"  CANONICAL DESIGN SHEET (multiple angles — use ONLY for paint scheme,\n"
+            f"  hull colour, material finish, and overall design fidelity; do NOT\n"
+            f"  copy any specific angle from this sheet):\n"
+            f"{canon_lines}"
+        )
+    else:
+        ref_block = (
+            f"REFERENCE IMAGE (use directly as image conditioning):\n"
+            f"{reference}"
+        )
+
     return f"""Create a pixel-art spaceship sprite using the attached reference image as a strict shape and pose guide.
 
-REFERENCE IMAGE (use directly as image conditioning):
-{reference}
+{ref_block}
 
-Subject: {pretty_ship}-class space freighter from Wing Commander: Privateer.
+Subject: {pretty_ship}-class {brief['role']} from Wing Commander: Privateer.
 
 Requirements:
 - Preserve the silhouette, proportions, and exact viewing angle from the reference image.
 - Do NOT invent a different ship design.
-- Keep the boxy cockpit/nose, long central fuselage, twin side nacelles, and utilitarian cargo-hauler structure.
+- Distinguishing features to preserve: {brief['silhouette']}.
 - Preserve the outline exactly; do not overly simplify or blur the geometry.
 - Keep the ship centered and fully readable as a single clean silhouette.
 - Readable sprite first, texture detail second.
@@ -102,9 +219,29 @@ Style:
 - hand-authored-looking sprite readability
 - dithered shading
 - limited palette
-- dark gunmetal / olive-gray hull
-- subtle panel breakup
+- {brief['palette']}
 - transparent background
+
+MATERIAL — READ THIS CAREFULLY (most important section):
+The PRIMARY reference is a low-fidelity 3D viewport screenshot with placeholder
+stone-block textures baked into the model. Those grid-of-rectangles patterns
+are a TEXTURING BUG, not a design choice. DO NOT REPRODUCE THEM.
+
+The CANONICAL DESIGN SHEET shows the correct surface finish:
+- glossy polished aerospace alloy — think F-22 Raptor, B-2 Spirit, X-wing,
+  Cylon Raider, mirrored chrome, brushed titanium
+- showroom-fresh painted military hull, clean off the production line
+- panel SEAMS are paper-thin scribed lines (1 pixel wide max) — NOT thick
+  mortar grooves between blocks
+- broad smooth metallic regions with gradient shading from directional lighting
+- specular highlights along edges and curved surfaces
+- a few crisp painted insignia / numbers / accent stripes (sparse, not
+  every panel)
+
+Use the PRIMARY reference for SILHOUETTE / POSE / PROPORTIONS only.
+Use the CANONICAL reference for MATERIAL / FINISH / PAINT JOB.
+These roles are non-negotiable — never let the primary's bricky textures
+leak into your output.
 
 Avoid:
 - painterly blur
@@ -114,6 +251,10 @@ Avoid:
 - changing the ship proportions
 - smearing thin structures
 - starfield background or background artifacts
+- stone walls, brickwork, masonry, cobblestones, castle/fortress textures
+- mortar lines, grout, chiseled stone blocks, ashlar masonry
+- weathered/aged/medieval/fantasy/wood-grain styling — this is a SLEEK SPACESHIP
+- copying the PRIMARY's surface texture pattern (it is a known bad input)
 
 Target:
 - master sprite quality
@@ -139,6 +280,12 @@ def load_jobs(
     with open(manifest_path, "r", encoding="utf-8") as f:
         manifest = json.load(f)
 
+    # Resolve canonical refs once per ship — they're the same for every angle.
+    canonical = resolve_canonical_refs(ship, REPO)
+    if canonical:
+        rels = ", ".join(str(p.relative_to(REPO)) for p in canonical)
+        print(f"  canonical refs for {ship!r}: {rels}")
+
     jobs: list[SpriteJob] = []
     for sample in manifest["samples"]:
         az = float(sample["az"])
@@ -153,8 +300,9 @@ def load_jobs(
         raw = sprite_dir / f"{stem}.png"
         clean = sprite_dir / f"{stem}_clean.png"
         prompt_file = prompt_dir / f"{stem}.txt"
-        prompt = build_prompt(ship, ref, prompt_suffix)
-        jobs.append(SpriteJob(ship, az, el, ref, raw, clean, prompt_file, prompt))
+        prompt = build_prompt(ship, ref, canonical, prompt_suffix)
+        jobs.append(SpriteJob(ship, az, el, ref, raw, clean, prompt_file, prompt,
+                              canonical_refs=canonical))
 
     return jobs[:limit] if limit else jobs
 
@@ -173,9 +321,9 @@ def write_batch_specs(jobs: list[SpriteJob], spec_path: Path) -> None:
             "size": "1024x1024",
             "transparent_bg": False,
             "save_raw": True,
-            "reference_image": str(job.reference),
+            "reference_image": [str(p) for p in job.all_references],
             "reference_strength": "strict",
-            "extra_style": "strict reference-conditioned Privateer ship sprite; preserve silhouette exactly",
+            "extra_style": EXTRA_STYLE,
         })
     spec_path.parent.mkdir(parents=True, exist_ok=True)
     spec_path.write_text(json.dumps(specs, indent=2), encoding="utf-8")
@@ -194,6 +342,7 @@ def write_job_files(jobs: list[SpriteJob], jobs_jsonl: Path) -> None:
                 "az": job.az,
                 "el": job.el,
                 "reference": str(job.reference),
+                "canonical_refs": [str(p) for p in job.canonical_refs],
                 "output": str(job.raw_output),
                 "clean_output": str(job.clean_output),
                 "prompt_file": str(job.prompt_file),
@@ -267,9 +416,9 @@ def run_pixelart_tool(job: SpriteJob, quality: str) -> None:
         transparent_bg=False,
         size="1024x1024",
         quality=quality,
-        extra_style="strict reference-conditioned Privateer ship sprite; preserve silhouette exactly",
+        extra_style=EXTRA_STYLE,
         save_raw=True,
-        reference_image=str(job.reference),
+        reference_image=[str(p) for p in job.all_references],
         reference_strength="strict",
         timeout=240.0,
     )
@@ -341,9 +490,9 @@ def run_pixelart_batch(jobs: list[SpriteJob], quality: str, skip_existing: bool)
             "size": "1024x1024",
             "transparent_bg": False,
             "save_raw": True,
-            "reference_image": str(job.reference),
+            "reference_image": [str(p) for p in job.all_references],
             "reference_strength": "strict",
-            "extra_style": "strict reference-conditioned Privateer ship sprite; preserve silhouette exactly",
+            "extra_style": EXTRA_STYLE,
         })
     out_dir = str(jobs[0].raw_output.parent)
     manifest = batch_generate(
@@ -355,7 +504,7 @@ def run_pixelart_batch(jobs: list[SpriteJob], quality: str, skip_existing: bool)
         default_pixel_grid=512,
         default_palette_size=40,
         default_quality=quality,
-        default_extra_style="strict reference-conditioned Privateer ship sprite; preserve silhouette exactly",
+        default_extra_style=EXTRA_STYLE,
         stop_on_error=False,
     )
     print(json.dumps({k: manifest[k] for k in ["total", "generated", "skipped", "failed", "elapsed_seconds"]}, indent=2))

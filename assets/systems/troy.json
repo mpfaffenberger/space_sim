@@ -90,6 +90,13 @@
       "atlas":         "ships/tarsus/atlas_manifest",
       "position":      [50000, -100000, 33150],
       "length_meters": 100
+    },
+    // Talon parked 500u to starboard of the Tarsus so Mike can fly
+    // between them and use F2 -> sprite light editor on either atlas.
+    {
+      "atlas":         "ships/talon/atlas_manifest",
+      "position":      [50500, -100000, 33150],
+      "length_meters": 80
     }
   ],
   // Navigation waypoints — what the in-game targeting system (press N
