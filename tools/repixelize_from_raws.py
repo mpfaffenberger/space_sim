@@ -30,10 +30,7 @@ from scipy import ndimage as ndi
 
 
 REPO = Path(__file__).resolve().parent.parent
-PIXELART_GENERATE_PATH = (
-    "/Users/mpfaffenberger/.code_puppy/plugins/universal_constructor/"
-    "pixelart/generate_sprite.py"
-)
+PIXELART_GENERATE_PATH = str(REPO / "tools" / "pixelart" / "generate_sprite.py")
 CLEAN_TOOL = REPO / "tools" / "clean_sprite_alpha.py"
 
 # These mirror the values our batch tool passes for ship sprites.

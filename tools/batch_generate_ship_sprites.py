@@ -47,12 +47,9 @@ from pathlib import Path
 
 
 REPO = Path(__file__).resolve().parents[1]
-PIXELART_GENERATE = Path(
-    "/Users/mpfaffenberger/.code_puppy/plugins/universal_constructor/pixelart/generate_sprite.py"
-)
-PIXELART_BATCH = Path(
-    "/Users/mpfaffenberger/.code_puppy/plugins/universal_constructor/pixelart/batch_generate.py"
-)
+PIXELART_DIR      = REPO / "tools" / "pixelart"
+PIXELART_GENERATE = PIXELART_DIR / "generate_sprite.py"
+PIXELART_BATCH    = PIXELART_DIR / "batch_generate.py"
 
 
 @dataclass(frozen=True)
