@@ -84,3 +84,6 @@ assets/meshes/
 # Python bytecode caches
 __pycache__/
 *.pyc
+
+# In-game sprite atlas capture dirs (regeneratable via tools/tour_ship_sprite_atlas.sh)
+assets/ships/*/sprites_ingame/
