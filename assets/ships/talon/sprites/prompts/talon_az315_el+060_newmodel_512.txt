@@ -1,0 +1,69 @@
+Create a pixel-art spaceship sprite using the attached reference image as a strict shape and pose guide.
+
+REFERENCE IMAGES:
+  PRIMARY (this exact angle — match silhouette and pose 1:1):
+  - /Users/mpfaffenberger/code/new_privateer/assets/ships/talon/renders/talon_az315_el+060.png
+  CANONICAL DESIGN SHEET (multiple angles — use ONLY for paint scheme,
+  hull colour, material finish, and overall design fidelity; do NOT
+  copy any specific angle from this sheet):
+  - /Users/mpfaffenberger/code/new_privateer/assets/ships/talon/canonical_reference.png
+
+Subject: Talon-class light pirate fighter from Wing Commander: Privateer.
+
+Requirements:
+- Preserve the silhouette, proportions, and exact viewing angle from the reference image.
+- Do NOT invent a different ship design.
+- Distinguishing features to preserve: flat wedge-shaped main hull tapering to a pointed nose, four short swept fins splayed outward, narrow rear engine block with a glowing central thrust strip.
+- Preserve the outline exactly; do not overly simplify or blur the geometry.
+- Keep the ship centered and fully readable as a single clean silhouette.
+- Readable sprite first, texture detail second.
+
+Style:
+- 1993 DOS / Wing Commander: Privateer style pixel art
+- chunky pixels
+- hand-authored-looking sprite readability
+- dithered shading
+- limited palette
+- glossy white-silver hull with a blue dorsal spine stripe and red engine-bell accents — match the canonical reference sheet exactly
+- transparent background
+
+MATERIAL — READ THIS CAREFULLY (most important section):
+The PRIMARY reference is a low-fidelity 3D viewport screenshot with placeholder
+stone-block textures baked into the model. Those grid-of-rectangles patterns
+are a TEXTURING BUG, not a design choice. DO NOT REPRODUCE THEM.
+
+The CANONICAL DESIGN SHEET shows the correct surface finish:
+- glossy polished aerospace alloy — think F-22 Raptor, B-2 Spirit, X-wing,
+  Cylon Raider, mirrored chrome, brushed titanium
+- showroom-fresh painted military hull, clean off the production line
+- panel SEAMS are paper-thin scribed lines (1 pixel wide max) — NOT thick
+  mortar grooves between blocks
+- broad smooth metallic regions with gradient shading from directional lighting
+- specular highlights along edges and curved surfaces
+- a few crisp painted insignia / numbers / accent stripes (sparse, not
+  every panel)
+
+Use the PRIMARY reference for SILHOUETTE / POSE / PROPORTIONS only.
+Use the CANONICAL reference for MATERIAL / FINISH / PAINT JOB.
+These roles are non-negotiable — never let the primary's bricky textures
+leak into your output.
+
+Avoid:
+- painterly blur
+- mushy silhouette
+- rounded organic forms
+- inventing extra fins / wings / greebles
+- changing the ship proportions
+- smearing thin structures
+- starfield background or background artifacts
+- stone walls, brickwork, masonry, cobblestones, castle/fortress textures
+- mortar lines, grout, chiseled stone blocks, ashlar masonry
+- weathered/aged/medieval/fantasy/wood-grain styling — this is a SLEEK SPACESHIP
+- copying the PRIMARY's surface texture pattern (it is a known bad input)
+
+Target:
+- master sprite quality
+- pixel grid 512 on longest side
+- palette around 40 colors
+- transparent background
+- large source sprite suitable for later downsampling into in-game atlas frames

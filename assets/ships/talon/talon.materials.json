@@ -1,0 +1,49 @@
+{
+  "materials": [
+    {
+      "name": "tex0_0",
+      "diffuse": "diff_0_0.png",
+      "spec": "spec_0_0.png",
+      "glow": "glow_0_0.png",
+      "normal": "norm_0_0.png"
+    },
+    {
+      "name": "tex1_0",
+      "diffuse": "diff_1_0.png",
+      "spec": "spec_1_0.png",
+      "glow": "glow_1_0.png",
+      "normal": "norm_1_0.png"
+    },
+    {
+      "name": "tex2_0",
+      "diffuse": "diff_2_0.png",
+      "spec": "spec_2_0.png",
+      "glow": "glow_2_0.png",
+      "normal": "norm_2_0.png"
+    },
+    {
+      "name": "tex3_0",
+      "diffuse": "diff_3_0.png",
+      "spec": "spec_3_0.png",
+      "glow": "glow_3_0.png",
+      "normal": "norm_3_0.png"
+    },
+    {
+      "name": "tex4_0",
+      "diffuse": "diff_4_0.png",
+      "spec": "spec_4_0.png",
+      "glow": "glow_4_0.png",
+      "normal": "norm_4_0.png"
+    },
+    {
+      "name": "tex5_0",
+      "diffuse": "diff_3_0.png",
+      "spec": "spec_3_0.png",
+      "glow": "glow_3_0.png",
+      "normal": "norm_3_0.png"
+    },
+    {
+      "name": "tex6_0"
+    }
+  ]
+}
