@@ -1,0 +1,10 @@
+[
+  { "u": 0.128986, "v": 0.455072, "color": [51, 140, 255], "size": 5, "hz": 0, "phase": 0, "kind": "steady" },
+  { "u": 0.12029, "v": 0.476812, "color": [51, 140, 255], "size": 5, "hz": 0, "phase": 0, "kind": "steady" },
+  { "u": 0.114493, "v": 0.5, "color": [51, 140, 255], "size": 5, "hz": 0, "phase": 0, "kind": "steady" },
+  { "u": 0.101449, "v": 0.513043, "color": [51, 140, 255], "size": 5, "hz": 0, "phase": 0, "kind": "steady" },
+  { "u": 0.1, "v": 0.528986, "color": [51, 140, 255], "size": 5, "hz": 0, "phase": 0, "kind": "steady" },
+  { "u": 0.991304, "v": 0.731884, "color": [255, 26, 26], "size": 5, "hz": 0, "phase": 0, "kind": "steady" },
+  { "u": 0.997101, "v": 0.807246, "color": [255, 26, 26], "size": 5, "hz": 0, "phase": 0, "kind": "steady" },
+  { "u": 0.895652, "v": 0.849275, "color": [255, 26, 26], "size": 5, "hz": 0, "phase": 0, "kind": "steady" }
+]
