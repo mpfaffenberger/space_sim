@@ -1,0 +1,33 @@
+{
+  "name": "Talon Compare — Mesh vs WCnews 1993 Sprite",
+  "description": "Sister scene to talon_compare.json. Same layout (3D mesh on the LEFT, sprite ship on the RIGHT) but the sprite atlas is the canonical 1993 Origin Privateer art harvested from the wcnews wcpedia 3Space Ship Sprite Archive — Militia variant — instead of our AI-regenerated atlas. studio_lighting on so the dim hand-painted pixel sprites aren't washed out by the system star. Use F3 to read the picked az/el cell live and verify the layout module's frame mapping.",
+  "skybox_seed": "deep_void",
+  "star": { "preset": "red" },
+  "studio_lighting": true,
+  "asteroid_fields": [],
+  "placed_sprites": [],
+  "placed_meshes": [
+    {
+      "obj": "ships/talon/talon.obj",
+      "position": [-14, 0, 0],
+      "euler_deg": [0, 0, 0],
+      "length_meters": 18,
+      "tint": [1.35, 1.35, 1.35],
+      "double_sided": true,
+      "ambient_floor": 1.0,
+      "spec": 0.2
+    }
+  ],
+  "placed_ship_sprites": [
+    {
+      "atlas":          "ships/talon/atlas_manifest_militia_wcnews",
+      "position":       [14, 0, 0],
+      "length_meters":  18,
+      "lights_enabled": false
+    }
+  ],
+  "nav_points": [],
+  "player_start": {
+    "position": [0, 0, 75]
+  }
+}

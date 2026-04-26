@@ -93,3 +93,6 @@ assets/ships/*/regen_trials/
 
 # Original Origin/EA WC sprite cache (do not redistribute)
 assets/ships/*/wcnews_sprites/
+
+# Atlas cells derived from wcnews wcpedia (still derived from Origin IP)
+assets/ships/*/sprites_wcnews/

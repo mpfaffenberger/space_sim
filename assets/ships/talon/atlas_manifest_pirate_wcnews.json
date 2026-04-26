@@ -1,0 +1,307 @@
+{
+  "ship": "talon",
+  "variant": "pirate",
+  "kind": "view_sphere_sprite_atlas",
+  "source": "wcnews_wcpedia_3space_sprite_archive",
+  "source_frames": 37,
+  "upscale": 4,
+  "forward_axis": "+Z",
+  "up_axis": "+Y",
+  "azimuth_degrees": [
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0,
+    150.0,
+    180.0,
+    210.0,
+    240.0,
+    270.0,
+    300.0,
+    330.0
+  ],
+  "elevation_degrees": [
+    -60.0,
+    -30.0,
+    0.0,
+    30.0,
+    60.0
+  ],
+  "cell_width": 500,
+  "cell_height": 408,
+  "pixel_grid": 500,
+  "framing": "Each cell is the wcnews sprite upscaled NEAREST x4. Off-equator yaws are pre-mirrored horizontally; el=0 ring is full 360 deg.",
+  "samples": [
+    {
+      "az": 0.0,
+      "el": -60.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az000_el-60.png"
+    },
+    {
+      "az": 60.0,
+      "el": -60.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az060_el-60.png"
+    },
+    {
+      "az": 120.0,
+      "el": -60.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az120_el-60.png"
+    },
+    {
+      "az": 180.0,
+      "el": -60.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az180_el-60.png"
+    },
+    {
+      "az": 240.0,
+      "el": -60.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az240_el-60.png"
+    },
+    {
+      "az": 300.0,
+      "el": -60.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az300_el-60.png"
+    },
+    {
+      "az": 0.0,
+      "el": -30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az000_el-30.png"
+    },
+    {
+      "az": 30.0,
+      "el": -30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az030_el-30.png"
+    },
+    {
+      "az": 60.0,
+      "el": -30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az060_el-30.png"
+    },
+    {
+      "az": 90.0,
+      "el": -30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az090_el-30.png"
+    },
+    {
+      "az": 120.0,
+      "el": -30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az120_el-30.png"
+    },
+    {
+      "az": 150.0,
+      "el": -30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az150_el-30.png"
+    },
+    {
+      "az": 180.0,
+      "el": -30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az180_el-30.png"
+    },
+    {
+      "az": 210.0,
+      "el": -30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az210_el-30.png"
+    },
+    {
+      "az": 240.0,
+      "el": -30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az240_el-30.png"
+    },
+    {
+      "az": 270.0,
+      "el": -30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az270_el-30.png"
+    },
+    {
+      "az": 300.0,
+      "el": -30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az300_el-30.png"
+    },
+    {
+      "az": 330.0,
+      "el": -30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az330_el-30.png"
+    },
+    {
+      "az": 0.0,
+      "el": 0.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az000_el+00.png"
+    },
+    {
+      "az": 30.0,
+      "el": 0.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az030_el+00.png"
+    },
+    {
+      "az": 60.0,
+      "el": 0.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az060_el+00.png"
+    },
+    {
+      "az": 90.0,
+      "el": 0.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az090_el+00.png"
+    },
+    {
+      "az": 120.0,
+      "el": 0.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az120_el+00.png"
+    },
+    {
+      "az": 150.0,
+      "el": 0.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az150_el+00.png"
+    },
+    {
+      "az": 180.0,
+      "el": 0.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az180_el+00.png"
+    },
+    {
+      "az": 210.0,
+      "el": 0.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az210_el+00.png"
+    },
+    {
+      "az": 240.0,
+      "el": 0.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az240_el+00.png"
+    },
+    {
+      "az": 270.0,
+      "el": 0.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az270_el+00.png"
+    },
+    {
+      "az": 300.0,
+      "el": 0.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az300_el+00.png"
+    },
+    {
+      "az": 330.0,
+      "el": 0.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az330_el+00.png"
+    },
+    {
+      "az": 0.0,
+      "el": 30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az000_el+30.png"
+    },
+    {
+      "az": 30.0,
+      "el": 30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az030_el+30.png"
+    },
+    {
+      "az": 60.0,
+      "el": 30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az060_el+30.png"
+    },
+    {
+      "az": 90.0,
+      "el": 30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az090_el+30.png"
+    },
+    {
+      "az": 120.0,
+      "el": 30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az120_el+30.png"
+    },
+    {
+      "az": 150.0,
+      "el": 30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az150_el+30.png"
+    },
+    {
+      "az": 180.0,
+      "el": 30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az180_el+30.png"
+    },
+    {
+      "az": 210.0,
+      "el": 30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az210_el+30.png"
+    },
+    {
+      "az": 240.0,
+      "el": 30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az240_el+30.png"
+    },
+    {
+      "az": 270.0,
+      "el": 30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az270_el+30.png"
+    },
+    {
+      "az": 300.0,
+      "el": 30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az300_el+30.png"
+    },
+    {
+      "az": 330.0,
+      "el": 30.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az330_el+30.png"
+    },
+    {
+      "az": 0.0,
+      "el": 60.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az000_el+60.png"
+    },
+    {
+      "az": 30.0,
+      "el": 60.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az030_el+60.png"
+    },
+    {
+      "az": 60.0,
+      "el": 60.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az060_el+60.png"
+    },
+    {
+      "az": 90.0,
+      "el": 60.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az090_el+60.png"
+    },
+    {
+      "az": 120.0,
+      "el": 60.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az120_el+60.png"
+    },
+    {
+      "az": 150.0,
+      "el": 60.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az150_el+60.png"
+    },
+    {
+      "az": 180.0,
+      "el": 60.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az180_el+60.png"
+    },
+    {
+      "az": 210.0,
+      "el": 60.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az210_el+60.png"
+    },
+    {
+      "az": 240.0,
+      "el": 60.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az240_el+60.png"
+    },
+    {
+      "az": 270.0,
+      "el": 60.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az270_el+60.png"
+    },
+    {
+      "az": 300.0,
+      "el": 60.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az300_el+60.png"
+    },
+    {
+      "az": 330.0,
+      "el": 60.0,
+      "sprite": "ships/talon/sprites_wcnews/pirate/talon_pirate_az330_el+60.png"
+    }
+  ]
+}
