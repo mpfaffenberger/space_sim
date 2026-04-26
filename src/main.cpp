@@ -422,10 +422,11 @@ void init_cb() {
         }
 
         ShipSpriteObject s{};
-        s.atlas      = &it->second;
-        s.position   = sd.position;
-        s.world_size = sd.length_meters;
-        s.tint       = HMM_V4(1.0f, 1.0f, 1.0f, 1.0f);
+        s.atlas          = &it->second;
+        s.position       = sd.position;
+        s.world_size     = sd.length_meters;
+        s.lights_enabled = sd.lights_enabled;
+        s.tint           = HMM_V4(1.0f, 1.0f, 1.0f, 1.0f);
         g.placed_ship_sprites.push_back(s);
     }
 

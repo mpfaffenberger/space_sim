@@ -68,8 +68,9 @@ struct PlacedSpriteDef {
 // placed_sprites, this selects one of many authored view angles per frame.
 struct PlacedShipSpriteDef {
     std::string atlas;
-    HMM_Vec3    position      = { 0, 0, 0 };
-    float       length_meters = 18.0f;
+    HMM_Vec3    position       = { 0, 0, 0 };
+    float       length_meters  = 18.0f;
+    bool        lights_enabled = true;  // debug scenes can disable glow spam
 };
 
 struct PlacedMeshDef {

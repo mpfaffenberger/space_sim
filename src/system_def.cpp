@@ -57,6 +57,7 @@ PlacedShipSpriteDef parse_ship_sprite(const json::Value& v) {
     if (auto* p = v.find("atlas"))          s.atlas         = p->as_string();
     s.position = vec3_or(v.find("position"), s.position);
     if (auto* p = v.find("length_meters"))  s.length_meters = p->as_float();
+    if (auto* p = v.find("lights_enabled")) s.lights_enabled = p->as_bool();
     return s;
 }
 

@@ -33,6 +33,7 @@ struct ShipSpriteObject {
     HMM_Vec3 position{0, 0, 0};
     float world_size = 18.0f;
     HMM_Vec4 tint{1, 1, 1, 1};
+    bool lights_enabled = true;
 
     // Atlas inspector override. When enabled, the in-world ship displays
     // the nearest authored frame to manual_{az,el}_deg instead of selecting
