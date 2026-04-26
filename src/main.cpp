@@ -109,6 +109,10 @@ struct AppState {
 
     std::string system_name = "troy";   // assets/systems/<name>.json
     bool        capture_clean = false;  // hide HUD/cockpit overlay for atlas screenshots
+    // Ship-sprite frame HUD: prints camera az/el and picked atlas cell az/el
+    // for every placed_ship_sprites entry, every frame. F3 toggles. Hidden by
+    // --capture-clean so screenshots stay HUD-free without extra flags.
+    bool        show_ship_frame_hud = true;
     StarSystem  system{};
 
     // Targeting / nav-cycling. -1 = no target. Press N to advance through
@@ -238,19 +242,28 @@ void init_cb() {
     // Gate at time of writing) — those systems were authored against
     // the sun-at-origin convention and their hand-tuned spawn framings
     // would break if we silently moved the star.
+    // A tiny dim sun parked far off-axis so meshes get readable directional
+    // light without the bloom/lens-flare whitewashing the scene. Two things
+    // opt in: --capture-clean (screenshot/atlas mode) and the per-system
+    // "studio_lighting": true flag (debug/inspection scenes that still want
+    // a live HUD). Both call this same helper so the lighting setup never
+    // drifts between the two paths.
+    auto apply_studio_sun = [](Sun& sun) {
+        sun.position     = HMM_V3(-200000.0f, 150000.0f, 200000.0f);
+        sun.radius       = 100.0f;
+        sun.core_color   = HMM_V3(0.70f, 0.70f, 0.70f);
+        sun.glow_color   = HMM_V3(0.06f, 0.06f, 0.06f);
+        sun.corona_alpha = 0.0f;
+        sun.gas_strength = 0.0f;
+        sun.ray_strength = 0.0f;
+    };
+
     if (g.capture_clean) {
-        // Atlas/reference capture wants boring studio lighting, not a giant
-        // nearby bloom cannon whitening every hull panel. Put a tiny dim sun
-        // far off-axis so meshes get readable directional light while the
-        // visible star/corona stays out of the crop. Boring is beautiful.
-        g.sun.position = HMM_V3(-200000.0f, 150000.0f, 200000.0f);
-        g.sun.radius = 100.0f;
-        g.sun.core_color = HMM_V3(0.70f, 0.70f, 0.70f);
-        g.sun.glow_color = HMM_V3(0.06f, 0.06f, 0.06f);
-        g.sun.corona_alpha = 0.0f;
-        g.sun.gas_strength = 0.0f;
-        g.sun.ray_strength = 0.0f;
+        apply_studio_sun(g.sun);
         std::printf("[main] capture-clean studio sun enabled\n");
+    } else if (g.system.studio_lighting) {
+        apply_studio_sun(g.sun);
+        std::printf("[main] system studio_lighting=true: dim sun enabled\n");
     } else if (!g.system.nav_points.empty()) {
         HMM_Vec3 sum{0.0f, 0.0f, 0.0f};
         for (const auto& nav : g.system.nav_points) {
@@ -507,6 +520,39 @@ void frame_cb() {
         sdtx_printf("D(SUN) %7.0f u\n",   dist);
         sdtx_printf("POS    %5.0f %5.0f %5.0f\n", p.X, p.Y, p.Z);
 
+        // Ship-sprite frame HUD. Prints, per placed ship sprite, the raw
+        // camera-relative az/el AND the authored atlas frame the engine
+        // actually picked. Toggled with F3. Hidden when there are no ship
+        // sprites in the scene (no signal, just clutter).
+        if (g.show_ship_frame_hud && !g.placed_ship_sprites.empty()) {
+            sdtx_color3f(1.0f, 0.85f, 0.4f);
+            sdtx_puts("\n");                       // 1 blank line gap
+            sdtx_puts("SHIP SPRITE FRAMES (F3)\n");
+            for (size_t i = 0; i < g.placed_ship_sprites.size(); ++i) {
+                const ShipSpriteObject& s = g.placed_ship_sprites[i];
+                const char* key = (s.atlas ? s.atlas->key.c_str() : "<no-atlas>");
+                // Trim a long atlas key like "ships/talon/atlas_manifest"
+                // down to the ship name segment so the HUD stays narrow.
+                const char* slash1 = std::strchr(key, '/');
+                const char* slash2 = slash1 ? std::strchr(slash1 + 1, '/') : nullptr;
+                const char* short_key = slash1 ? slash1 + 1 : key;
+                const size_t short_len = slash2 ? (size_t)(slash2 - short_key)
+                                                : std::strlen(short_key);
+                char short_buf[24];
+                const size_t copy_len = short_len < sizeof(short_buf) - 1
+                                        ? short_len : sizeof(short_buf) - 1;
+                std::memcpy(short_buf, short_key, copy_len);
+                short_buf[copy_len] = '\0';
+                const char* tag = s.manual_frame_enabled ? " [MANUAL]" : "";
+                sdtx_printf(" %zu %-10s cam(az %+4.0f el %+4.0f) -> cell(az %+4.0f el %+4.0f)%s\n",
+                            i, short_buf,
+                            s.debug_cam_az_deg, s.debug_cam_el_deg,
+                            s.debug_last_az_deg, s.debug_last_el_deg,
+                            tag);
+            }
+            sdtx_color3f(0.7f, 1.0f, 0.9f);   // restore default for any later block
+        }
+
         // Bottom-left: controls reminder in the second, thinner font.
         sdtx_font(1);
         sdtx_color3f(0.5f, 0.6f, 0.7f);
@@ -514,7 +560,7 @@ void frame_cb() {
         sdtx_puts("W/S throttle   A/D strafe   R/F up/down\n");
         sdtx_puts("mouse aim      SPACE toggle cursor   TAB cruise\n");
         sdtx_puts("X brake        N cycle nav target\n");
-        sdtx_puts("CTRL+M debug   ESC x2 quit\n");
+        sdtx_puts("CTRL+M debug   F2 lights   F3 ship-frame HUD   ESC x2 quit\n");
     }
 
     // --- draw ---------------------------------------------------------------
@@ -686,6 +732,15 @@ void event_cb(const sapp_event* ev) {
             g.selected_nav = (g.selected_nav + 1) % n;
             std::printf("[nav] target → %s\n",
                         g.system.nav_points[g.selected_nav].name.c_str());
+        }
+        // F3 — toggle the ship-sprite frame HUD. Useful while flying around a
+        // sprite ship: lets you see exactly which atlas cell the engine picks
+        // for your current camera angle, and how close the snapped cell is
+        // to the raw camera direction.
+        if (ev->key_code == SAPP_KEYCODE_F3) {
+            g.show_ship_frame_hud = !g.show_ship_frame_hud;
+            std::printf("[hud] ship-frame HUD %s\n",
+                        g.show_ship_frame_hud ? "on" : "off");
         }
         // SPACE — toggle fly-by-wire vs free-cursor mode. Hides/shows
         // the OS cursor in lockstep so the visual matches the input

@@ -45,8 +45,15 @@ struct ShipSpriteObject {
 
     // Debug breadcrumbs from the latest frame selection. Lets us print the
     // exact atlas az/el being used without recomputing and risking drift.
+    // `debug_last_*_deg` is the AUTHORED frame az/el (post-binning, i.e. the
+    // cell the renderer actually sampled). `debug_cam_*_deg` is the raw
+    // camera-relative az/el produced by compute_cam_az_el — useful for the
+    // F3 atlas-frame HUD so you can see exactly how camera motion maps onto
+    // chosen cells in real time.
     float debug_last_az_deg = 0.0f;
     float debug_last_el_deg = 0.0f;
+    float debug_cam_az_deg  = 0.0f;
+    float debug_cam_el_deg  = 0.0f;
 };
 
 bool load_ship_sprite_atlas(const std::string& atlas_stem,

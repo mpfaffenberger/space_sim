@@ -143,6 +143,14 @@ struct StarSystem {
     std::string skybox_seed  = "troy";
     std::string star_preset  = "yellow";
 
+    // Studio-lighting flag for debug/inspection scenes. When true, main.cpp
+    // dims the sun and parks it off-axis (same effect as --capture-clean's
+    // sun setup) so bloom/lens-flare don't whitewash the scene. Unlike
+    // --capture-clean, the in-game HUD/cockpit overlay still draws — this
+    // is the live-debug case, not the screenshot case. Default false so
+    // existing systems are unaffected.
+    bool        studio_lighting = false;
+
     std::vector<AsteroidFieldDef> asteroid_fields;
     std::vector<PlacedMeshDef>       placed_meshes;
     std::vector<PlacedSpriteDef>     placed_sprites;

@@ -121,6 +121,8 @@ std::optional<StarSystem> load_system(const std::string& name_or_path) {
         if (auto* p = star->find("preset")) s.star_preset = p->as_string();
     }
 
+    if (auto* p = root.find("studio_lighting")) s.studio_lighting = p->as_bool();
+
     if (auto* fields = root.find("asteroid_fields"); fields && fields->is_array()) {
         for (const auto& f : fields->as_array()) {
             s.asteroid_fields.push_back(parse_field(f));

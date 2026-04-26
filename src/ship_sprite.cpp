@@ -215,6 +215,22 @@ void append_ship_sprites_for_camera(std::vector<ShipSpriteObject>& ships,
 
     for (ShipSpriteObject& ship : ships) {
         if (!ship.atlas) continue;
+
+        // Publish the raw camera-relative az/el for the F3 atlas-frame HUD.
+        // For ships under manual override we also expose the slider values
+        // here so the HUD reflects the user-driven angles instead of the
+        // (now-irrelevant) camera position.
+        if (ship.manual_frame_enabled) {
+            ship.debug_cam_az_deg = ship.manual_az_deg;
+            ship.debug_cam_el_deg = ship.manual_el_deg;
+        } else {
+            float cam_az = 0.0f, cam_el = 0.0f;
+            if (compute_cam_az_el(ship.position, cam.position, cam_az, cam_el)) {
+                ship.debug_cam_az_deg = cam_az;
+                ship.debug_cam_el_deg = cam_el;
+            }
+        }
+
         const ShipSpriteFrame* frame = choose_ship_sprite_frame(*ship.atlas, ship, cam);
         if (!frame || !frame->art) continue;
 

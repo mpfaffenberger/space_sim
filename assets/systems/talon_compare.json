@@ -1,8 +1,9 @@
 {
   "name": "Talon Side-by-Side Compare",
   "description": "Talon 3D mesh on the LEFT, Talon sprite atlas on the RIGHT. Sprite lights are disabled so hull silhouette/content can be compared without giant engine/nav glows photobombing the evidence. Caveat on cell-selection parallax: because the objects are physically offset, each sees the camera from a slightly different azimuth. Fly farther out to reduce that error; for exact 80-cell comparison use tools/tour_ship_sprite_atlas.sh instead.",
-  "skybox_seed": "troy",
-  "star": { "preset": "yellow" },
+  "skybox_seed": "deep_void",
+  "star": { "preset": "red" },
+  "studio_lighting": true,
   "asteroid_fields": [],
   "placed_sprites": [],
   "placed_meshes": [
