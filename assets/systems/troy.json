@@ -31,8 +31,14 @@
   // land, we'll wire each Nav into the system loader as a typed entity.
   "name":        "Troy",
   "description": "Sol-like G-type system. Stable, well-mapped. Achilles and Hector mining bases work the inner belt; Helen feeds the colony from far orbit.",
-  "skybox_seed": "troy",
-  "star":        { "preset": "yellow" },
+  // Aesthetic re-skin (April 2026): swapped from the canonical Troy yellow-
+  // dwarf + sparse-stars combo to a hot-blue O/B-type star drowning in a
+  // violet nebula (sector_4774 skybox). Cool-on-cool sci-fi vibes; Sol-
+  // analog look got boring. Lore-wise, treat as Troy seen through a deep
+  // dust lane that didn't exist last patch. Revert by setting skybox_seed
+  // back to "troy" and star.preset back to "yellow".
+  "skybox_seed": "sector_4774",
+  "star":        { "preset": "blue" },
 
   "asteroid_fields": [
     {
