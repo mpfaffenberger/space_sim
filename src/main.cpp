@@ -144,6 +144,26 @@ void init_cb() {
     sg_desc desc{};
     desc.environment = sglue_environment();
     desc.logger.func = slog_func;
+    // Sokol pool sizes. Defaults (128 images / 128 views / 128 buffers) blew
+    // up the moment we shipped a second view-sphere atlas: each ship cell
+    // burns *both* an image and a view slot (80 + 80 per ship), so two ships
+    // alone need 160+160 before we count standalone sprites, skybox, offscreen
+    // render targets, ImGui's font atlas, etc. Pool overflow is silent —
+    // sg_make_image returns SG_INVALID_ID which downstream code reads as
+    // 'failed to load', not a hard crash, so the HUD just disappears.
+    //
+    // 8k slots is generous headroom for the current per-cell-image scheme
+    // (~50 ships' worth) and the slot tracking structs themselves are small
+    // (the real GPU cost is the textures behind them, not the slots).
+    //
+    // SCALING NOTE: this number can't grow forever — see
+    // docs/ARCHITECTURE_TEXTURES.md. Once we approach ~50 ships' worth of
+    // assets we should switch from one-image-per-cell to atlas-page-per-ship
+    // (single 8192² sg_image holding all 80 cells as UV rects), which cuts
+    // image-pool pressure 80x and is the precondition for LRU residency.
+    desc.image_pool_size  = 8192;
+    desc.view_pool_size   = 8192;
+    desc.buffer_pool_size = 1024;
     sg_setup(&desc);
     stm_setup();
 
