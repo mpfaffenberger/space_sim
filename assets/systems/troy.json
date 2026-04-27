@@ -96,68 +96,42 @@
       "atlas":         "ships/tarsus/atlas_manifest",
       "position":      [50000, -100000, 33150],
       "length_meters": 100,
-      // Slow circular patrol so the cell-selection / orientation pipeline
-      // is exercised in motion. forward_speed=30 m/s along body +Z while
-      // angular_velocity_deg.Y=6°/s yaws around the body up-axis = a
-      // wide clockwise circle (viewed from +Y) of radius v/|omega| ≈
-      // 286m, lapping every 60s. Lap time depends ONLY on angular
-      // velocity (T = 360°/|omega|), so bumping forward_speed widens the
-      // arc without speeding up the cell-cycle pacing — each 22.5° az
-      // ring cell still holds for ~3.75s. To widen further, lower
-      // angular_velocity; to spin through cells faster, raise it. See the
-      // long header on ShipSpriteObject for the body-frame angular-velocity
-      // convention.
+      // Wide CLOCKWISE circular patrol (viewed from +Y). forward_speed
+      // along body +Z + ω.Y > 0 = right-hand yaw around body up = body +Z
+      // sweeps toward body +X each tick → orbit center is to the ship's
+      // LEFT (= body -X = world -X at identity), so the orbit extends
+      // westward from the anchor: from X=50000 down to ~X=48856 (anchor.X
+      // - 2r). Lap time T = 360°/|ω| = 60s, radius v/|ω| ≈ 572 m. Lap
+      // pacing depends only on |ω|, so future speed tweaks change the
+      // arc but not the cell-cycle rhythm (~3.75s per 22.5° az cell).
+      // Paired with the Talon below (counter-clockwise, orbiting the
+      // opposite direction) so the two ships sweep into disjoint half-
+      // planes — no collision, and the side-by-side comparison shows
+      // the cell-selection pipeline running in both yaw directions.
       "motion": {
-        "forward_speed":        30.0,
+        "forward_speed":        60.0,
         "angular_velocity_deg": [0.0, 6.0, 0.0]
       }
     },
-    // Talon parked 500u to starboard of the Tarsus so Mike can fly
-    // between them and use F2 -> sprite light editor on either atlas.
+    // Talon parked 500u to starboard of the Tarsus's anchor. Now also
+    // motion-enabled — counter-clockwise wide circle (viewed from +Y).
+    // ω.Y < 0 = left-hand yaw → orbit center is to the ship's RIGHT (=
+    // world +X at identity), so the orbit extends EASTWARD from the
+    // anchor: from X=50500 up to ~X=51264 (anchor.X + 2r). That's the
+    // mirror of the Tarsus's westward sweep — the two ships' orbits
+    // can't overlap because their centers are on opposite sides of the
+    // gap between them. Smaller radius (forward_speed 40 vs Tarsus's
+    // 60) gives a tighter loop so the demo doesn't look like a copy-
+    // paste; same |ω|=6°/s keeps both ships on the same 60s lap so
+    // their cell handoffs stay in sync if you watch them side-by-side.
     {
       "atlas":         "ships/talon/atlas_manifest",
       "position":      [50500, -100000, 33150],
-      "length_meters": 80
-    }
-  ],
-
-  // One tiny real mesh debug marker — same trick that proved out the
-  // Tarsus forward-axis math, now repointed at the Talon. Unlike sprite
-  // billboards this arrow does NOT face the camera; it points along the
-  // ship-sprite atlas' declared forward axis (+Z) so we can debug atlas
-  // frame selection honestly. Placed at the Talon's exact coordinates;
-  // the arrow extends past the ~80 m hull (length 120) so it's readable
-  // even when the camera is hugging the sprite.
-  "placed_meshes": [
-    {
-      "obj":           "debug/forward_axis_marker.obj",
-      "position":      [50450, -100000, 33150],
-      "euler_deg":     [0, 0, 0],
-      "length_meters": 120,
-      "tint":          [0.05, 1.0, 0.25],
-      "double_sided":  true,
-      "ambient_floor": 0.8,
-      "spec":          0.15
-    },
-    {
-      "obj":           "debug/forward_axis_fin_up.obj",
-      "position":      [50450, -100000, 33150],
-      "euler_deg":     [0, 0, 0],
-      "length_meters": 120,
-      "tint":          [1.0, 0.15, 0.15],
-      "double_sided":  true,
-      "ambient_floor": 0.8,
-      "spec":          0.15
-    },
-    {
-      "obj":           "debug/forward_axis_fin_down.obj",
-      "position":      [50450, -100000, 33150],
-      "euler_deg":     [0, 0, 0],
-      "length_meters": 120,
-      "tint":          [0.15, 0.85, 1.0],
-      "double_sided":  true,
-      "ambient_floor": 0.8,
-      "spec":          0.15
+      "length_meters": 80,
+      "motion": {
+        "forward_speed":        40.0,
+        "angular_velocity_deg": [0.0, -6.0, 0.0]
+      }
     }
   ],
 
