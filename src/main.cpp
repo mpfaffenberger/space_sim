@@ -21,6 +21,7 @@
 #include "sokol_debugtext.h"
 
 #include "asteroid.h"
+#include "atlas_grid_viewer.h"
 #include "camera.h"
 #include "cockpit_hud.h"
 #include "debug_panel.h"
@@ -309,6 +310,7 @@ void init_cb() {
     // backend has a valid device/context to build its pipeline against.
     debug_panel::init();
     sprite_light_editor::init();
+    atlas_grid_viewer::init();
 
     // Dev remote: HTTP control channel on 127.0.0.1. Lets external
     // tools (code puppy, curl, shell scripts) teleport the camera,
@@ -647,6 +649,9 @@ void frame_cb() {
         }
     }
     sprite_light_editor::build(g.placed_sprites, ship_cell_targets);
+    // F4 — atlas grid viewer. Mutates ShipSpriteFrame fields directly,
+    // so changes flow into the next render frame with no apply step.
+    atlas_grid_viewer::build(g.ship_sprite_atlases);
     if (!g.capture_clean) {
         cockpit_hud::build(g.camera, g.system, g.selected_nav,
                            g.mouse_x, g.mouse_y, g.fly_by_wire);
@@ -702,6 +707,7 @@ void cleanup_cb() {
     g.post.destroy();
     g.rt.destroy();
     debug_panel::shutdown();
+    atlas_grid_viewer::shutdown();
     for (auto& pm : g.placed_meshes) {
         // Mesh::destroy also frees every Material's textures — no more
         // per-placement teardown now that textures live on the mesh.
@@ -722,8 +728,10 @@ void event_cb(const sapp_event* ev) {
     // mouse is over a widget it'll swallow the input; we only forward to
     // the camera / keymap when it doesn't.
     // Light editor sees events first so its F2 toggle beats any widget
-    // focus or ImGui input capture in debug_panel.
+    // focus or ImGui input capture in debug_panel. Same reason for
+    // putting the F4 atlas grid viewer ahead of debug_panel.
     if (sprite_light_editor::handle_event(ev)) return;
+    if (atlas_grid_viewer::handle_event(ev)) return;
     if (debug_panel::handle_event(ev)) return;
 
     switch (ev->type) {

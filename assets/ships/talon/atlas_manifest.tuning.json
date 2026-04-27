@@ -1,8 +1,8 @@
 {
-  "ship": "tarsus",
+  "ship": "talon",
   "frames": [
     { "az": 0, "el": 60, "scale": 1, "roll_deg": 0 },
-    { "az": 22.5, "el": 60, "scale": 1.009, "roll_deg": 0 },
+    { "az": 22.5, "el": 60, "scale": 1, "roll_deg": 0 },
     { "az": 45, "el": 60, "scale": 1, "roll_deg": 0 },
     { "az": 67.5, "el": 60, "scale": 1, "roll_deg": 0 },
     { "az": 90, "el": 60, "scale": 1, "roll_deg": 0 },
@@ -33,7 +33,7 @@
     { "az": 292.5, "el": 30, "scale": 1, "roll_deg": 0 },
     { "az": 315, "el": 30, "scale": 1, "roll_deg": 0 },
     { "az": 337.5, "el": 30, "scale": 1, "roll_deg": 0 },
-    { "az": 0, "el": 0, "scale": 0.466, "roll_deg": 0 },
+    { "az": 0, "el": 0, "scale": 1, "roll_deg": 0 },
     { "az": 22.5, "el": 0, "scale": 1, "roll_deg": 0 },
     { "az": 45, "el": 0, "scale": 1, "roll_deg": 0 },
     { "az": 67.5, "el": 0, "scale": 1, "roll_deg": 0 },
@@ -41,7 +41,7 @@
     { "az": 112.5, "el": 0, "scale": 1, "roll_deg": 0 },
     { "az": 135, "el": 0, "scale": 1, "roll_deg": 0 },
     { "az": 157.5, "el": 0, "scale": 1, "roll_deg": 0 },
-    { "az": 180, "el": 0, "scale": 0.706, "roll_deg": 0 },
+    { "az": 180, "el": 0, "scale": 1, "roll_deg": 0 },
     { "az": 202.5, "el": 0, "scale": 1, "roll_deg": 0 },
     { "az": 225, "el": 0, "scale": 1, "roll_deg": 0 },
     { "az": 247.5, "el": 0, "scale": 1, "roll_deg": 0 },
@@ -49,7 +49,7 @@
     { "az": 292.5, "el": 0, "scale": 1, "roll_deg": 0 },
     { "az": 315, "el": 0, "scale": 1, "roll_deg": 0 },
     { "az": 337.5, "el": 0, "scale": 1, "roll_deg": 0 },
-    { "az": 0, "el": -30, "scale": 0.801, "roll_deg": 0 },
+    { "az": 0, "el": -30, "scale": 1, "roll_deg": 0 },
     { "az": 22.5, "el": -30, "scale": 1, "roll_deg": 0 },
     { "az": 45, "el": -30, "scale": 1, "roll_deg": 0 },
     { "az": 67.5, "el": -30, "scale": 1, "roll_deg": 0 },
@@ -81,7 +81,7 @@
     { "az": 292.5, "el": -60, "scale": 1, "roll_deg": 0 },
     { "az": 315, "el": -60, "scale": 1, "roll_deg": 0 },
     { "az": 337.5, "el": -60, "scale": 1, "roll_deg": 0 },
-    { "az": 0, "el": -90, "scale": 1, "roll_deg": 0 },
-    { "az": 0, "el": 90, "scale": 1, "roll_deg": 0 }
+    { "az": 0, "el": -90, "scale": 1, "roll_deg": 180 },
+    { "az": 0, "el": 90, "scale": 1, "roll_deg": 180 }
   ]
 }
