@@ -14,11 +14,6 @@ float wrap_degrees(float deg) {
     return out < 0.0f ? out + 360.0f : out;
 }
 
-float angular_delta_degrees(float a, float b) {
-    float d = std::fabs(wrap_degrees(a) - wrap_degrees(b));
-    return d > 180.0f ? 360.0f - d : d;
-}
-
 std::string strip_assets_prefix(std::string path) {
     constexpr const char* prefix = "assets/";
     if (path.rfind(prefix, 0) == 0) return path.substr(7);
@@ -114,6 +109,18 @@ bool load_ship_sprite_atlas(const std::string& atlas_stem,
         }
     }
 
+    // Precompute each frame's unit-vector direction on the view sphere.
+    // Done once at load time after both manifest and tuning have been
+    // applied; the scorer reads `frame.dir` directly without trig per
+    // call. See ShipSpriteFrame::dir comment for the parameterization.
+    for (ShipSpriteFrame& frame : atlas.frames) {
+        const float az_rad = frame.az_deg * kPi / 180.0f;
+        const float el_rad = frame.el_deg * kPi / 180.0f;
+        frame.dir = HMM_V3(std::cos(el_rad) * std::sin(az_rad),
+                            std::sin(el_rad),
+                            std::cos(el_rad) * std::cos(az_rad));
+    }
+
     std::printf("[ship-sprite] loaded '%s' frames=%zu\n", path.c_str(), atlas.frames.size());
     return !atlas.frames.empty();
 }
@@ -123,14 +130,51 @@ const ShipSpriteFrame* choose_ship_sprite_frame_by_angles(const ShipSpriteAtlas&
                                                           float el_deg) {
     if (atlas.frames.empty()) return nullptr;
 
+    // Score by cosine of the great-circle angle between the query and
+    // each cell's authored direction on the view sphere. Pick the cell
+    // with the maximum cosine = the smallest 3D angle = the closest
+    // authored viewpoint to the runtime camera.
+    //
+    // Why not the old `da² + 2·de²` (angular delta in az and el)? That
+    // metric lives in the (az, el) parameter space, where a degree of
+    // azimuth at the equator covers a full degree of arc on the sphere
+    // but a degree of azimuth near the pole covers almost no arc at
+    // all. The penalty is wildly miscalibrated near the poles.
+    //
+    // Concrete consequence with the old scorer: a pole cell at (az=0,
+    // el=90) competing against (az=180, el=60) for a runtime sample at
+    // (az=180, el=85) — i.e. the camera is 5° from the pole, on the
+    // far side. Old scorer:
+    //   pole cell:      180² + 2·5²   = 32450
+    //   el=60 az=180:     0² + 2·25²  =  1250    ← wins
+    // Even though the runtime view is way closer to the pole than to
+    // (180, 60) in actual 3D angle (5° vs 25°), the az penalty crushes
+    // it. The pole cell only ever wins inside a ~25-40° az cone around
+    // az=0, which defeats the entire point of authoring it.
+    //
+    // With cosine scoring on the same example:
+    //   pole cell:      dot = sin(85°)                = 0.996
+    //   el=60 az=180:   dot = cos(25°) = sin(65°)     = 0.906
+    // Pole wins, as it should. And it wins for *every* az above
+    // el ≈ 75°, which is the actual halfway point in 3D angle between
+    // an el=60 ring cell and an el=90 pole cell.
+    //
+    // Cost: one HMM_DotV3 per frame (3 muls + 2 adds) instead of the
+    // old (subtract, abs, fmod, conditional, mul, mul, add). Each
+    // frame's `dir` was precomputed at atlas load, so no trig in the
+    // hot path. Net: this is also faster, not just more correct.
+    const float az_rad = az_deg * kPi / 180.0f;
+    const float el_rad = el_deg * kPi / 180.0f;
+    const HMM_Vec3 qdir = HMM_V3(std::cos(el_rad) * std::sin(az_rad),
+                                  std::sin(el_rad),
+                                  std::cos(el_rad) * std::cos(az_rad));
+
     const ShipSpriteFrame* best = nullptr;
-    float best_score = 1.0e30f;
+    float best_dot = -2.0f;   // strictly less than any real cosine ∈ [-1, 1]
     for (const ShipSpriteFrame& frame : atlas.frames) {
-        const float da = angular_delta_degrees(frame.az_deg, az_deg);
-        const float de = frame.el_deg - el_deg;
-        const float score = da * da + de * de * 2.0f;
-        if (score < best_score) {
-            best_score = score;
+        const float dot = HMM_DotV3(qdir, frame.dir);
+        if (dot > best_dot) {
+            best_dot = dot;
             best = &frame;
         }
     }

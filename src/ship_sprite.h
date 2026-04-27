@@ -20,6 +20,13 @@ struct ShipSpriteFrame {
     float el_deg = 0.0f;
     float scale = 1.0f;      // per-frame visual correction multiplier
     float roll_deg = 0.0f;   // per-frame billboard roll correction
+    // Precomputed unit vector for this cell's authored direction on the
+    // view sphere: (cos(el)·sin(az), sin(el), cos(el)·cos(az)). Filled in
+    // by load_ship_sprite_atlas after manifest + tuning load. The scorer
+    // in choose_ship_sprite_frame_by_angles uses this for cosine-of-
+    // great-circle-angle nearest-cell selection — gimbal-lock-immune at
+    // the view-sphere poles (where (az, el) parameterization breaks down).
+    HMM_Vec3 dir { 0.0f, 0.0f, 1.0f };
     const SpriteArt* art = nullptr;
 };
 
