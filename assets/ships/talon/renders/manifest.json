@@ -400,6 +400,16 @@
       "az": 337.5,
       "el": 60.0,
       "file": "talon_az337p5_el+060.png"
+    },
+    {
+      "az": 0.0,
+      "el": 90.0,
+      "file": "talon_az000_el+090.png"
+    },
+    {
+      "az": 0.0,
+      "el": -90.0,
+      "file": "talon_az000_el-090.png"
     }
   ],
   "orbit_radius": 35.0,
