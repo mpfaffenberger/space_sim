@@ -1,0 +1,3 @@
+feather_sprite_edges.py applied with radius=0.8.
+To revert: `git checkout assets/ships/talon/sprites` then
+delete this sentinel. Re-running with --force compounds the blur.
