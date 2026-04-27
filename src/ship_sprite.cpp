@@ -153,65 +153,54 @@ const ShipSpriteFrame* choose_ship_sprite_frame(const ShipSpriteAtlas& atlas,
 void append_ship_sprites_for_camera(std::vector<ShipSpriteObject>& ships,
                                     const Camera& cam,
                                     std::vector<SpriteObject>& out_sprites) {
-    // Per-frame roll alignment for the atlas billboard.
+    // Per-frame billboard roll: align each cell's CAPTURE-UP direction
+    // with screen-up.
     //
-    // Goal: render each picked atlas frame so the SHIP-FORWARD direction
-    // in the rendered image lands on screen where world +Z (the ship's
-    // forward axis) actually projects under the engine camera. This is
-    // the alignment the player expects when comparing the sprite to a
-    // debug arrow drawn along world +Z.
+    // Each atlas cell at (az, el) was captured with the camera at
+    //   cap_pos = R · (cos(el)·sin(az), sin(el), cos(el)·cos(az))
+    // looking back at the origin, with no roll applied. The corresponding
+    // capture cam-up vector in world space (which is the direction that
+    // appears as "up" inside the captured PNG) is
     //
-    // Two unit vectors do the heavy lifting:
+    //   cap_up(az, el) = ( -sin(el)·sin(az),  cos(el),  -sin(el)·cos(az) )
     //
-    //   img(az, el) = ( -sin(az),  +cos(az)·sin(el) )
-    //     The 2D direction in the VISIBLE runtime atlas PNG that corresponds
-    //     to world +Z at the capture pose. The raw capture-space derivation
-    //     gives -cos(az)·sin(el), but our atlas cell path bakes a vertical
-    //     flip on disk and the sprite shader flips V again for Metal/stb
-    //     texture-origin sanity. Net result: the authored image's in-plane
-    //     Y direction is mirrored relative to the 3D projection math. X is
-    //     unchanged; only image-space Y flips. Tiny sign, giant headache.
+    // For an equator cell (el=0) this collapses to world up (0,1,0). For
+    // higher-elevation cells it tilts away from world up — that's the
+    // capture camera's pitch baked into the image.
     //
-    //   scr        = ( world_fwd · cam_right,  world_fwd · cam_up )
-    //     The 2D direction in the engine's screen plane where world +Z
-    //     projects right now.
+    // The billboard is camera-facing, so its only freedom is `roll_rad`
+    // (an in-plane 2D rotation in the camera's right/up basis). We choose
+    // the rotation that maps the cell's image +up axis onto cap_up's
+    // current screen projection:
     //
-    // Both live in the same (right, up) basis convention, so the roll
-    // that maps img onto scr is simply
+    //   cu_x = cap_up · cam_right          (screen-x of cap_up)
+    //   cu_y = cap_up · cam_up             (screen-y of cap_up)
+    //   align_roll = atan2(-cu_x, cu_y)
     //
-    //   align_roll = atan2(scr.y, scr.x) − atan2(img.y, img.x)
+    // What this gives us:
+    //   * When the runtime camera matches the cell's authored direction,
+    //     cap_up == runtime cam_up, cu_x = 0, cu_y = 1, align_roll = 0 —
+    //     i.e. the cell renders as captured. Correct by construction.
+    //   * When the runtime camera differs from the cell's authored
+    //     direction (the common case, since selection rounds), the cell
+    //     is rotated so its painted "up" still lands on screen where its
+    //     authored 3D up direction projects. The visible silhouette is a
+    //     little off but the orientation reads correctly.
+    //   * Camera ROLL automatically tilts the rendered sprite the right
+    //     way: rolling rotates cam_right/cam_up, which rotates cap_up's
+    //     screen projection, which rotates align_roll. No yaw/pitch leak
+    //     because cap_up is fixed in world space — only the projection
+    //     onto the camera basis changes.
     //
-    // Why this is smooth across atlas slot boundaries: when the picked
-    // frame switches (say cap_az 315° → 337.5°), img_angle jumps, but
-    // the new authored image has its ship-forward at the new img_angle,
-    // so the rendered ship-forward direction lands at the SAME screen
-    // angle on either side of the boundary. The visual result is a
-    // continuous nose direction with at most a tiny silhouette change.
-    //
-    // Degeneracies. img → 0 when ship-forward is parallel to cap_F
-    // (front/back equator views: az=0/180 with el=0). scr → 0 when the
-    // engine camera is looking straight along world +Z. In either case
-    // there is no in-plane direction to align, so we fall back to
-    // aligning the picked frame's capture-up axis (cap_U) with the
-    // engine's screen-up — which is well-defined for every authored
-    // frame because cap_U is perpendicular to cap_F by construction.
-    //
-    //   cap_U(az, el) = ( -sin(el)·sin(az),  cos(el),  -sin(el)·cos(az) )
-    //
-    // Visible-image up = +cap_U (world up at capture pose). The disk-flip
-    // and shader V-flip cancel each other for the perpendicular up axis,
-    // unlike the in-plane forward-axis term which only carries one mirror.
-    // So the fallback aligns +cap_U (NOT -cap_U) with cam_up. Hard-learned.
-    constexpr float kMinMag2 = 0.04f; // ~12° off the degenerate axis
-
-    const HMM_Vec3 world_fwd = HMM_V3(0.0f, 0.0f, 1.0f);
+    // Why this replaces the old screen-projected NOSE alignment: the old
+    // math projected world +Z (ship-forward) onto screen and rotated the
+    // cell to match. That tries to keep the rendered nose pinned to a
+    // world axis, but goes singular when the camera looks along that
+    // axis (atan2(tiny, tiny) flips on tiny camera nudges). cap_up is
+    // perpendicular to the look direction by construction, so it never
+    // shrinks to zero — vastly more stable.
     const HMM_Vec3 cam_right = cam.right();
     const HMM_Vec3 cam_up    = cam.up();
-
-    const float scr_x = HMM_DotV3(world_fwd, cam_right);
-    const float scr_y = HMM_DotV3(world_fwd, cam_up);
-    const float scr_mag2 = scr_x * scr_x + scr_y * scr_y;
-    const float scr_angle = std::atan2(scr_y, scr_x);
 
     for (ShipSpriteObject& ship : ships) {
         if (!ship.atlas) continue;
@@ -237,33 +226,26 @@ void append_ship_sprites_for_camera(std::vector<ShipSpriteObject>& ships,
         ship.debug_last_az_deg = frame->az_deg;
         ship.debug_last_el_deg = frame->el_deg;
 
+        // Capture-up axis for this cell (see comment at function top).
         const float az_rad = frame->az_deg * kPi / 180.0f;
         const float el_rad = frame->el_deg * kPi / 180.0f;
         const float sin_az = std::sin(az_rad);
         const float cos_az = std::cos(az_rad);
         const float sin_el = std::sin(el_rad);
         const float cos_el = std::cos(el_rad);
-
-        const float img_x = -sin_az;
-        const float img_y = cos_az * sin_el;
-        const float img_mag2 = img_x * img_x + img_y * img_y;
-
-        float align_roll;
-        if (img_mag2 > kMinMag2 && scr_mag2 > kMinMag2) {
-            align_roll = scr_angle - std::atan2(img_y, img_x);
-        } else {
-            // Pole / head-on fallback: align +cap_U with cam_up.
-            const HMM_Vec3 cap_up = HMM_V3(-sin_el * sin_az, cos_el,
-                                           -sin_el * cos_az);
-            const float a = HMM_DotV3(cap_up, cam_right);
-            const float b = HMM_DotV3(cap_up, cam_up);
-            align_roll = std::atan2(-a, b);
-        }
+        const HMM_Vec3 cap_up = HMM_V3(-sin_el * sin_az,
+                                        cos_el,
+                                       -sin_el * cos_az);
+        const float cu_x = HMM_DotV3(cap_up, cam_right);
+        const float cu_y = HMM_DotV3(cap_up, cam_up);
+        const float align_roll = std::atan2(-cu_x, cu_y);
 
         SpriteObject sprite{};
         sprite.art = frame->art;
         sprite.position = ship.position;
         sprite.world_size = ship.world_size * frame->scale;
+        // Authored per-cell roll plus the cap-up alignment roll. See the
+        // "Per-frame billboard roll" comment above for the derivation.
         sprite.roll_rad = frame->roll_deg * kPi / 180.0f + align_roll;
         sprite.tint = ship.tint;
         // Animated lights authored on this cell's `.lights.json` ride along
