@@ -440,6 +440,16 @@ void init_cb() {
         s.world_size     = sd.length_meters;
         s.lights_enabled = sd.lights_enabled;
         s.tint           = HMM_V4(1.0f, 1.0f, 1.0f, 1.0f);
+
+        // Motion: convert deg/s to rad/s once at scene-load time so the
+        // hot path doesn't redo the multiplication every frame. orientation
+        // defaults to identity (nose along world +Z) — adding an authored
+        // initial yaw is a one-quaternion-multiply away if a future scene
+        // needs it.
+        constexpr float kDegToRad = 3.14159265358979323846f / 180.0f;
+        s.angular_velocity = HMM_MulV3F(sd.angular_velocity_deg, kDegToRad);
+        s.forward_speed    = sd.forward_speed;
+
         g.placed_ship_sprites.push_back(s);
     }
 
@@ -497,6 +507,12 @@ void frame_cb() {
     if (roll_input != 0.0f) g.camera.apply_roll(roll_input, dt);
     g.camera.apply_thrust(thrust_from_keys(), dt);
     g.camera.integrate(dt);
+
+    // NPC ship motion. Free-strafe lives on the camera (player only); ships
+    // get aircraft-style integration — orientation rotates by body-frame
+    // angular velocity, position advances along body +Z at forward_speed.
+    // No-op for the static-ship case so this is safe to call unconditionally.
+    update_ship_sprite_motion(g.placed_ship_sprites, dt);
 
     // --- render -------------------------------------------------------------
     // --- build the on-screen HUD for this frame -----------------------------

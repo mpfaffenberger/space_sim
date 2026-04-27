@@ -28,22 +28,44 @@ std::string strip_png_suffix(std::string path) {
     return path;
 }
 
-// Camera-relative spherical coordinates of the camera as seen from the ship.
-// az: atan2(X, Z) in degrees, wrapped 0..360. Matches authored atlas frames
-// where az=0 means "camera at ship's +Z (in front of nose)" and az grows
-// clockwise when viewed from above.
-// el: asin(Y / |to_cam|) in degrees, [-90,+90]. Positive = camera above ship.
+// Camera position expressed in the ship's BODY frame as spherical (az, el).
+// az: atan2(X_body, Z_body) in degrees, wrapped 0..360. Matches authored
+// atlas frames where az=0 means "camera in front of the ship's nose"
+// (body +Z) and az grows clockwise when viewed from above (right-hand
+// rotation around body +Y takes body +Z toward body +X).
+// el: asin(Y_body / |to_cam|) in degrees, [-90,+90]. Positive = camera
+// above the ship's belly (body +Y).
+//
+// `ship_orientation` is the ship's world-frame orientation quaternion.
+// We rotate the world-frame to_cam vector by its inverse so the (az, el)
+// we hand to the cell selector are ship-local: a ship turning in world
+// space therefore picks a different cell at every instant even though
+// the camera hasn't moved. Identity orientation collapses this to the
+// pre-existing world-frame behavior — back-compat for static scenes.
+//
 // Returns false at coincident position (no meaningful direction).
 bool compute_cam_az_el(const HMM_Vec3& ship_pos,
+                      const HMM_Quat& ship_orientation,
                       const HMM_Vec3& cam_pos,
                       float& out_az_deg,
                       float& out_el_deg) {
-    const HMM_Vec3 to_cam = HMM_SubV3(cam_pos, ship_pos);
-    const float len2 = HMM_DotV3(to_cam, to_cam);
+    const HMM_Vec3 to_cam_world = HMM_SubV3(cam_pos, ship_pos);
+    const float len2 = HMM_DotV3(to_cam_world, to_cam_world);
     if (len2 <= 0.0001f) return false;
-    const float len = std::sqrt(len2);
-    out_az_deg = wrap_degrees(std::atan2(to_cam.X, to_cam.Z) * 180.0f / kPi);
-    out_el_deg = std::asin(std::max(-1.0f, std::min(1.0f, to_cam.Y / len))) * 180.0f / kPi;
+
+    // Rotation matrices: world←body is QToM4. body←world is its transpose
+    // (rotation matrices are orthonormal). Stash the world matrix; some
+    // callers will want it too in future, but for now we only need the
+    // inverse to push to_cam into the body frame.
+    const HMM_Mat4 R_world_from_body = HMM_QToM4(ship_orientation);
+    const HMM_Mat4 R_body_from_world = HMM_TransposeM4(R_world_from_body);
+    const HMM_Vec4 v4 = HMM_MulM4V4(R_body_from_world,
+                                    HMM_V4(to_cam_world.X, to_cam_world.Y, to_cam_world.Z, 0.0f));
+    const HMM_Vec3 to_cam_body = HMM_V3(v4.X, v4.Y, v4.Z);
+
+    const float len = std::sqrt(len2);  // |v| is rotation-invariant
+    out_az_deg = wrap_degrees(std::atan2(to_cam_body.X, to_cam_body.Z) * 180.0f / kPi);
+    out_el_deg = std::asin(std::max(-1.0f, std::min(1.0f, to_cam_body.Y / len))) * 180.0f / kPi;
     return true;
 }
 
@@ -188,7 +210,7 @@ const ShipSpriteFrame* choose_ship_sprite_frame(const ShipSpriteAtlas& atlas,
         return choose_ship_sprite_frame_by_angles(atlas, ship.manual_az_deg, ship.manual_el_deg);
     }
     float az = 0.0f, el = 0.0f;
-    if (!compute_cam_az_el(ship.position, cam.position, az, el)) {
+    if (!compute_cam_az_el(ship.position, ship.orientation, cam.position, az, el)) {
         return atlas.frames.empty() ? nullptr : &atlas.frames.front();
     }
     return choose_ship_sprite_frame_by_angles(atlas, az, el);
@@ -258,7 +280,7 @@ void append_ship_sprites_for_camera(std::vector<ShipSpriteObject>& ships,
             ship.debug_cam_el_deg = ship.manual_el_deg;
         } else {
             float cam_az = 0.0f, cam_el = 0.0f;
-            if (compute_cam_az_el(ship.position, cam.position, cam_az, cam_el)) {
+            if (compute_cam_az_el(ship.position, ship.orientation, cam.position, cam_az, cam_el)) {
                 ship.debug_cam_az_deg = cam_az;
                 ship.debug_cam_el_deg = cam_el;
             }
@@ -271,15 +293,28 @@ void append_ship_sprites_for_camera(std::vector<ShipSpriteObject>& ships,
         ship.debug_last_el_deg = frame->el_deg;
 
         // Capture-up axis for this cell (see comment at function top).
+        // The (az, el) parameterization is in the ship's BODY frame, so the
+        // formula yields cap_up_body — the painted-up direction expressed
+        // in ship-local coordinates. To project onto the camera's screen
+        // basis we have to push it back into world space via the ship's
+        // current orientation. For a static (identity) ship this is a no-op
+        // and reproduces the pre-orientation behavior; for a turning ship
+        // it rotates the billboard's roll alignment with the hull, so the
+        // ship's own "up" tracks its yaw/pitch/roll instead of being pinned
+        // to world up.
         const float az_rad = frame->az_deg * kPi / 180.0f;
         const float el_rad = frame->el_deg * kPi / 180.0f;
         const float sin_az = std::sin(az_rad);
         const float cos_az = std::cos(az_rad);
         const float sin_el = std::sin(el_rad);
         const float cos_el = std::cos(el_rad);
-        const HMM_Vec3 cap_up = HMM_V3(-sin_el * sin_az,
-                                        cos_el,
-                                       -sin_el * cos_az);
+        const HMM_Vec3 cap_up_body = HMM_V3(-sin_el * sin_az,
+                                             cos_el,
+                                            -sin_el * cos_az);
+        const HMM_Mat4 R_world_from_body = HMM_QToM4(ship.orientation);
+        const HMM_Vec4 cu4 = HMM_MulM4V4(R_world_from_body,
+                                         HMM_V4(cap_up_body.X, cap_up_body.Y, cap_up_body.Z, 0.0f));
+        const HMM_Vec3 cap_up = HMM_V3(cu4.X, cu4.Y, cu4.Z);
         const float cu_x = HMM_DotV3(cap_up, cam_right);
         const float cu_y = HMM_DotV3(cap_up, cam_up);
         const float align_roll = std::atan2(-cu_x, cu_y);
@@ -301,5 +336,54 @@ void append_ship_sprites_for_camera(std::vector<ShipSpriteObject>& ships,
             sprite.lights = frame->art->light_spots;
         }
         out_sprites.push_back(sprite);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Per-frame motion integration.
+//
+// Each ship advances its orientation by the body-frame angular velocity and
+// translates along its (body) +Z by forward_speed. World-frame velocity is
+// derived implicitly via `world_v = orientation · (0, 0, forward_speed)` —
+// no separately-stored linear velocity, so the nose always tracks the
+// motion (aircraft model, locked-in by `header comment on ShipSpriteObject`).
+//
+// Convention check: with identity orientation, body +Z = world +Z and body
+// +Y = world +Y. A positive yaw rate (angular_velocity.Y > 0) is a right-
+// hand rotation around body +Y, which takes body +Z toward body +X — i.e.
+// the ship turns RIGHT when viewed from above. forward_speed = 20,
+// angular_velocity_deg.Y = 60 therefore traces a clockwise (viewed from
+// +Y) circle of radius v/|omega| ≈ 19.1 m, completing one lap every 6 s.
+//
+// Composing in BODY frame (`q · dq`) instead of world frame (`dq · q`) is
+// what makes the angular velocity body-relative — "yaw 60°/s around my own
+// up axis" stays correct after the ship has rolled, which is the whole
+// reason we wanted quaternions in the first place. The HMM_NormQ at the
+// end fights floating-point drift over many composes (same trick as
+// camera.cpp::compose_local).
+// -----------------------------------------------------------------------------
+void update_ship_sprite_motion(std::vector<ShipSpriteObject>& ships, float dt) {
+    for (ShipSpriteObject& s : ships) {
+        // Static-ship fast path. Both checks are needed because either DOF
+        // alone is meaningful — a ship with forward_speed = 0 but non-zero
+        // angular_velocity should still spin in place.
+        const float omega2 = HMM_DotV3(s.angular_velocity, s.angular_velocity);
+        const bool turning = omega2 > 1e-10f;             // ~6 millideg/s threshold
+        const bool moving  = std::fabs(s.forward_speed) > 1e-6f;
+        if (!turning && !moving) continue;
+
+        if (turning) {
+            const float omega_mag = std::sqrt(omega2);
+            const HMM_Vec3 axis_body = HMM_DivV3F(s.angular_velocity, omega_mag);
+            const HMM_Quat dq = HMM_QFromAxisAngle_RH(axis_body, omega_mag * dt);
+            s.orientation = HMM_NormQ(HMM_MulQ(s.orientation, dq));
+        }
+
+        if (moving) {
+            const HMM_Mat4 R = HMM_QToM4(s.orientation);
+            const HMM_Vec4 fwd_world4 = HMM_MulM4V4(R, HMM_V4(0.0f, 0.0f, s.forward_speed, 0.0f));
+            s.position = HMM_AddV3(s.position,
+                HMM_MulV3F(HMM_V3(fwd_world4.X, fwd_world4.Y, fwd_world4.Z), dt));
+        }
     }
 }

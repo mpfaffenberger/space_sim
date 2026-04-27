@@ -95,7 +95,22 @@
     {
       "atlas":         "ships/tarsus/atlas_manifest",
       "position":      [50000, -100000, 33150],
-      "length_meters": 100
+      "length_meters": 100,
+      // Slow circular patrol so the cell-selection / orientation pipeline
+      // is exercised in motion. forward_speed=30 m/s along body +Z while
+      // angular_velocity_deg.Y=6°/s yaws around the body up-axis = a
+      // wide clockwise circle (viewed from +Y) of radius v/|omega| ≈
+      // 286m, lapping every 60s. Lap time depends ONLY on angular
+      // velocity (T = 360°/|omega|), so bumping forward_speed widens the
+      // arc without speeding up the cell-cycle pacing — each 22.5° az
+      // ring cell still holds for ~3.75s. To widen further, lower
+      // angular_velocity; to spin through cells faster, raise it. See the
+      // long header on ShipSpriteObject for the body-frame angular-velocity
+      // convention.
+      "motion": {
+        "forward_speed":        30.0,
+        "angular_velocity_deg": [0.0, 6.0, 0.0]
+      }
     },
     // Talon parked 500u to starboard of the Tarsus so Mike can fly
     // between them and use F2 -> sprite light editor on either atlas.

@@ -58,6 +58,16 @@ PlacedShipSpriteDef parse_ship_sprite(const json::Value& v) {
     s.position = vec3_or(v.find("position"), s.position);
     if (auto* p = v.find("length_meters"))  s.length_meters = p->as_float();
     if (auto* p = v.find("lights_enabled")) s.lights_enabled = p->as_bool();
+
+    // Optional `motion` block. Either field is independently optional;
+    // omitting both keeps the ship static (back-compat for every existing
+    // scene). Angular velocity is authored in deg/s for human readability;
+    // the runtime converts to rad/s once at scene-load time.
+    if (auto* m = v.find("motion")) {
+        s.angular_velocity_deg = vec3_or(m->find("angular_velocity_deg"),
+                                         s.angular_velocity_deg);
+        if (auto* p = m->find("forward_speed")) s.forward_speed = p->as_float();
+    }
     return s;
 }
 

@@ -42,6 +42,24 @@ struct ShipSpriteObject {
     HMM_Vec4 tint{1, 1, 1, 1};
     bool lights_enabled = true;
 
+    // Kinematics. Identity orientation = nose along world +Z, top along
+    // world +Y — matches the atlas-authoring convention where az=0 / el=0
+    // places the camera in front of the ship's nose. Cell selection uses
+    // the inverse of this quaternion to convert the world-frame to_cam
+    // vector into ship-local az/el, so a ship spinning in world space
+    // shows the right atlas frame at every instant.
+    //
+    // angular_velocity is in BODY frame, rad/s — "yaw at 60°/s around my
+    // own up axis" stays correct after the ship has rolled. forward_speed
+    // moves along body +Z at the given m/s; the runtime derives world
+    // velocity each frame as `orientation · (0, 0, forward_speed)`. This
+    // is the aircraft model: the nose tracks the motion. Free-strafe /
+    // inertial drift are intentionally absent — that's a player-only
+    // capability (camera.cpp).
+    HMM_Quat orientation{0.0f, 0.0f, 0.0f, 1.0f};
+    HMM_Vec3 angular_velocity{0.0f, 0.0f, 0.0f};
+    float    forward_speed = 0.0f;
+
     // Atlas inspector override. When enabled, the in-world ship displays
     // the nearest authored frame to manual_{az,el}_deg instead of selecting
     // from camera position. This lets Mike scrub the Tarsus pose while the
@@ -53,15 +71,21 @@ struct ShipSpriteObject {
     // Debug breadcrumbs from the latest frame selection. Lets us print the
     // exact atlas az/el being used without recomputing and risking drift.
     // `debug_last_*_deg` is the AUTHORED frame az/el (post-binning, i.e. the
-    // cell the renderer actually sampled). `debug_cam_*_deg` is the raw
-    // camera-relative az/el produced by compute_cam_az_el — useful for the
-    // F3 atlas-frame HUD so you can see exactly how camera motion maps onto
-    // chosen cells in real time.
+    // cell the renderer actually sampled). `debug_cam_*_deg` is the
+    // ship-LOCAL camera-relative az/el (after un-rotating to_cam by
+    // ship.orientation) — same quantity used for cell selection, so the F3
+    // HUD reading directly explains which cell the engine chose and why.
     float debug_last_az_deg = 0.0f;
     float debug_last_el_deg = 0.0f;
     float debug_cam_az_deg  = 0.0f;
     float debug_cam_el_deg  = 0.0f;
 };
+
+// Per-frame integration of orientation + position for every ship that has
+// non-zero angular_velocity or forward_speed. No-op for static ships, so
+// it's safe to call unconditionally on the full vector. Call once before
+// append_ship_sprites_for_camera so cell selection sees the post-step pose.
+void update_ship_sprite_motion(std::vector<ShipSpriteObject>& ships, float dt);
 
 bool load_ship_sprite_atlas(const std::string& atlas_stem,
                             ShipSpriteAtlas& atlas,

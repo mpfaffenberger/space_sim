@@ -66,11 +66,21 @@ struct PlacedSpriteDef {
 // A multi-view ship sprite atlas instance. `atlas` is a JSON manifest stem
 // relative to assets/, e.g. "ships/tarsus/atlas_manifest". Unlike generic
 // placed_sprites, this selects one of many authored view angles per frame.
+//
+// Optional motion: NPC ships fly aircraft-style — nose tracks motion at
+// `forward_speed` along body +Z, while the ship spins at `angular_velocity`
+// around its own (body) axes. Free strafe / inertial drift are intentionally
+// player-only (camera.cpp). For a horizontal turning circle, set
+// `angular_velocity_deg = (0, yaw_rate, 0)` and `forward_speed = v`; the
+// path radius is implicit (= v / |omega|). Default = static.
 struct PlacedShipSpriteDef {
     std::string atlas;
     HMM_Vec3    position       = { 0, 0, 0 };
     float       length_meters  = 18.0f;
     bool        lights_enabled = true;  // debug scenes can disable glow spam
+
+    HMM_Vec3    angular_velocity_deg = { 0.0f, 0.0f, 0.0f };  // body frame, deg/s
+    float       forward_speed        = 0.0f;                  // body +Z, m/s
 };
 
 struct PlacedMeshDef {
