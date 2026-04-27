@@ -105,6 +105,47 @@
       "length_meters": 80
     }
   ],
+
+  // One tiny real mesh debug marker — same trick that proved out the
+  // Tarsus forward-axis math, now repointed at the Talon. Unlike sprite
+  // billboards this arrow does NOT face the camera; it points along the
+  // ship-sprite atlas' declared forward axis (+Z) so we can debug atlas
+  // frame selection honestly. Placed at the Talon's exact coordinates;
+  // the arrow extends past the ~80 m hull (length 120) so it's readable
+  // even when the camera is hugging the sprite.
+  "placed_meshes": [
+    {
+      "obj":           "debug/forward_axis_marker.obj",
+      "position":      [50450, -100000, 33150],
+      "euler_deg":     [0, 0, 0],
+      "length_meters": 120,
+      "tint":          [0.05, 1.0, 0.25],
+      "double_sided":  true,
+      "ambient_floor": 0.8,
+      "spec":          0.15
+    },
+    {
+      "obj":           "debug/forward_axis_fin_up.obj",
+      "position":      [50450, -100000, 33150],
+      "euler_deg":     [0, 0, 0],
+      "length_meters": 120,
+      "tint":          [1.0, 0.15, 0.15],
+      "double_sided":  true,
+      "ambient_floor": 0.8,
+      "spec":          0.15
+    },
+    {
+      "obj":           "debug/forward_axis_fin_down.obj",
+      "position":      [50450, -100000, 33150],
+      "euler_deg":     [0, 0, 0],
+      "length_meters": 120,
+      "tint":          [0.15, 0.85, 1.0],
+      "double_sided":  true,
+      "ambient_floor": 0.8,
+      "spec":          0.15
+    }
+  ],
+
   // Navigation waypoints — what the in-game targeting system (press N
   // to cycle) sees. Includes the four jump points (which have no visual
   // representation yet) plus the renderable destinations. Position
