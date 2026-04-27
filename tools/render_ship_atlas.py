@@ -140,7 +140,10 @@ def main():
     parser.add_argument("--az-count", type=int, default=None,
                         help="Number of evenly-spaced azimuth samples, e.g. 16 for 22.5-degree steps")
     parser.add_argument("--elevations", default=None,
-                        help="Comma-separated elevations, e.g. -60,-30,0,30,60 for an 80-sample atlas with --az-count 16")
+                        help="Comma-separated elevations, e.g. -60,-30,0,30,60 for an 80-sample atlas "
+                             "with --az-count 16. Include 90 and/or -90 to also capture pole cells "
+                             "(one canonical az=0 image per pole; all azimuths at the pole see the "
+                             "same view by rotational symmetry).")
     parser.add_argument("--flip-y", action="store_true",
                         help="Vertically flip cropped reference PNGs so the ship is upright for image generation")
     args = parser.parse_args()
@@ -150,35 +153,49 @@ def main():
     azimuths = evenly_spaced_azimuths(args.az_count) if args.az_count else AZIMUTHS
     elevations = parse_elevations(args.elevations) if args.elevations else ELEVATIONS
 
-    samples = []
-    total = len(azimuths) * len(elevations)
-    idx = 0
-
+    # Pole elevations (el = ±90°) are rotational symmetry axes: from
+    # directly above (or below) the ship, every azimuth sees the same
+    # physical view, just rotated in image space. So we capture one
+    # canonical az=0 image per pole instead of N redundant identical
+    # screenshots. The engine's cap_up alignment math handles the
+    # in-plane rotation at runtime regardless of which az was authored.
+    #
+    # Building the capture list up-front rather than nesting the loops
+    # keeps the [idx/total] counter honest when elevations and pole
+    # entries mix (an N×M product would lie about the total).
+    captures: list[tuple[float, float]] = []
     for el in elevations:
-        for az in azimuths:
-            idx += 1
-            px, py, pz = orbit_position(az, el, args.radius)
-            yaw, pitch = camera_euler_to_look_at_origin(px, py, pz)
+        is_pole = abs(abs(el) - 90.0) < 0.01
+        az_list = [0.0] if is_pole else azimuths
+        for az in az_list:
+            captures.append((az, el))
+    total = len(captures)
 
-            print(f"[{idx:2d}/{total}]  az={az:5.1f}  el={el:+6.1f}  "
-                  f"cam=({px:+7.1f}, {py:+7.1f}, {pz:+7.1f})  "
-                  f"yaw={yaw:+7.1f}  pitch={pitch:+7.1f}")
+    samples = []
+    for idx0, (az, el) in enumerate(captures):
+        idx = idx0 + 1
+        px, py, pz = orbit_position(az, el, args.radius)
+        yaw, pitch = camera_euler_to_look_at_origin(px, py, pz)
 
-            set_camera(px, py, pz, yaw, pitch)
-            time.sleep(args.settle)
+        print(f"[{idx:2d}/{total}]  az={az:5.1f}  el={el:+6.1f}  "
+              f"cam=({px:+7.1f}, {py:+7.1f}, {pz:+7.1f})  "
+              f"yaw={yaw:+7.1f}  pitch={pitch:+7.1f}")
 
-            shot = take_screenshot()
-            time.sleep(0.15)   # let the file flush
+        set_camera(px, py, pz, yaw, pitch)
+        time.sleep(args.settle)
 
-            filename = f"{args.ship}_az{az_tag(az)}_el{angle_tag(el)}.png"
-            outpath = os.path.join(args.outdir, filename)
-            crop_center(shot, outpath, flip_y=args.flip_y)
+        shot = take_screenshot()
+        time.sleep(0.15)   # let the file flush
 
-            samples.append({
-                "az": az, "el": el,
-                "file": filename,
-            })
-            print(f"         → {outpath}")
+        filename = f"{args.ship}_az{az_tag(az)}_el{angle_tag(el)}.png"
+        outpath = os.path.join(args.outdir, filename)
+        crop_center(shot, outpath, flip_y=args.flip_y)
+
+        samples.append({
+            "az": az, "el": el,
+            "file": filename,
+        })
+        print(f"         → {outpath}")
 
     manifest = {
         "ship": args.ship,
