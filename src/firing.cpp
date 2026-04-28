@@ -78,31 +78,23 @@ void firing::tick(std::vector<Ship>& ships,
 
         const HMM_Vec3 fwd_world = ship_forward_world(s);
 
-        // Convergence point: where every mount's projectile path should
-        // cross. Fixed distance ahead of the ship along the aim vector.
-        // Without this, off-center mounts (player's left-low laser at
-        // body offset (-10, 10, 0); Talon's wing-tip mass drivers) fire
-        // PARALLEL to the aim vector — tracers offset from the cursor
-        // by their muzzle offset, never quite hitting where the player
-        // points. With convergence, each muzzle aims at the same point
-        // and tracer paths visibly cross at that range.
-        //
-        // 1 km is a typical engagement distance — at the convergence
-        // point the tracer hits exactly where the cursor is; closer /
-        // farther targets see slight deviation. Real-world fighter
-        // guns work the same way (mechanical convergence at a chosen
-        // range). Could be made dynamic per-target later.
-        constexpr float k_convergence_m = 1000.0f;
-        const HMM_Vec3 conv_point =
-            HMM_AddV3(s.position, HMM_MulV3F(fwd_world, k_convergence_m));
+        // No gun convergence — every mount fires straight along the
+        // ship's aim direction, tracers stay parallel from their muzzle
+        // offsets. Parallel is more legible than the toed-in V the
+        // earlier convergence math produced; aim accuracy comes from
+        // the ITTS reticle telling you where to point.
 
-        // Forward speed lives on the sprite (NPCs) or implicitly 0 for
-        // the player (the camera owns player velocity, not the ship).
-        // For inheritance we approximate: NPCs use sprite.forward_speed
-        // along world forward; player gets 0 (good enough for v1 — the
-        // player's projectile speed dwarfs typical camera motion).
-        float forward_speed_mps = 0.0f;
-        if (s.sprite) forward_speed_mps = s.sprite->forward_speed;
+        // Inherit shooter velocity. ship.world_velocity is populated
+        // by sync_from_sprite (NPCs: orientation*+Z*forward_speed) or
+        // main.cpp's player block (camera.velocity for the player).
+        // Without this, projectiles fly at exactly muzzle speed in the
+        // ship's forward direction — fine when the shooter is at
+        // rest, but a coasting/strafing player sees tracers drift in
+        // their reference frame. Adding the shooter's full 3D motion
+        // matches real-world ballistics + every other space sim.
+        const HMM_Vec3 ship_v = s.world_velocity;
+
+
 
         for (size_t i = 0; i < s.mounts.size(); ++i) {
             if (s.gun_cooldowns[i] > 0.0f)            continue;
@@ -115,21 +107,12 @@ void firing::tick(std::vector<Ship>& ships,
             Projectile p;
             // Muzzle position: ship pos + rotated mount offset.
             p.position = HMM_AddV3(s.position, body_to_world(s.orientation, m.offset_body));
-            // Fire direction: from THIS muzzle toward the convergence
-            // point, NOT straight along ship forward. This is the
-            // gun-convergence math — each mount toes-in slightly so
-            // all guns' tracer paths cross at conv_point. Falls back
-            // to straight forward in the degenerate case where muzzle
-            // happens to be at the convergence point (sub-mm distance).
-            HMM_Vec3 fire_dir = HMM_SubV3(conv_point, p.position);
-            const float fd_l2 = HMM_DotV3(fire_dir, fire_dir);
-            fire_dir = (fd_l2 > 1e-6f) ? HMM_DivV3F(fire_dir, std::sqrt(fd_l2))
-                                       : fwd_world;
-
-            // Velocity: ship's forward inherited + muzzle speed along
-            // the per-mount fire direction.
-            const float total_speed = forward_speed_mps + gs.speed_mps;
-            p.velocity = HMM_MulV3F(fire_dir, total_speed);
+            // Velocity: shooter's full 3D world velocity + muzzle
+            // speed along the aim direction. Inheritance lets the
+            // tracer fly with the player's frame so coasting / strafing
+            // doesn't make bullets visually drift sideways from the
+            // crosshair.
+            p.velocity = HMM_AddV3(ship_v, HMM_MulV3F(fwd_world, gs.speed_mps));
             p.damage_cm        = gs.damage_cm;
             p.range_remaining  = gs.range_m;
             p.type             = m.type;

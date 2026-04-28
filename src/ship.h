@@ -98,6 +98,15 @@ struct Ship {
     HMM_Vec3 position    = { 0.0f, 0.0f, 0.0f };
     HMM_Quat orientation = { 0.0f, 0.0f, 0.0f, 1.0f };
 
+    // World-frame velocity (m/s). Populated per frame from the source
+    // of truth: camera.velocity for the player, sprite forward * speed
+    // for NPCs (synced in ship::sync_from_sprite). Read by firing.cpp
+    // so spawned projectiles inherit the shooter's motion — bullets
+    // fired from a moving ship carry that ship's velocity, the way
+    // real-world physics works. Without this, lateral coasting (with
+    // damping=0) makes tracers visually drift relative to the player.
+    HMM_Vec3 world_velocity = { 0.0f, 0.0f, 0.0f };
+
     // ---- visual back-pointer ------------------------------------------
     // Non-owning. The ShipSpriteObject vector lives in main's State and
     // outlives every Ship; we just point into it. This keeps kinematics

@@ -69,12 +69,14 @@ float max_roll_rate   = 2.0f;
 // half-screen radius. 0.05 = ignore the inner 5 % so the player
 // can fly straight without micrometre-perfect cursor placement.
 float mouse_dead_zone = 0.05f;
-    // Tuned so terminal velocity (accel/damping = 200/0.5) exceeds the
-    // 300 m/s cap below — the player reaches 300 quickly under W thrust
-    // and the cap clamps there. With cruise engaged the cap rises to
-    // 600; the same physics underneath, just a higher ceiling.
+    // Newtonian flight: thrust accelerates, the cap clamps the peak,
+    // damping is OFF so released keys mean "coast at current velocity"
+    // instead of bleeding to zero. Hold W to wind up to 300 m/s, let
+    // go and stay there indefinitely. X explicitly brakes to zero;
+    // A/D/R/F lateral inputs also persist (space, no friction).
+    // Keep damping > 0 if you want WC1-style auto-deceleration back.
     float thrust_accel      = 200.0f;   // units / s^2, normal flight
-    float linear_damping    = 0.5f;     // terminal v ≈ accel / damping
+    float linear_damping    = 0.0f;     // 0 = pure Newtonian (no friction)
 
     // Hard velocity cap, applied in integrate() AFTER damping. Mike's
     // preferred feel: top speed is fixed at 300 m/s normal, 600 m/s

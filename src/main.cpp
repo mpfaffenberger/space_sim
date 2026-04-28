@@ -633,17 +633,20 @@ void init_cb() {
             }
             player.energy_gj = tarsus->energy_max;
         }
-        // Custom loadout: 2x Meson Blaster, mirrored left/right and
-        // below the eye line. Mesons are stronger per-shot than Lasers
-        // (3.2 cm vs 2.0 cm) and have higher range, so the player
-        // packs more punch in fewer shots. Body offsets put muzzles
-        // at lower-left and lower-right; gun convergence (firing.cpp)
-        // toes them in at 1 km so tracers cross at the crosshair.
+        // Custom loadout: 2x Meson Blaster, mounts on left and right and
+        // dropped ~5° below the crosshair. Y offset (engine quirk: world
+        // +Y projects to screen +Y = downward direction, so positive Y
+        // appears BELOW center) is sized so the muzzle reads as a
+        // chin/wing gun under the cockpit eye line at typical FOV.
+        // Tracers still fire ALONG aim, not toward a convergence point;
+        // the ITTS gimbal block above lets aim track the locked target
+        // within a small cone, so the muzzles appear visibly below
+        // while the bullets land where the reticle says.
         GunMount meson_l, meson_r;
         meson_l.type        = GunType::MesonBlaster;
         meson_r.type        = GunType::MesonBlaster;
-        meson_l.offset_body = HMM_V3(-10.0f, 10.0f, 0.0f);
-        meson_r.offset_body = HMM_V3( 10.0f, 10.0f, 0.0f);
+        meson_l.offset_body = HMM_V3(-10.0f, 5.0f, 0.0f);
+        meson_r.offset_body = HMM_V3( 10.0f, 5.0f, 0.0f);
         player.mounts        = { meson_l, meson_r };
         player.gun_cooldowns = { 0.0f, 0.0f };
     }
@@ -788,8 +791,14 @@ void frame_cb() {
     // (the integrator's owner). After this, downstream code reads
     // `s.position` uniformly with no special cases.
     if (!g.ships.empty() && g.ships.front().is_player) {
-        g.ships.front().position    = g.camera.position;
-        g.ships.front().orientation = g.camera.orientation;
+        Ship& player = g.ships.front();
+        player.position       = g.camera.position;
+        player.orientation    = g.camera.orientation;
+        // Camera carries the player's full 3D world velocity (forward
+        // thrust + lateral strafes + persistent coasting under zero
+        // damping). Projectiles inherit this in firing.cpp so tracers
+        // move with the player's reference frame instead of drifting.
+        player.world_velocity = g.camera.velocity;
     }
     for (size_t i = 1; i < g.ships.size(); ++i) {
         ship::sync_from_sprite(g.ships[i]);
@@ -819,18 +828,74 @@ void frame_cb() {
     // it's held; firing::tick consumes it and respects per-mount
     // cooldowns + energy budget.
     //
-    // Aim direction is just camera-forward — "shoot where I'm looking".
-    // (An earlier draft had a Freelancer-style mouse-driven gun gimbal
-    // up to ±40° off the ship's nose; reverted because it didn't feel
-    // right — guns lagging the camera read as decoupled rather than
-    // responsive. The convergence math in firing.cpp still applies so
-    // muzzle-offset wing guns toe-in toward a point 1 km ahead.)
+    // Aim direction defaults to camera-forward ("shoot where I'm
+    // looking"). When the player has a locked target (T-cycle), an
+    // ITTS aim-gimbal nudges the fire direction toward the lead point
+    // within a small cone — same lead math as the on-screen ITTS
+    // reticle, so the player sees "green crosshair → tracers go
+    // there". Outside the cone, falls back to camera-forward and the
+    // player has to rotate the ship to engage.
     if (!g.ships.empty() && g.ships.front().is_player) {
         Ship& player = g.ships.front();
         player.controller.fire_guns =
             g.keys_down[SAPP_KEYCODE_LEFT_CONTROL] ||
             g.keys_down[SAPP_KEYCODE_RIGHT_CONTROL];
-        player.controller.desired_forward = g.camera.forward();
+
+        HMM_Vec3 aim = g.camera.forward();
+        if (g.player_target_id != 0) {
+            const Ship* target = nullptr;
+            for (const Ship& s : g.ships) {
+                if (s.id == g.player_target_id && s.alive) { target = &s; break; }
+            }
+            if (target) {
+                // Average projectile speed across player mounts.
+                float proj_speed = 1100.0f;
+                {
+                    int n = 0; float sum = 0.0f;
+                    for (const auto& m : player.mounts) {
+                        if ((int)m.type < 0 || (int)m.type >= kGunTypeCount) continue;
+                        const GunStats& gs = g_gun_stats[(int)m.type];
+                        if (!gs.complete) continue;
+                        sum += gs.speed_mps; ++n;
+                    }
+                    if (n > 0) proj_speed = sum / n;
+                }
+                // Lead position: target_pos + target_vel * (dist / proj_speed).
+                // world_velocity is already populated for both NPCs (via
+                // sync_from_sprite) and player (camera.velocity), so this
+                // works whether the target is moving on rails or being
+                // controlled. Using sprite->position when available so
+                // we lead where the visual ship is, not the frame-stale
+                // Ship::position snapshot.
+                const HMM_Vec3 t_pos = target->sprite ? target->sprite->position
+                                                       : target->position;
+                const HMM_Vec3 to_t  = HMM_SubV3(t_pos, player.position);
+                const float    dist  = std::sqrt(HMM_DotV3(to_t, to_t));
+                const float    t_int = (proj_speed > 1.0f) ? dist / proj_speed : 0.0f;
+                const HMM_Vec3 lead  = HMM_AddV3(t_pos,
+                    HMM_MulV3F(target->world_velocity, t_int));
+                const HMM_Vec3 to_lead = HMM_SubV3(lead, player.position);
+                const float    ll2     = HMM_DotV3(to_lead, to_lead);
+                if (ll2 > 1e-6f) {
+                    const HMM_Vec3 lead_dir = HMM_DivV3F(to_lead, std::sqrt(ll2));
+                    // ±12° gimbal cone around camera-forward. Wider
+                    // than the original 5° because long-range targets
+                    // with lateral motion produce big lead offsets —
+                    // a fighter at 5 km moving 240 m/s sideways leads
+                    // ~270 m which can be 10°+ off the target's
+                    // current position, outside a tight cone, so
+                    // aim-assist never engages where it'd help most.
+                    // Wider cone keeps the assist usable at long range
+                    // without becoming "auto-aim everywhere" (40°+
+                    // would feel like the gun has a mind of its own).
+                    constexpr float gimbal_cos = 0.9781f;   // cos(12°)
+                    if (HMM_DotV3(g.camera.forward(), lead_dir) >= gimbal_cos) {
+                        aim = lead_dir;
+                    }
+                }
+            }
+        }
+        player.controller.desired_forward = aim;
     }
 
     // Firing -> spawn projectiles. Runs after AI/player set fire_guns,
@@ -1497,20 +1562,26 @@ void frame_cb() {
                 const HMM_Vec4 lc = HMM_MulM4V4(vp_loc,
                     HMM_V4(lead.X, lead.Y, lead.Z, 1.0f));
                 if (lc.W > 0.0f) {
+                    // Project regardless of frustum bounds — at long
+                    // range with fast lateral targets the lead point
+                    // can land outside the view frustum even though
+                    // the target itself is on-screen, and the previous
+                    // |ndc| <= 1 gate hid the reticle exactly when the
+                    // player needed it most. ImGui clips to its window
+                    // anyway, so an off-screen reticle just won't be
+                    // visible (no further hiding needed).
                     const float lndc_x = lc.X / lc.W;
                     const float lndc_y = lc.Y / lc.W;
-                    if (std::fabs(lndc_x) <= 1.0f && std::fabs(lndc_y) <= 1.0f) {
-                        const float lsx = (lndc_x * 0.5f + 0.5f) * fb_w;
-                        const float lsy = (lndc_y * 0.5f + 0.5f) * fb_h;
-                        // Reticle: open circle + small inset crosshair,
-                        // bright green so it pops against any backdrop.
-                        const ImU32 itts_col = IM_COL32(140, 255, 140, 230);
-                        dl->AddCircle(ImVec2(lsx, lsy), 9.0f, itts_col, 16, 1.5f);
-                        dl->AddLine(ImVec2(lsx - 5, lsy),
-                                    ImVec2(lsx + 5, lsy), itts_col, 1.0f);
-                        dl->AddLine(ImVec2(lsx, lsy - 5),
-                                    ImVec2(lsx, lsy + 5), itts_col, 1.0f);
-                    }
+                    const float lsx = (lndc_x * 0.5f + 0.5f) * fb_w;
+                    const float lsy = (lndc_y * 0.5f + 0.5f) * fb_h;
+                    // Reticle: open circle + small inset crosshair,
+                    // bright green so it pops against any backdrop.
+                    const ImU32 itts_col = IM_COL32(140, 255, 140, 230);
+                    dl->AddCircle(ImVec2(lsx, lsy), 9.0f, itts_col, 16, 1.5f);
+                    dl->AddLine(ImVec2(lsx - 5, lsy),
+                                ImVec2(lsx + 5, lsy), itts_col, 1.0f);
+                    dl->AddLine(ImVec2(lsx, lsy - 5),
+                                ImVec2(lsx, lsy + 5), itts_col, 1.0f);
                 }
             }
         } else {

@@ -152,6 +152,11 @@ void ship::sync_from_sprite(Ship& s) {
     if (!s.sprite) return;
     s.position    = s.sprite->position;
     s.orientation = s.sprite->orientation;
+    // World-frame velocity for NPCs: orientation * +Z * forward_speed.
+    // Used by firing.cpp so projectiles inherit the shooter's motion.
+    const HMM_Mat4 R = HMM_QToM4(s.orientation);
+    const HMM_Vec4 f = HMM_MulM4V4(R, HMM_V4(0.0f, 0.0f, 1.0f, 0.0f));
+    s.world_velocity = HMM_MulV3F(HMM_V3(f.X, f.Y, f.Z), s.sprite->forward_speed);
 }
 
 Ship ship::spawn(const ShipClass& klass) {
