@@ -1,0 +1,19 @@
+[
+  {
+    "filename": "galaxy_az000_el-060_newmodel_512.png",
+    "subject": "Create a pixel-art spaceship sprite for the Galaxy-class heavy merchant freighter from Wing Commander: Privateer.\n\n=== POSE \u2014 HIGHEST PRIORITY ===\nThis sprite shows the ship from a SPECIFIC 3D viewing angle. The reference\nimage IS that angle. Your output MUST match the same orientation:\n  Camera position: directly BEHIND the ship (looking at the rear/engines), BELOW the ship by 60\u00b0 (looking up at the ventral surface)\n  Azimuth = 0.0\u00b0, Elevation = -60.0\u00b0\n\nDo NOT collapse this view to a generic side-on or top-down perspective.\nDo NOT \"fix\" the angle to a more aesthetic one. The angle in the reference IS\nthe angle the engine will sample at this slot in the view-sphere atlas \u2014 any\ndeviation will cause the sprite to twist visibly when the player orbits the\nship. Match the silhouette, foreshortening, and visible facets exactly.\n\nREFERENCE IMAGE (use directly as image conditioning \u2014 this is the ONLY\nimage and it dictates BOTH pose and design):\n/Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/renders/galaxy_az000_el-060.png\n\n=== DESIGN \u2014 what this ship IS ===\nDistinguishing features (every cell must show these regardless of angle):\nlong forward fuselage tapering to a pointed cockpit nose (roughly 60% of total length), wide rectangular rear hull with two large cylindrical engine pods slung beneath, squared-off cargo modules and dorsal turret housings on the top of the aft section, industrial freighter proportions \u2014 NOT a fighter.\n\nDo not invent extra fins, wings, cockpits, or modules not implied by the\nreference. Do not delete features the reference shows.\n\n=== STYLE ===\n- 1993 DOS / Wing Commander: Privateer pixel art\n- chunky pixels, hand-authored sprite readability\n- dithered shading, limited palette\n- matte gunmetal-grey industrial hull with darker panel seams, slightly weathered freighter look \u2014 match the canonical reference top-down render exactly\n- transparent background\n- readable sprite first, texture detail second\n- pixel grid 512 on longest side, palette ~40 colours\n\nMATERIAL \u2014 READ THIS CAREFULLY:\nThe reference is a low-fidelity 3D viewport screenshot. It may have placeholder\ntextures baked into the model (stone-block patterns, untextured cockpits, etc).\nThose patterns are a TEXTURING BUG, not a design choice. DO NOT REPRODUCE THEM.\nUse the reference STRICTLY for silhouette, pose, and proportions; the textual\npalette description below dictates the actual surface finish.\n\n=== AVOID ===\n- painterly blur, mushy silhouette\n- rounded organic forms (this is a hard-edged industrial spaceship)\n- inventing extra fins / wings / greebles\n- changing ship proportions\n- starfield or background artifacts\n- stone walls, brickwork, masonry, mortar lines, chiseled blocks\n- weathered/aged/medieval/fantasy styling\n- copying placeholder textures from the reference\n- collapsing the requested 3D angle to a more convenient flat view\n",
+    "view": "side",
+    "pixel_grid": 512,
+    "palette_size": 40,
+    "render_size": 1024,
+    "quality": "high",
+    "size": "1024x1024",
+    "transparent_bg": false,
+    "save_raw": true,
+    "reference_image": [
+      "/Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/renders/galaxy_az000_el-060.png"
+    ],
+    "reference_strength": "strict",
+    "extra_style": "sleek futuristic spaceship pixel art; glossy polished aerospace alloy hull (think F-22, B-2, mirrored chrome) with paper-thin panel seams; clean and showroom-fresh; NEVER stone, brick, mortar, masonry, granite, or sandstone; preserve silhouette from the primary reference exactly"
+  }
+]

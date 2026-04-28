@@ -1,0 +1,51 @@
+Create a pixel-art spaceship sprite for the Galaxy-class heavy merchant freighter from Wing Commander: Privateer.
+
+=== POSE — HIGHEST PRIORITY ===
+This sprite shows the ship from a SPECIFIC 3D viewing angle. The reference
+image IS that angle. Your output MUST match the same orientation:
+  Camera position: directly BEHIND the ship (looking at the rear/engines), BELOW the ship by 60° (looking up at the ventral surface)
+  Azimuth = 0.0°, Elevation = -60.0°
+
+Do NOT collapse this view to a generic side-on or top-down perspective.
+Do NOT "fix" the angle to a more aesthetic one. The angle in the reference IS
+the angle the engine will sample at this slot in the view-sphere atlas — any
+deviation will cause the sprite to twist visibly when the player orbits the
+ship. Match the silhouette, foreshortening, and visible facets exactly.
+
+REFERENCE IMAGE (use directly as image conditioning — this is the ONLY
+image and it dictates BOTH pose and design):
+/Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/renders/galaxy_az000_el-060.png
+
+=== DESIGN — what this ship IS ===
+Distinguishing features (every cell must show these regardless of angle):
+long forward fuselage tapering to a pointed cockpit nose (roughly 60% of total length), wide rectangular rear hull with two large cylindrical engine pods slung beneath, squared-off cargo modules and dorsal turret housings on the top of the aft section, industrial freighter proportions — NOT a fighter.
+
+Do not invent extra fins, wings, cockpits, or modules not implied by the
+reference. Do not delete features the reference shows.
+
+=== STYLE ===
+- 1993 DOS / Wing Commander: Privateer pixel art
+- chunky pixels, hand-authored sprite readability
+- dithered shading, limited palette
+- matte gunmetal-grey industrial hull with darker panel seams, slightly weathered freighter look — match the canonical reference top-down render exactly
+- transparent background
+- readable sprite first, texture detail second
+- pixel grid 512 on longest side, palette ~40 colours
+
+MATERIAL — READ THIS CAREFULLY:
+The reference is a low-fidelity 3D viewport screenshot. It may have placeholder
+textures baked into the model (stone-block patterns, untextured cockpits, etc).
+Those patterns are a TEXTURING BUG, not a design choice. DO NOT REPRODUCE THEM.
+Use the reference STRICTLY for silhouette, pose, and proportions; the textual
+palette description below dictates the actual surface finish.
+
+=== AVOID ===
+- painterly blur, mushy silhouette
+- rounded organic forms (this is a hard-edged industrial spaceship)
+- inventing extra fins / wings / greebles
+- changing ship proportions
+- starfield or background artifacts
+- stone walls, brickwork, masonry, mortar lines, chiseled blocks
+- weathered/aged/medieval/fantasy styling
+- copying placeholder textures from the reference
+- collapsing the requested 3D angle to a more convenient flat view

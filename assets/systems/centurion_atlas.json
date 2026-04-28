@@ -1,0 +1,27 @@
+{
+  "name": "Centurion Atlas Capture",
+  "description": "Atlas-capture scene for the Centurion (bounty-hunter heavy fighter). clay_mode strips per-mesh diffuse/spec/glow textures so the AI sprite generator sees pure shape + Lambertian shading instead of copying placeholder textures.",
+  "skybox_seed": "troy",
+  "star": { "preset": "yellow" },
+  "studio_lighting": true,
+  "asteroid_fields": [],
+  "placed_sprites": [],
+  "placed_ship_sprites": [],
+  "placed_meshes": [
+    {
+      "obj": "meshes/ships/centurion.obj",
+      "position": [0, 0, 0],
+      "euler_deg": [0, 0, 180],
+      "length_meters": 30,
+      "tint": [0.85, 0.85, 0.88],
+      "double_sided": true,
+      "ambient_floor": 0.25,
+      "spec": 0.4,
+      "clay_mode": true
+    }
+  ],
+  "nav_points": [],
+  "player_start": {
+    "position": [0, 0, 60]
+  }
+}

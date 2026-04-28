@@ -192,10 +192,14 @@ void MeshRenderer::draw(const std::vector<PlacedMesh>& meshes,
             sg_bindings b{};
             b.vertex_buffers[0] = pm.mesh.vbuf;
             b.index_buffer      = pm.mesh.ibuf;
-            b.views[0] = mat.diffuse.valid ? mat.diffuse.view : white_1x1_view;
-            b.views[1] = mat.spec.valid    ? mat.spec.view    : gray_1x1_view;
-            b.views[2] = mat.glow.valid    ? mat.glow.view    : black_1x1_view;
-            b.views[3] = mat.normal.valid  ? mat.normal.view  : flat_normal_1x1_view;
+            // Clay mode binds neutral 1×1 fallbacks for ALL channels —
+            // bypasses per-mesh textures so AI atlas captures see pure
+            // shape + shading without baked-in patterns leaking through.
+            const bool clay = pm.clay_mode;
+            b.views[0] = (clay || !mat.diffuse.valid) ? white_1x1_view       : mat.diffuse.view;
+            b.views[1] = (clay || !mat.spec.valid)    ? gray_1x1_view        : mat.spec.view;
+            b.views[2] = (clay || !mat.glow.valid)    ? black_1x1_view       : mat.glow.view;
+            b.views[3] = (clay || !mat.normal.valid)  ? flat_normal_1x1_view : mat.normal.view;
             b.samplers[0] = sampler;
             sg_apply_bindings(&b);
             sg_draw((int)sm.index_start, (int)sm.index_count, 1);

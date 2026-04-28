@@ -120,6 +120,38 @@ SHIP_DESIGN_BRIEFS: dict[str, dict[str, str]] = {
             "engine-bell accents — match the canonical reference sheet exactly"
         ),
     },
+    "galaxy": {
+        "role": "heavy merchant freighter",
+        "silhouette": (
+            "long forward fuselage tapering to a pointed cockpit nose "
+            "(roughly 60% of total length), wide rectangular rear hull "
+            "with two large cylindrical engine pods slung beneath, "
+            "squared-off cargo modules and dorsal turret housings on the "
+            "top of the aft section, industrial freighter proportions — "
+            "NOT a fighter"
+        ),
+        "palette": (
+            "matte gunmetal-grey industrial hull with darker panel seams, "
+            "slightly weathered freighter look — match the canonical "
+            "reference top-down render exactly"
+        ),
+    },
+    "centurion": {
+        "role": "bounty-hunter heavy fighter",
+        "silhouette": (
+            "sleek delta-wing fighter, sharply pointed nose extending well "
+            "forward of the wings, twin large cylindrical engine pods "
+            "flanking the rear hull on top of the wing roots, central "
+            "raised cockpit blister, swept-back wings with weapon hardpoints "
+            "underneath, low-slung side profile (wider than tall), aggressive "
+            "predatory aerospace fighter — NOT a freighter, NOT blocky"
+        ),
+        "palette": (
+            "matte gunmetal-grey hull with darker panel seams and subtle "
+            "red/yellow Confed-style accent stripes, clean polished "
+            "aerospace-alloy finish, no weathering"
+        ),
+    },
 }
 
 DEFAULT_BRIEF: dict[str, str] = {
@@ -142,7 +174,14 @@ DEFAULT_BRIEF: dict[str, str] = {
 # imagery still works — it just falls back to render-only conditioning.
 # ---------------------------------------------------------------------------
 CANONICAL_REFS: dict[str, tuple[str, ...]] = {
-    "talon": ("assets/ships/talon/canonical_reference.png",),
+    "talon":     ("assets/ships/talon/canonical_reference.png",),
+    "centurion": ("assets/ships/centurion/canonical_reference.png",),
+    # "galaxy" deliberately omitted: the wcnews 2-view sheet (top + side)
+    # overrode the per-angle render's pose — the AI rendered every cell
+    # as a side view regardless of az/el. With no canonical, the AI uses
+    # ONLY the per-angle 3D render (correct pose) plus the SHIP_DESIGN_BRIEFS
+    # textual description (correct design). Re-add when we have a multi-
+    # angle canonical sheet with 8-12+ views like the talon sheet has.
 }
 
 # Single source of truth for the per-spec extra_style string. Used by the
@@ -169,16 +208,42 @@ def resolve_canonical_refs(ship: str, repo_root: Path) -> tuple[Path, ...]:
     return tuple(out)
 
 
+def _angle_orientation_hint(az: float, el: float) -> str:
+    """Build a plain-English description of where the camera sits relative to
+    the ship at this (az, el). Hand-fed to the prompt because the AI
+    repeatedly collapses awkward 3/4 angles to the nearest cardinal view
+    (e.g. az=0 el=-60 -> always rendered as a side view) when the canonical
+    reference biases it. Explicit text + the per-angle render together force
+    the model to actually respect the requested orientation.
+    """
+    az_norm = az % 360.0
+    if   abs(az_norm -   0.0) < 0.5: az_desc = "directly BEHIND the ship (looking at the rear/engines)"
+    elif abs(az_norm -  90.0) < 0.5: az_desc = "to the ship's STARBOARD side (right wing visible)"
+    elif abs(az_norm - 180.0) < 0.5: az_desc = "directly IN FRONT of the ship (looking at the nose/cockpit)"
+    elif abs(az_norm - 270.0) < 0.5: az_desc = "to the ship's PORT side (left wing visible)"
+    elif az_norm <  90.0: az_desc = f"behind-and-starboard (azimuth {az_norm:.0f}° around from rear)"
+    elif az_norm < 180.0: az_desc = f"front-and-starboard (azimuth {az_norm:.0f}° around from rear)"
+    elif az_norm < 270.0: az_desc = f"front-and-port (azimuth {az_norm:.0f}° around from rear)"
+    else:                  az_desc = f"behind-and-port (azimuth {az_norm:.0f}° around from rear)"
+
+    if   abs(el) < 0.5:  el_desc = "at the ship's vertical midline (horizontal view)"
+    elif el > 60.0:      el_desc = "HIGH ABOVE the ship, looking nearly straight down (top-down view)"
+    elif el >  0.0:      el_desc = f"ABOVE the ship by {el:.0f}° (looking down at the dorsal surface)"
+    elif el < -60.0:     el_desc = "FAR BELOW the ship, looking nearly straight up (bottom-up view)"
+    else:                el_desc = f"BELOW the ship by {abs(el):.0f}° (looking up at the ventral surface)"
+
+    return f"{az_desc}, {el_desc}"
+
+
 def build_prompt(ship: str, reference: Path, canonical_refs: tuple[Path, ...] = (),
-                 prompt_suffix: str = "") -> str:
+                 prompt_suffix: str = "", az: float = 0.0, el: float = 0.0) -> str:
     pretty_ship = ship.replace("_", " ").title()
     brief = SHIP_DESIGN_BRIEFS.get(ship, DEFAULT_BRIEF)
 
-    # Reference-images section. The PRIMARY render dictates pose+silhouette;
-    # CANONICAL refs (when present) dictate paint scheme & material finish.
-    # Splitting them in the prompt prevents the model from copying the
-    # canonical's POSE (which would collapse all 80 sprites to the same
-    # angle) or the primary's COLOURS (which are stale WCU stone-textures).
+    # Reference-images section. With canonical: split roles (primary = pose,
+    # canonical = paint). Without canonical: single ref dictates everything.
+    # The textual brief carries design fidelity in the no-canonical path so
+    # we don't lose shape language entirely.
     if canonical_refs:
         canon_lines = "\n".join(f"  - {p}" for p in canonical_refs)
         ref_block = (
@@ -192,37 +257,23 @@ def build_prompt(ship: str, reference: Path, canonical_refs: tuple[Path, ...] = 
         )
     else:
         ref_block = (
-            f"REFERENCE IMAGE (use directly as image conditioning):\n"
+            f"REFERENCE IMAGE (use directly as image conditioning — this is the ONLY\n"
+            f"image and it dictates BOTH pose and design):\n"
             f"{reference}"
         )
 
-    return f"""Create a pixel-art spaceship sprite using the attached reference image as a strict shape and pose guide.
+    angle_hint = _angle_orientation_hint(az, el)
 
-{ref_block}
-
-Subject: {pretty_ship}-class {brief['role']} from Wing Commander: Privateer.
-
-Requirements:
-- Preserve the silhouette, proportions, and exact viewing angle from the reference image.
-- Do NOT invent a different ship design.
-- Distinguishing features to preserve: {brief['silhouette']}.
-- Preserve the outline exactly; do not overly simplify or blur the geometry.
-- Keep the ship centered and fully readable as a single clean silhouette.
-- Readable sprite first, texture detail second.
-
-Style:
-- 1993 DOS / Wing Commander: Privateer style pixel art
-- chunky pixels
-- hand-authored-looking sprite readability
-- dithered shading
-- limited palette
-- {brief['palette']}
-- transparent background
-
-MATERIAL — READ THIS CAREFULLY (most important section):
+    # Material section is canonical-conditional: with canonical, it talks
+    # about "split roles" (primary=pose, canonical=material). Without,
+    # the brief's palette field carries the material direction and we just
+    # warn against the placeholder-texture bug from low-fi 3D mesh renders.
+    if canonical_refs:
+        material_block = (
+"""MATERIAL — READ THIS CAREFULLY:
 The PRIMARY reference is a low-fidelity 3D viewport screenshot with placeholder
-stone-block textures baked into the model. Those grid-of-rectangles patterns
-are a TEXTURING BUG, not a design choice. DO NOT REPRODUCE THEM.
+textures baked into the model (stone-block patterns, untextured cockpits, etc).
+Those patterns are a TEXTURING BUG, not a design choice. DO NOT REPRODUCE THEM.
 
 The CANONICAL DESIGN SHEET shows the correct surface finish:
 - glossy polished aerospace alloy — think F-22 Raptor, B-2 Spirit, X-wing,
@@ -238,28 +289,63 @@ The CANONICAL DESIGN SHEET shows the correct surface finish:
 Use the PRIMARY reference for SILHOUETTE / POSE / PROPORTIONS only.
 Use the CANONICAL reference for MATERIAL / FINISH / PAINT JOB.
 These roles are non-negotiable — never let the primary's bricky textures
-leak into your output.
+leak into your output."""
+        )
+    else:
+        material_block = (
+"""MATERIAL — READ THIS CAREFULLY:
+The reference is a low-fidelity 3D viewport screenshot. It may have placeholder
+textures baked into the model (stone-block patterns, untextured cockpits, etc).
+Those patterns are a TEXTURING BUG, not a design choice. DO NOT REPRODUCE THEM.
+Use the reference STRICTLY for silhouette, pose, and proportions; the textual
+palette description below dictates the actual surface finish."""
+        )
 
-Avoid:
-- painterly blur
-- mushy silhouette
-- rounded organic forms
-- inventing extra fins / wings / greebles
-- changing the ship proportions
-- smearing thin structures
-- starfield background or background artifacts
-- stone walls, brickwork, masonry, cobblestones, castle/fortress textures
-- mortar lines, grout, chiseled stone blocks, ashlar masonry
-- weathered/aged/medieval/fantasy/wood-grain styling — this is a SLEEK SPACESHIP
-- copying the PRIMARY's surface texture pattern (it is a known bad input)
+    return f"""Create a pixel-art spaceship sprite for the {pretty_ship}-class {brief['role']} from Wing Commander: Privateer.
 
-Target:
-- master sprite quality
-- pixel grid 512 on longest side
-- palette around 40 colors
+=== POSE — HIGHEST PRIORITY ===
+This sprite shows the ship from a SPECIFIC 3D viewing angle. The reference
+image IS that angle. Your output MUST match the same orientation:
+  Camera position: {angle_hint}
+  Azimuth = {az:.1f}°, Elevation = {el:+.1f}°
+
+Do NOT collapse this view to a generic side-on or top-down perspective.
+Do NOT "fix" the angle to a more aesthetic one. The angle in the reference IS
+the angle the engine will sample at this slot in the view-sphere atlas — any
+deviation will cause the sprite to twist visibly when the player orbits the
+ship. Match the silhouette, foreshortening, and visible facets exactly.
+
+{ref_block}
+
+=== DESIGN — what this ship IS ===
+Distinguishing features (every cell must show these regardless of angle):
+{brief['silhouette']}.
+
+Do not invent extra fins, wings, cockpits, or modules not implied by the
+reference. Do not delete features the reference shows.
+
+=== STYLE ===
+- 1993 DOS / Wing Commander: Privateer pixel art
+- chunky pixels, hand-authored sprite readability
+- dithered shading, limited palette
+- {brief['palette']}
 - transparent background
-- large source sprite suitable for later downsampling into in-game atlas frames
-""" + (f"\nAdditional per-frame art direction from inspector:\n{prompt_suffix.strip()}\n" if prompt_suffix.strip() else "")
+- readable sprite first, texture detail second
+- pixel grid 512 on longest side, palette ~40 colours
+
+{material_block}
+
+=== AVOID ===
+- painterly blur, mushy silhouette
+- rounded organic forms (this is a hard-edged industrial spaceship)
+- inventing extra fins / wings / greebles
+- changing ship proportions
+- starfield or background artifacts
+- stone walls, brickwork, masonry, mortar lines, chiseled blocks
+- weathered/aged/medieval/fantasy styling
+- copying placeholder textures from the reference
+- collapsing the requested 3D angle to a more convenient flat view
+""" + (f"\nAdditional per-frame art direction:\n{prompt_suffix.strip()}\n" if prompt_suffix.strip() else "")
 
 
 def load_jobs(
@@ -297,7 +383,7 @@ def load_jobs(
         raw = sprite_dir / f"{stem}.png"
         clean = sprite_dir / f"{stem}_clean.png"
         prompt_file = prompt_dir / f"{stem}.txt"
-        prompt = build_prompt(ship, ref, canonical, prompt_suffix)
+        prompt = build_prompt(ship, ref, canonical, prompt_suffix, az=az, el=el)
         jobs.append(SpriteJob(ship, az, el, ref, raw, clean, prompt_file, prompt,
                               canonical_refs=canonical))
 
@@ -509,7 +595,15 @@ def run_pixelart_batch(jobs: list[SpriteJob], quality: str, skip_existing: bool)
 
 def clean_sprite(job: SpriteJob, preview: bool) -> None:
     cleaner = REPO / "tools" / "clean_sprite_alpha.py"
-    cmd = [sys.executable, str(cleaner), str(job.raw_output), str(job.clean_output)]
+    # Always prefer the truly-raw .raw.png — it has the original opaque
+    # white background. clean_sprite_alpha defaults to flood-fill bg
+    # removal (corner-anchored 4-connected BFS), which preserves
+    # interior hull highlights / cockpit glints that the pixelart tool's
+    # own threshold-keying would have eaten. Falls back to the
+    # already-keyed output only if save_raw was disabled at gen time.
+    raw_white_bg = job.raw_output.with_name(job.raw_output.stem + ".raw.png")
+    src = raw_white_bg if raw_white_bg.exists() else job.raw_output
+    cmd = [sys.executable, str(cleaner), str(src), str(job.clean_output)]
     if preview:
         cmd.append("--preview")
     print(f"  clean: {' '.join(shlex.quote(c) for c in cmd)}")

@@ -1,0 +1,37 @@
+{
+  "name":           "galaxy",
+  "display_name":   "Galaxy",
+  "class_label":    "Merchant Ship",
+  "atlas_manifest": "ships/galaxy/atlas_manifest.json",
+  "default_faction": "merchant",
+
+  "armor_fore_cm":  25,
+  "armor_aft_cm":   20,
+  "armor_side_cm":  17.5,
+
+  "cruise_speed":      300,
+  "afterburner_speed": 750,
+  "acceleration":      "average",
+  "max_ypr":           "average",
+
+  "personality":       "coward",
+
+  "radar_range":   25000,
+  "weapons_range": 4000,
+
+  "max_engine_level": 3,
+  "max_shield_level": 3,
+  "default_shield":   "Shield Generator 2",
+  "default_armor":    "Tungsten Armor",
+
+  "default_guns": [
+    { "offset_body": [-3.0, 0.0, 4.0], "type": "mass_driver" },
+    { "offset_body": [ 3.0, 0.0, 4.0], "type": "mass_driver" }
+  ],
+
+  "energy_max":      200,
+  "energy_recharge": 30,
+
+  "cargo_units":     150,
+  "cargo_units_max": 225
+}

@@ -1,0 +1,432 @@
+{
+  "ship": "centurion",
+  "samples": [
+    {
+      "az": 0.0,
+      "el": -60.0,
+      "file": "centurion_az000_el-060.png"
+    },
+    {
+      "az": 22.5,
+      "el": -60.0,
+      "file": "centurion_az022p5_el-060.png"
+    },
+    {
+      "az": 45.0,
+      "el": -60.0,
+      "file": "centurion_az045_el-060.png"
+    },
+    {
+      "az": 67.5,
+      "el": -60.0,
+      "file": "centurion_az067p5_el-060.png"
+    },
+    {
+      "az": 90.0,
+      "el": -60.0,
+      "file": "centurion_az090_el-060.png"
+    },
+    {
+      "az": 112.5,
+      "el": -60.0,
+      "file": "centurion_az112p5_el-060.png"
+    },
+    {
+      "az": 135.0,
+      "el": -60.0,
+      "file": "centurion_az135_el-060.png"
+    },
+    {
+      "az": 157.5,
+      "el": -60.0,
+      "file": "centurion_az157p5_el-060.png"
+    },
+    {
+      "az": 180.0,
+      "el": -60.0,
+      "file": "centurion_az180_el-060.png"
+    },
+    {
+      "az": 202.5,
+      "el": -60.0,
+      "file": "centurion_az202p5_el-060.png"
+    },
+    {
+      "az": 225.0,
+      "el": -60.0,
+      "file": "centurion_az225_el-060.png"
+    },
+    {
+      "az": 247.5,
+      "el": -60.0,
+      "file": "centurion_az247p5_el-060.png"
+    },
+    {
+      "az": 270.0,
+      "el": -60.0,
+      "file": "centurion_az270_el-060.png"
+    },
+    {
+      "az": 292.5,
+      "el": -60.0,
+      "file": "centurion_az292p5_el-060.png"
+    },
+    {
+      "az": 315.0,
+      "el": -60.0,
+      "file": "centurion_az315_el-060.png"
+    },
+    {
+      "az": 337.5,
+      "el": -60.0,
+      "file": "centurion_az337p5_el-060.png"
+    },
+    {
+      "az": 0.0,
+      "el": -30.0,
+      "file": "centurion_az000_el-030.png"
+    },
+    {
+      "az": 22.5,
+      "el": -30.0,
+      "file": "centurion_az022p5_el-030.png"
+    },
+    {
+      "az": 45.0,
+      "el": -30.0,
+      "file": "centurion_az045_el-030.png"
+    },
+    {
+      "az": 67.5,
+      "el": -30.0,
+      "file": "centurion_az067p5_el-030.png"
+    },
+    {
+      "az": 90.0,
+      "el": -30.0,
+      "file": "centurion_az090_el-030.png"
+    },
+    {
+      "az": 112.5,
+      "el": -30.0,
+      "file": "centurion_az112p5_el-030.png"
+    },
+    {
+      "az": 135.0,
+      "el": -30.0,
+      "file": "centurion_az135_el-030.png"
+    },
+    {
+      "az": 157.5,
+      "el": -30.0,
+      "file": "centurion_az157p5_el-030.png"
+    },
+    {
+      "az": 180.0,
+      "el": -30.0,
+      "file": "centurion_az180_el-030.png"
+    },
+    {
+      "az": 202.5,
+      "el": -30.0,
+      "file": "centurion_az202p5_el-030.png"
+    },
+    {
+      "az": 225.0,
+      "el": -30.0,
+      "file": "centurion_az225_el-030.png"
+    },
+    {
+      "az": 247.5,
+      "el": -30.0,
+      "file": "centurion_az247p5_el-030.png"
+    },
+    {
+      "az": 270.0,
+      "el": -30.0,
+      "file": "centurion_az270_el-030.png"
+    },
+    {
+      "az": 292.5,
+      "el": -30.0,
+      "file": "centurion_az292p5_el-030.png"
+    },
+    {
+      "az": 315.0,
+      "el": -30.0,
+      "file": "centurion_az315_el-030.png"
+    },
+    {
+      "az": 337.5,
+      "el": -30.0,
+      "file": "centurion_az337p5_el-030.png"
+    },
+    {
+      "az": 0.0,
+      "el": 0.0,
+      "file": "centurion_az000_el+000.png"
+    },
+    {
+      "az": 22.5,
+      "el": 0.0,
+      "file": "centurion_az022p5_el+000.png"
+    },
+    {
+      "az": 45.0,
+      "el": 0.0,
+      "file": "centurion_az045_el+000.png"
+    },
+    {
+      "az": 67.5,
+      "el": 0.0,
+      "file": "centurion_az067p5_el+000.png"
+    },
+    {
+      "az": 90.0,
+      "el": 0.0,
+      "file": "centurion_az090_el+000.png"
+    },
+    {
+      "az": 112.5,
+      "el": 0.0,
+      "file": "centurion_az112p5_el+000.png"
+    },
+    {
+      "az": 135.0,
+      "el": 0.0,
+      "file": "centurion_az135_el+000.png"
+    },
+    {
+      "az": 157.5,
+      "el": 0.0,
+      "file": "centurion_az157p5_el+000.png"
+    },
+    {
+      "az": 180.0,
+      "el": 0.0,
+      "file": "centurion_az180_el+000.png"
+    },
+    {
+      "az": 202.5,
+      "el": 0.0,
+      "file": "centurion_az202p5_el+000.png"
+    },
+    {
+      "az": 225.0,
+      "el": 0.0,
+      "file": "centurion_az225_el+000.png"
+    },
+    {
+      "az": 247.5,
+      "el": 0.0,
+      "file": "centurion_az247p5_el+000.png"
+    },
+    {
+      "az": 270.0,
+      "el": 0.0,
+      "file": "centurion_az270_el+000.png"
+    },
+    {
+      "az": 292.5,
+      "el": 0.0,
+      "file": "centurion_az292p5_el+000.png"
+    },
+    {
+      "az": 315.0,
+      "el": 0.0,
+      "file": "centurion_az315_el+000.png"
+    },
+    {
+      "az": 337.5,
+      "el": 0.0,
+      "file": "centurion_az337p5_el+000.png"
+    },
+    {
+      "az": 0.0,
+      "el": 30.0,
+      "file": "centurion_az000_el+030.png"
+    },
+    {
+      "az": 22.5,
+      "el": 30.0,
+      "file": "centurion_az022p5_el+030.png"
+    },
+    {
+      "az": 45.0,
+      "el": 30.0,
+      "file": "centurion_az045_el+030.png"
+    },
+    {
+      "az": 67.5,
+      "el": 30.0,
+      "file": "centurion_az067p5_el+030.png"
+    },
+    {
+      "az": 90.0,
+      "el": 30.0,
+      "file": "centurion_az090_el+030.png"
+    },
+    {
+      "az": 112.5,
+      "el": 30.0,
+      "file": "centurion_az112p5_el+030.png"
+    },
+    {
+      "az": 135.0,
+      "el": 30.0,
+      "file": "centurion_az135_el+030.png"
+    },
+    {
+      "az": 157.5,
+      "el": 30.0,
+      "file": "centurion_az157p5_el+030.png"
+    },
+    {
+      "az": 180.0,
+      "el": 30.0,
+      "file": "centurion_az180_el+030.png"
+    },
+    {
+      "az": 202.5,
+      "el": 30.0,
+      "file": "centurion_az202p5_el+030.png"
+    },
+    {
+      "az": 225.0,
+      "el": 30.0,
+      "file": "centurion_az225_el+030.png"
+    },
+    {
+      "az": 247.5,
+      "el": 30.0,
+      "file": "centurion_az247p5_el+030.png"
+    },
+    {
+      "az": 270.0,
+      "el": 30.0,
+      "file": "centurion_az270_el+030.png"
+    },
+    {
+      "az": 292.5,
+      "el": 30.0,
+      "file": "centurion_az292p5_el+030.png"
+    },
+    {
+      "az": 315.0,
+      "el": 30.0,
+      "file": "centurion_az315_el+030.png"
+    },
+    {
+      "az": 337.5,
+      "el": 30.0,
+      "file": "centurion_az337p5_el+030.png"
+    },
+    {
+      "az": 0.0,
+      "el": 60.0,
+      "file": "centurion_az000_el+060.png"
+    },
+    {
+      "az": 22.5,
+      "el": 60.0,
+      "file": "centurion_az022p5_el+060.png"
+    },
+    {
+      "az": 45.0,
+      "el": 60.0,
+      "file": "centurion_az045_el+060.png"
+    },
+    {
+      "az": 67.5,
+      "el": 60.0,
+      "file": "centurion_az067p5_el+060.png"
+    },
+    {
+      "az": 90.0,
+      "el": 60.0,
+      "file": "centurion_az090_el+060.png"
+    },
+    {
+      "az": 112.5,
+      "el": 60.0,
+      "file": "centurion_az112p5_el+060.png"
+    },
+    {
+      "az": 135.0,
+      "el": 60.0,
+      "file": "centurion_az135_el+060.png"
+    },
+    {
+      "az": 157.5,
+      "el": 60.0,
+      "file": "centurion_az157p5_el+060.png"
+    },
+    {
+      "az": 180.0,
+      "el": 60.0,
+      "file": "centurion_az180_el+060.png"
+    },
+    {
+      "az": 202.5,
+      "el": 60.0,
+      "file": "centurion_az202p5_el+060.png"
+    },
+    {
+      "az": 225.0,
+      "el": 60.0,
+      "file": "centurion_az225_el+060.png"
+    },
+    {
+      "az": 247.5,
+      "el": 60.0,
+      "file": "centurion_az247p5_el+060.png"
+    },
+    {
+      "az": 270.0,
+      "el": 60.0,
+      "file": "centurion_az270_el+060.png"
+    },
+    {
+      "az": 292.5,
+      "el": 60.0,
+      "file": "centurion_az292p5_el+060.png"
+    },
+    {
+      "az": 315.0,
+      "el": 60.0,
+      "file": "centurion_az315_el+060.png"
+    },
+    {
+      "az": 337.5,
+      "el": 60.0,
+      "file": "centurion_az337p5_el+060.png"
+    }
+  ],
+  "orbit_radius": 70.0,
+  "azimuths": [
+    0.0,
+    22.5,
+    45.0,
+    67.5,
+    90.0,
+    112.5,
+    135.0,
+    157.5,
+    180.0,
+    202.5,
+    225.0,
+    247.5,
+    270.0,
+    292.5,
+    315.0,
+    337.5
+  ],
+  "elevations": [
+    -60.0,
+    -30.0,
+    0.0,
+    30.0,
+    60.0
+  ],
+  "count": 80
+}

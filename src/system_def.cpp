@@ -30,6 +30,7 @@ PlacedMeshDef parse_mesh(const json::Value& v) {
     if (auto* p = v.find("spec"))          m.spec           = p->as_float();
     if (auto* p = v.find("texture_preset"))m.texture_preset = p->as_string();
     if (auto* p = v.find("double_sided")) m.double_sided   = p->as_bool();
+    if (auto* p = v.find("clay_mode"))    m.clay_mode      = p->as_bool();
     if (auto* p = v.find("ambient_floor")) m.ambient_floor = p->as_float();
     if (auto* p = v.find("rim_strength"))  m.rim_strength  = p->as_float();
     // Atmosphere block: { "thickness": 0.04, "color": [r,g,b], "strength": 1.2 }

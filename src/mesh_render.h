@@ -29,6 +29,17 @@ struct PlacedMesh {
     HMM_Vec3    body_tint    = { 1.00f, 1.00f, 1.00f };  // multiplies the texture
     float       spec_amount  = 0.35f;
 
+    // Clay mode: when true, the renderer ignores per-submesh diffuse /
+    // spec / glow / normal textures and binds the neutral 1×1 fallbacks
+    // instead. Result is a flat-shaded white-ish mesh — pure shape, no
+    // baked-in textures. Use case: rendering reference frames for the
+    // sprite-atlas AI generator. The pixelart tool copies texture
+    // patterns from the conditioning image, so a placeholder brick
+    // diffuse on the source mesh leaks into every generated cell.
+    // Clay mode strips that influence at the renderer level so the
+    // AI sees pure silhouette + Lambertian shading.
+    bool        clay_mode    = false;
+
     // Textures live on `mesh.materials` (one bundle per submesh). Missing
     // slots get substituted at bind time with shared 1×1 neutral fallbacks
     // owned by the MeshRenderer (white for diffuse, gray for spec, black

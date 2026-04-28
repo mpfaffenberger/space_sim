@@ -185,7 +185,7 @@ struct AppState {
     // Ship-sprite frame HUD: prints camera az/el and picked atlas cell az/el
     // for every placed_ship_sprites entry, every frame. F3 toggles. Hidden by
     // --capture-clean so screenshots stay HUD-free without extra flags.
-    bool        show_ship_frame_hud = true;
+    bool        show_ship_frame_hud = false;
     StarSystem  system{};
 
     // Targeting / nav-cycling. -1 = no target. Press N to advance through
@@ -453,6 +453,7 @@ void init_cb() {
         pm.body_tint     = pm_def.tint;
         pm.spec_amount   = pm_def.spec;
         pm.double_sided  = pm_def.double_sided;
+        pm.clay_mode     = pm_def.clay_mode;
         pm.ambient_floor = pm_def.ambient_floor;
         pm.rim_strength  = pm_def.rim_strength;
         pm.atm_thickness = pm_def.atm_thickness;
@@ -723,6 +724,19 @@ void init_cb() {
             inst.ai.state = (seeded == AIState::Count) ? AIState::Idle : seeded;
             inst.ai.has_patrol_anchor = sd.ai_has_patrol_anchor;
             inst.ai.patrol_anchor     = sd.ai_patrol_anchor;
+
+            // Cowards (merchants etc.) auto-get their spawn position as
+            // a patrol_anchor when one isn't explicitly set in JSON.
+            // Used by the Flee state's home-tether: the ship still flees
+            // from threats but is pulled back toward this point as it
+            // gets further from home, so merchants don't fly off to
+            // infinity. Standard-personality ships (pirates, militia)
+            // don't get the auto-anchor — they're free hunters.
+            if (klass->personality == AIPersonality::Coward
+                && !inst.ai.has_patrol_anchor) {
+                inst.ai.patrol_anchor     = sd.position;
+                inst.ai.has_patrol_anchor = true;
+            }
         }
 
         g.ships.push_back(inst);
@@ -1074,6 +1088,125 @@ void frame_cb() {
     // angular velocity, position advances along body +Z at forward_speed.
     // No-op for the static-ship case so this is safe to call unconditionally.
     update_ship_sprite_motion(g.placed_ship_sprites, dt);
+
+    // ---- ship-vs-ship collisions -----------------------------------
+    // O(N²) sphere-sphere check. When two ships overlap (distance <
+    // r1 + r2), apply an elastic-ish bounce by adding impulse to each
+    // ship's collision_velocity field, separate them by the overlap
+    // amount so they don't keep colliding next frame, and apply damage
+    // proportional to closing speed (more KE on impact = bigger
+    // crunch). Player special-cased because the camera owns player
+    // velocity, not the sprite — bounce hits g.camera.velocity
+    // directly instead of the (nonexistent) player sprite.
+    {
+        // Damage per impact: linear in closing speed plus a base.
+        // 50 cm minimum so a slow nudge isn't free; up to 250 cm for a
+        // head-on at high relative velocity. Shields/armor are 30 cm
+        // each so even a slow bump knocks half a shield down,
+        // high-speed ramming chunks armor immediately. Mike's call:
+        // "a lot of damage".
+        constexpr float k_base_dmg          = 50.0f;
+        constexpr float k_dmg_per_mps       = 0.5f;
+        constexpr float k_dmg_max           = 250.0f;
+        constexpr float k_elasticity        = 0.6f;   // 0=plastic, 1=fully elastic
+        constexpr float k_player_hit_radius = 30.0f * 1.4f;  // matches ship::hit_radius_m
+
+        for (size_t i = 0; i < g.ships.size(); ++i) {
+            Ship& a = g.ships[i];
+            if (!a.alive) continue;
+            const HMM_Vec3 a_pos = a.sprite ? a.sprite->position : a.position;
+            const float a_r = ship::hit_radius_m(a);
+            if (a_r <= 0.0f) continue;
+            const HMM_Vec3 a_vel = a.is_player ? g.camera.velocity : a.world_velocity;
+
+            for (size_t j = i + 1; j < g.ships.size(); ++j) {
+                Ship& b = g.ships[j];
+                if (!b.alive) continue;
+                const HMM_Vec3 b_pos = b.sprite ? b.sprite->position : b.position;
+                const float b_r = ship::hit_radius_m(b);
+                if (b_r <= 0.0f) continue;
+
+                const HMM_Vec3 d = HMM_SubV3(b_pos, a_pos);
+                const float d2 = HMM_DotV3(d, d);
+                const float r_sum = a_r + b_r;
+                if (d2 >= r_sum * r_sum) continue;
+
+                // Normal: from a -> b. Degenerate-overlap fallback to
+                // an arbitrary axis so we still separate ships that
+                // happen to spawn at the same point.
+                float dist = std::sqrt(std::max(d2, 1e-6f));
+                const HMM_Vec3 n = (dist > 1e-3f)
+                    ? HMM_DivV3F(d, dist) : HMM_V3(1.0f, 0.0f, 0.0f);
+
+                // Closing speed along the normal. Positive = ships are
+                // moving toward each other; negative = already
+                // separating (skip impulse but still separate by
+                // overlap so they don't stay stuck together).
+                const HMM_Vec3 v_rel = HMM_SubV3(b.is_player ? g.camera.velocity
+                                                              : b.world_velocity,
+                                                  a_vel);
+                const float v_rel_n = HMM_DotV3(v_rel, n);
+
+                // Position separation — split overlap evenly. Player
+                // moves the camera; NPCs nudge their sprite position.
+                const float overlap = r_sum - dist;
+                const HMM_Vec3 push = HMM_MulV3F(n, overlap * 0.5f);
+                if (a.is_player) {
+                    g.camera.position = HMM_SubV3(g.camera.position, push);
+                } else if (a.sprite) {
+                    a.sprite->position = HMM_SubV3(a.sprite->position, push);
+                }
+                if (b.is_player) {
+                    g.camera.position = HMM_AddV3(g.camera.position, push);
+                } else if (b.sprite) {
+                    b.sprite->position = HMM_AddV3(b.sprite->position, push);
+                }
+
+                // Apply impulse only if approaching. For equal masses,
+                // the impulse magnitude per ship is
+                // (1+e) * v_rel_n / 2; opposite signs so a gets pushed
+                // back along -n, b along +n.
+                if (v_rel_n > 0.0f) {
+                    const float impulse_mag = (1.0f + k_elasticity) * v_rel_n * 0.5f;
+                    const HMM_Vec3 impulse_a = HMM_MulV3F(n, -impulse_mag);
+                    const HMM_Vec3 impulse_b = HMM_MulV3F(n,  impulse_mag);
+                    if (a.is_player) {
+                        g.camera.velocity = HMM_AddV3(g.camera.velocity, impulse_a);
+                    } else if (a.sprite) {
+                        a.sprite->collision_velocity =
+                            HMM_AddV3(a.sprite->collision_velocity, impulse_a);
+                    }
+                    if (b.is_player) {
+                        g.camera.velocity = HMM_AddV3(g.camera.velocity, impulse_b);
+                    } else if (b.sprite) {
+                        b.sprite->collision_velocity =
+                            HMM_AddV3(b.sprite->collision_velocity, impulse_b);
+                    }
+                }
+
+                // Damage: scale with closing speed, with a base so
+                // a slow nudge still does something. Apply to both
+                // ships, on the facings that hit each other (b's hit
+                // is from -n, a's hit is from +n). Player gets a 0.25×
+                // multiplier — "reinforced cockpit" handwave so
+                // collision feedback doesn't insta-kill the squishy
+                // Tarsus the player flies. NPCs eat full damage.
+                constexpr float k_player_dmg_multiplier = 0.25f;
+                const float dmg = std::clamp(
+                    k_base_dmg + k_dmg_per_mps * std::fabs(v_rel_n),
+                    k_base_dmg, k_dmg_max);
+                const float dmg_a = a.is_player ? dmg * k_player_dmg_multiplier : dmg;
+                const float dmg_b = b.is_player ? dmg * k_player_dmg_multiplier : dmg;
+                // Compute facings: hit point is approximately at the
+                // midpoint between ship centers (where they touched).
+                const HMM_Vec3 hit_point = HMM_AddV3(a_pos,
+                    HMM_MulV3F(n, a_r));
+                ship::take_damage(a, dmg_a, ship::facing_of_hit(a, hit_point));
+                ship::take_damage(b, dmg_b, ship::facing_of_hit(b, hit_point));
+            }
+        }
+        (void)k_player_hit_radius;
+    }
 
     // --- render -------------------------------------------------------------
     // --- build the on-screen HUD for this frame -----------------------------

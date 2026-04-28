@@ -153,6 +153,11 @@ struct PlacedMeshDef {
     // closed convex shapes.
     bool        double_sided = true;
 
+    // Clay mode — see mesh_render.h. Strips per-mesh textures at draw
+    // time, useful for atlas-capture systems where the AI sprite
+    // generator would otherwise copy placeholder texture patterns.
+    bool        clay_mode    = false;
+
     // Lighting overrides — negative = "inherit global default". Lets
     // planets run a darker night side and skip the rim term.
     float       ambient_floor = -1.0f;
