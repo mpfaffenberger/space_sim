@@ -20,6 +20,7 @@
 #include "sokol_time.h"
 #include "sokol_debugtext.h"
 
+#include "armor.h"
 #include "asteroid.h"
 #include "atlas_grid_viewer.h"
 #include "camera.h"
@@ -27,7 +28,11 @@
 #include "debug_panel.h"
 #include "dev_remote.h"
 #include "dust.h"
+#include "faction.h"
+#include "gun.h"
 #include "mesh_render.h"
+#include "ship_class.h"
+#include "shield.h"
 #include "sprite.h"
 #include "ship_sprite.h"
 #include "sprite_light_editor.h"
@@ -216,6 +221,21 @@ void init_cb() {
         std::exit(1);
     }
     g.camera.position = g.system.player_start;
+
+    // ---- load the design-data tables (factions, guns, shields, armor, ----
+    // ship classes). Order matters: ship_class::load_all resolves
+    // default_shield/default_armor strings against the shield/armor
+    // tables, so those must be populated first. None of these touch the
+    // GPU; they're pure data loaders, safe to run after system_def and
+    // before any rendering init.
+    faction::init();
+    {
+        const std::string ship_data = "docs/privateer_ship_data.json";
+        gun::load_table(ship_data);
+        shield::load_table(ship_data);
+        armor::load_table(ship_data);
+    }
+    ship_class::load_all("assets/ships");
 
     const std::string dir = "assets/skybox/" + g.system.skybox_seed;
     if (!g.skybox.init(dir, g.system.skybox_seed)) {

@@ -1,0 +1,35 @@
+{
+  "name":           "tarsus",
+  "display_name":   "Tarsus",
+  "class_label":    "Merchant Scout",
+  "atlas_manifest": "ships/tarsus/atlas_manifest.json",
+  "default_faction": "merchant",
+
+  "armor_fore_cm": 10,
+  "armor_aft_cm":  10,
+  "armor_side_cm":  8,
+
+  "cruise_speed":      300,
+  "afterburner_speed": 600,
+  "acceleration":      "average",
+  "max_ypr":           "average",
+
+  "radar_range":   25000,
+  "weapons_range": 2500,
+
+  "max_engine_level": 1,
+  "max_shield_level": 2,
+  "default_shield":   "Shield Generator 1",
+  "default_armor":    "Plasteel Armor",
+
+  "default_guns": [
+    { "offset_body": [-2.0, 0.0, 2.0], "type": "mass_driver" },
+    { "offset_body": [ 2.0, 0.0, 2.0], "type": "mass_driver" }
+  ],
+
+  "energy_max":      150,
+  "energy_recharge": 20,
+
+  "cargo_units":     100,
+  "cargo_units_max": 150
+}

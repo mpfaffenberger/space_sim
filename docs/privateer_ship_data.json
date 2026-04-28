@@ -1,0 +1,569 @@
+{
+  "ships": [
+    {
+      "Name": "Tarsus",
+      "Class": "Merchant Scout",
+      "Max Velocity (kps)": 300,
+      "Afterburner Velocity (kps)": 600,
+      "Acceleration": "Average",
+      "Max YPR": "Average",
+      "Weapons": "Mass Drivers (2), DF Missiles (3)",
+      "Cargo Hold": "100 units (150 with cargo expansion)",
+      "Armour Sides (cm)": 8.0,
+      "Armour Fore (cm)": 10.0,
+      "Armour Aft (cm)": 10.0,
+      "Max Engine Level": 1,
+      "Max Shield Level": 2
+    },
+    {
+      "Name": "Centurion",
+      "Class": "Bounty Hunter Heavy Fighter",
+      "Max Velocity (kps)": 500,
+      "Afterburner Velocity (kps)": 1000,
+      "Acceleration": "Excellent",
+      "Max YPR": "Good",
+      "Weapons": "Mass Drivers (2), Tachyon Cannon (1), Particle Cannon (1), FF Missiles (2), IR Missiles (2), Tractor Beam (1), Turreted Mass Drivers (2)",
+      "Cargo Hold": "50 units (75 with cargo expansion)",
+      "Armour Sides (cm)": 15.0,
+      "Armour Fore (cm)": 20.0,
+      "Armour Aft (cm)": 15.0,
+      "Max Shield Level": 3,
+      "Turrets Available": [
+        "Rear"
+      ]
+    },
+    {
+      "Name": "Galaxy",
+      "Class": "Merchant Ship",
+      "Max Velocity (kps)": 300,
+      "Afterburner Velocity (kps)": 750,
+      "Acceleration": "Average",
+      "Max YPR": "Average",
+      "Weapons": "Mass Drivers (2), DF Missiles (3), HS Missiles (4), Turreted Mass Drivers (4)",
+      "Cargo Hold": "150 units (225 with cargo expansion)",
+      "Armour Sides (cm)": 17.5,
+      "Armour Fore (cm)": 25.0,
+      "Armour Aft (cm)": 20.0,
+      "Max Engine Level": 3,
+      "Turrets Available": [
+        "Top",
+        "Bottom"
+      ]
+    },
+    {
+      "Name": "Orion",
+      "Class": "Mercenary Gunship",
+      "Max Velocity (kps)": 350,
+      "Afterburner Velocity (kps)": 800,
+      "Acceleration": "Average",
+      "Max YPR": "Poor",
+      "Weapons": "Mass Drivers (2), HS Missiles (3), Turreted Lasers (2)",
+      "Cargo Hold": "50 units (75 with cargo expansion)",
+      "Armour Sides (cm)": 35.0,
+      "Armour Fore (cm)": 48.0,
+      "Armour Aft (cm)": 50.0,
+      "Max Engine Level": 5,
+      "Turrets Available": [
+        "Rear"
+      ]
+    },
+    {
+      "Name": "Broadsword",
+      "Class": "Confederation Heavy Fighter",
+      "Max Velocity (kps)": 350,
+      "Afterburner Velocity (kps)": "n/a",
+      "Acceleration": "Average",
+      "Max YPR": "Average",
+      "Weapons": "Mass Drivers (3), FF Missiles (6), HS Missiles (3) Turreted Lasers (2), Turreted Particle Cannon (2)",
+      "Armour Sides (cm)": 17.5,
+      "Armour Fore (cm)": 25.0,
+      "Armour Aft (cm)": 20.0
+    },
+    {
+      "Name": "Demon",
+      "Class": "Bounty Hunter Light Fighter",
+      "Max Velocity (kps)": 450,
+      "Afterburner Velocity (kps)": 1200,
+      "Acceleration": "Very Good",
+      "Max YPR": "Good",
+      "Weapons": "Lasers (2), Meson Blasters (2), HS Missiles (2), Torpedoes (10)",
+      "Armour Sides (cm)": 9.0,
+      "Armour Fore (cm)": 14.0,
+      "Armour Aft (cm)": 12.0
+    },
+    {
+      "Name": "Dralthi",
+      "Class": "Kilrathi Light Fighter",
+      "Max Velocity (kps)": 400,
+      "Afterburner Velocity (kps)": 1000,
+      "Acceleration": "Excellent",
+      "Max YPR": "Excellent",
+      "Weapons": "Lasers (3), DF Missiles (3)",
+      "Armour Sides (cm)": 12.0,
+      "Armour Fore (cm)": 15.0,
+      "Armour Aft (cm)": 13.5
+    },
+    {
+      "Name": "Drayman",
+      "Class": "Merchant Ship",
+      "Max Velocity (kps)": 150,
+      "Afterburner Velocity (kps)": "n/a",
+      "Acceleration": "Poor",
+      "Max YPR": "Poor",
+      "Weapons": "Meson Blasters (2)",
+      "Armour Sides (cm)": 28.0,
+      "Armour Fore (cm)": 35.0,
+      "Armour Aft (cm)": 30.0
+    },
+    {
+      "Name": "Gladius",
+      "Class": "Militia Light Fighter",
+      "Max Velocity (kps)": 400,
+      "Afterburner Velocity (kps)": 1000,
+      "Acceleration": "Very Good",
+      "Max YPR": "Good",
+      "Weapons": "Lasers (2), Particle Cannon (1), HS Missiles (2), Torpedoes (8)",
+      "Armour Sides (cm)": 8.0,
+      "Armour Fore (cm)": 14.0,
+      "Armour Aft (cm)": 10.0
+    },
+    {
+      "Name": "Gothri",
+      "Class": "Kilrathi Fighter",
+      "Max Velocity (kps)": 450,
+      "Afterburner Velocity (kps)": 1200,
+      "Acceleration": "Very Good",
+      "Max YPR": "Good",
+      "Weapons": "Mass Drivers (2), Particle Cannon (2), FF Missile (1), Turreted, Laser (1), DF Missile (1), IR Missiles (3), Turreted Meson Blaster (1)",
+      "Armour Sides (cm)": 15.0,
+      "Armour Fore (cm)": 17.5,
+      "Armour Aft (cm)": 17.5
+    },
+    {
+      "Name": "Kamekh",
+      "Class": "Kilrathi Capital Ship",
+      "Max Velocity (kps)": 300,
+      "Afterburner Velocity (kps)": "n/a",
+      "Acceleration": "Poor",
+      "Max YPR": "Poor",
+      "Weapons": "IR Missiles (2), HS Missile (1), DF Missiles (10), Ionic Pulse, Cannon (1), Meson Blasters (2), Tachyon Cannon (2), Turreted, Lasers (4), Turreted Plasma Cannon (2)",
+      "Armour Sides (cm)": 55.0,
+      "Armour Fore (cm)": 70.0,
+      "Armour Aft (cm)": 40.0
+    },
+    {
+      "Name": "Paradigm",
+      "Class": "Confederation Capital Ship",
+      "Max Velocity (kps)": 200,
+      "Afterburner Velocity (kps)": "n/a",
+      "Acceleration": "Poor",
+      "Max YPR": "Poor",
+      "Weapons": "Meson Blasters (2), Tachyon Cannon (2), Ionic Pulse Cannon (1), Turreted Lasers (3), Turreted Mass Drivers (3), DF Missiles (10), IR Missiles (2), HS Missile (1)",
+      "Armour Sides (cm)": 65.0,
+      "Armour Fore (cm)": 80.0,
+      "Armour Aft (cm)": 50.0
+    },
+    {
+      "Name": "Stiletto",
+      "Class": "Confederation Light Fighter",
+      "Max Velocity (kps)": 500,
+      "Afterburner Velocity (kps)": 1400,
+      "Acceleration": "Excellent",
+      "Max YPR": "Excellent",
+      "Weapons": "Mass Drivers (2), HS Missiles (2)",
+      "Armour Sides (cm)": 7.0,
+      "Armour Fore (cm)": 9.0,
+      "Armour Aft (cm)": 8.0
+    },
+    {
+      "Name": "Talon",
+      "Class": "Light Fighter (used by militia, Church of Man, pirates)",
+      "Max Velocity (kps)": 400,
+      "Afterburner Velocity (kps)": 1000,
+      "Acceleration": "Very Good",
+      "Max YPR": "Good",
+      "Weapons": "Mass Drivers (2), Particle Cannon (1), HS Missiles (2)",
+      "Armour Sides (cm)": 8.0,
+      "Armour Fore (cm)": 10.0,
+      "Armour Aft (cm)": 9.0
+    }
+  ],
+  "guns": [
+    {
+      "Name": "Laser",
+      "Damage (cm)": 2.0,
+      "Damage Rate": 6.67,
+      "Damage Eff.": 5.0,
+      "Speed (kps)": 1400,
+      "Range (m)": 4760,
+      "Refire Delay (s)": 0.3,
+      "Energy Use (GJ)": 4
+    },
+    {
+      "Name": "Mass Driver",
+      "Damage (cm)": 2.6,
+      "Damage Rate": 7.43,
+      "Damage Eff.": 5.2,
+      "Speed (kps)": 1100,
+      "Range (m)": 3740,
+      "Refire Delay (s)": 0.6,
+      "Energy Use (GJ)": 6
+    },
+    {
+      "Name": "Meson Blaster",
+      "Damage (cm)": 3.2,
+      "Damage Rate": 8.0,
+      "Damage Eff.": 4.0,
+      "Speed (kps)": 1300,
+      "Range (m)": 4420,
+      "Refire Delay (s)": 0.4,
+      "Energy Use (GJ)": 8
+    },
+    {
+      "Name": "Neutron Gun",
+      "Damage (cm)": 6.2,
+      "Damage Rate": 9.54,
+      "Damage Eff.": 3.88,
+      "Speed (kps)": 960,
+      "Range (m)": 3264,
+      "Refire Delay (s)": 0.65,
+      "Energy Use (GJ)": 18
+    },
+    {
+      "Name": "Particle Cannon",
+      "Damage (cm)": 4.3,
+      "Damage Rate": 8.6,
+      "Damage Eff.": 3.91,
+      "Speed (kps)": 1000,
+      "Range (m)": 3400,
+      "Refire Delay (s)": 0.6,
+      "Energy Use (GJ)": 11
+    },
+    {
+      "Name": "Tachyon Cannon",
+      "Damage (cm)": 5.0,
+      "Damage Rate": 12.5,
+      "Damage Eff.": 6.25,
+      "Speed (kps)": 1250,
+      "Range (m)": 4250,
+      "Refire Delay (s)": 0.4,
+      "Energy Use (GJ)": 8
+    },
+    {
+      "Name": "Ionic Pulse Cannon",
+      "Damage (cm)": 5.4,
+      "Damage Rate": 9.0,
+      "Damage Eff.": 3.6,
+      "Speed (kps)": 1200,
+      "Range (m)": 4080,
+      "Refire Delay (s)": 0.7,
+      "Energy Use (GJ)": 15
+    },
+    {
+      "Name": "Plasma Gun",
+      "Damage (cm)": 7.2,
+      "Damage Rate": 10.0,
+      "Damage Eff.": 3.79,
+      "Speed (kps)": 940,
+      "Range (m)": 3196,
+      "Refire Delay (s)": 0.8,
+      "Energy Use (GJ)": 22
+    },
+    {
+      "Name": "Plasma Gun RF",
+      "Damage (cm)": 8.5,
+      "Damage Rate": 13.08,
+      "Damage Eff.": 5.0,
+      "Speed (kps)": 940,
+      "Range (m)": 3196,
+      "Refire Delay (s)": null,
+      "Energy Use (GJ)": null
+    },
+    {
+      "Name": "Fusion Cannon",
+      "Damage (cm)": 6.6,
+      "Damage Rate": 13.2,
+      "Damage Eff.": 6.0,
+      "Speed (kps)": 1350,
+      "Range (m)": 4590,
+      "Refire Delay (s)": null,
+      "Energy Use (GJ)": null
+    },
+    {
+      "Name": "Steltek Gun",
+      "Damage (cm)": 10.0,
+      "Damage Rate": 22.22,
+      "Damage Eff.": 5.26,
+      "Speed (kps)": 1175,
+      "Range (m)": 3995,
+      "Refire Delay (s)": null,
+      "Energy Use (GJ)": null
+    },
+    {
+      "Name": "Steltek Gun RF",
+      "Damage (cm)": 6.0,
+      "Damage Rate": 13.33,
+      "Damage Eff.": 3.16,
+      "Speed (kps)": 1175,
+      "Range (m)": 3995,
+      "Refire Delay (s)": null,
+      "Energy Use (GJ)": null
+    },
+    {
+      "Name": "Mega Steltek",
+      "Damage (cm)": 19.0,
+      "Damage Rate": 51.35,
+      "Damage Eff.": 11.18,
+      "Speed (kps)": 1250,
+      "Range (m)": 5000,
+      "Refire Delay (s)": null,
+      "Energy Use (GJ)": null
+    },
+    {
+      "Name": "Mega Steltek RF",
+      "Damage (cm)": 1.0,
+      "Damage Rate": 2.7,
+      "Damage Eff.": 0.59,
+      "Speed (kps)": 1250,
+      "Range (m)": 5000,
+      "Refire Delay (s)": null,
+      "Energy Use (GJ)": null
+    },
+    {
+      "Name": "Weak Steltek",
+      "Damage (cm)": 3.0,
+      "Damage Rate": 4.0,
+      "Damage Eff.": 1.76,
+      "Speed (kps)": 1050,
+      "Range (m)": 3570,
+      "Refire Delay (s)": null,
+      "Energy Use (GJ)": null
+    }
+  ],
+  "missiles": [
+    {
+      "Name": "Dumb Fire",
+      "Abbreviation": "DF",
+      "Damage (cm)": 13.0,
+      "Damage Rate": 5.2,
+      "Damage Eff.": 0,
+      "Speed (kps)": 1000,
+      "Range (m)": 8000,
+      "Lock Type": "None (fires straight)"
+    },
+    {
+      "Name": "Heat Seeker",
+      "Abbreviation": "HS",
+      "Damage (cm)": 16.0,
+      "Damage Rate": 6.4,
+      "Damage Eff.": 0,
+      "Speed (kps)": 800,
+      "Range (m)": 7200,
+      "Lock Type": "Locks onto engines of target; most effective if behind target"
+    },
+    {
+      "Name": "Image Recognition",
+      "Abbreviation": "IR",
+      "Damage (cm)": 17.5,
+      "Damage Rate": 7.0,
+      "Damage Eff.": 0,
+      "Speed (kps)": 850,
+      "Range (m)": 7650,
+      "Lock Type": "Locks onto shape of target; effective from any angle"
+    },
+    {
+      "Name": "Friend or Foe",
+      "Abbreviation": "FF",
+      "Damage (cm)": 17.5,
+      "Damage Rate": 7.0,
+      "Damage Eff.": 0,
+      "Speed (kps)": 900,
+      "Range (m)": 7200,
+      "Lock Type": "Locks onto nearest hostile ship (or nearest ship not transmitting friendly signal)"
+    }
+  ],
+  "torpedo": {
+    "Name": "Proton Torpedo",
+    "Damage (cm)": 20.0,
+    "Damage Rate": 66.67,
+    "Damage Eff.": 0,
+    "Speed (kps)": 1200,
+    "Range (m)": 3600,
+    "Launcher Capacity": 10,
+    "Refire Delay (s)": 0.5
+  },
+  "weapon_columns_explained": {
+    "Damage (cm)": "Armour penetration in cm durasteel equivalent",
+    "Damage Rate": "Damage per second (Damage x shots/sec)",
+    "Damage Eff.": "Damage per GJ of energy (Damage / Energy Use). Higher = more efficient.",
+    "Speed (kps)": "Projectile velocity in kilometers per second",
+    "Range (m)": "Maximum range in meters",
+    "RF": "Rapid Fire variant"
+  },
+  "shields": [
+    {
+      "Name": "Shield Generator 1",
+      "Levels": 1,
+      "Power (GW)": 30,
+      "Regen": 4,
+      "Front (cm)": 10,
+      "Back (cm)": 10,
+      "Sides (cm)": 10,
+      "Effect %": 111
+    },
+    {
+      "Name": "Shield Generator 2",
+      "Levels": 2,
+      "Power (GW)": 45,
+      "Regen": 4,
+      "Front (cm)": 20,
+      "Back (cm)": 20,
+      "Sides (cm)": 20,
+      "Effect %": 100
+    },
+    {
+      "Name": "Shield Generator 3",
+      "Levels": 3,
+      "Power (GW)": 60,
+      "Regen": 4,
+      "Front (cm)": 30,
+      "Back (cm)": 30,
+      "Sides (cm)": 30,
+      "Effect %": 100
+    },
+    {
+      "Name": "Shield Generator 4",
+      "Levels": 3,
+      "Power (GW)": 80,
+      "Regen": 4,
+      "Front (cm)": 40,
+      "Back (cm)": 40,
+      "Sides (cm)": 40,
+      "Effect %": 100
+    },
+    {
+      "Name": "Shield Generator 5",
+      "Levels": 3,
+      "Power (GW)": 100,
+      "Regen": 4,
+      "Front (cm)": 50,
+      "Back (cm)": 50,
+      "Sides (cm)": 50,
+      "Effect %": 100
+    },
+    {
+      "Name": "Shield Generator 6",
+      "Levels": 3,
+      "Power (GW)": 116.25,
+      "Regen": 4,
+      "Front (cm)": 57.5,
+      "Back (cm)": 60,
+      "Sides (cm)": 57.5,
+      "Effect %": 100
+    },
+    {
+      "Name": "Shield Generator 7",
+      "Levels": 3,
+      "Power (GW)": 132.5,
+      "Regen": 4,
+      "Front (cm)": 65,
+      "Back (cm)": 70,
+      "Sides (cm)": 65,
+      "Effect %": 100
+    },
+    {
+      "Name": "Light Shields",
+      "Levels": 1,
+      "Power (GW)": 30,
+      "Regen": 2,
+      "Front (cm)": 10,
+      "Back (cm)": 10,
+      "Sides (cm)": 10,
+      "Effect %": 100
+    },
+    {
+      "Name": "Medium Shields",
+      "Levels": 2,
+      "Power (GW)": 45,
+      "Regen": 2,
+      "Front (cm)": 20,
+      "Back (cm)": 20,
+      "Sides (cm)": 20,
+      "Effect %": 96
+    },
+    {
+      "Name": "Heavy Shields",
+      "Levels": 3,
+      "Power (GW)": 60,
+      "Regen": 2,
+      "Front (cm)": 30,
+      "Back (cm)": 30,
+      "Sides (cm)": 30,
+      "Effect %": 91
+    },
+    {
+      "Name": "Capital Ship Shields",
+      "Levels": 3,
+      "Power (GW)": 83.75,
+      "Regen": 37,
+      "Front (cm)": 100,
+      "Back (cm)": 85,
+      "Sides (cm)": 75,
+      "Effect %": 100
+    },
+    {
+      "Name": "Weak Light Shields",
+      "Levels": 1,
+      "Power (GW)": 30,
+      "Regen": 1,
+      "Front (cm)": 10,
+      "Back (cm)": 10,
+      "Sides (cm)": 10,
+      "Effect %": 87
+    },
+    {
+      "Name": "Steltek Drone Shields",
+      "Levels": 3,
+      "Power (GW)": 80,
+      "Regen": 3,
+      "Front (cm)": 40,
+      "Back (cm)": 40,
+      "Sides (cm)": 40,
+      "Effect %": 100
+    }
+  ],
+  "armor": [
+    {
+      "Name": "Plasteel Armor",
+      "Front (cm)": 25,
+      "Back (cm)": 25,
+      "Sides (cm)": 25,
+      "Notes": "From fan data - manual says 10 cm equivalent"
+    },
+    {
+      "Name": "Tungsten Armor",
+      "Front (cm)": 50,
+      "Back (cm)": 50,
+      "Sides (cm)": 50,
+      "Notes": "From fan data - manual says 20 cm equivalent"
+    },
+    {
+      "Name": "Isometal Armor",
+      "Front (cm)": 300,
+      "Back (cm)": 300,
+      "Sides (cm)": 300,
+      "Notes": "Endgame armor, not in manual"
+    }
+  ],
+  "afterburners": {
+    "Power (GW)": 40,
+    "Notes": "More than doubles speed"
+  },
+  "shield_columns_explained": {
+    "Levels": "Number of shield 'bars' / upgrade slots this occupies",
+    "Power (GW)": "Energy draw in Gigawatts",
+    "Regen": "Shield regeneration rate",
+    "Front/Back/Sides (cm)": "Shield protection per facing in cm durasteel equivalent",
+    "Effect %": "Shield efficiency / effectiveness percentage"
+  }
+}

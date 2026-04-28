@@ -118,6 +118,12 @@ add_executable(new_privateer
     src/json.cpp
     src/obj_loader.cpp
     src/system_def.cpp
+    src/faction.cpp
+    src/mobility.cpp
+    src/gun.cpp
+    src/shield.cpp
+    src/armor.cpp
+    src/ship_class.cpp
     src/mesh_render.cpp
     src/mesh_render_atmosphere.cpp
     src/sprite.cpp

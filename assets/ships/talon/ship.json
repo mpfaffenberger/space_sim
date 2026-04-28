@@ -1,0 +1,33 @@
+{
+  "name":           "talon",
+  "display_name":   "Talon",
+  "class_label":    "Light Fighter (used by militia, Church of Man, pirates)",
+  "atlas_manifest": "ships/talon/atlas_manifest.json",
+  "default_faction": "pirate",
+
+  "armor_fore_cm": 10,
+  "armor_aft_cm":   9,
+  "armor_side_cm":  8,
+
+  "cruise_speed":      400,
+  "afterburner_speed": 1000,
+  "acceleration":      "very good",
+  "max_ypr":           "good",
+
+  "radar_range":   25000,
+  "weapons_range": 3000,
+
+  "max_engine_level": 1,
+  "max_shield_level": 1,
+  "default_shield":   "Light Shields",
+  "default_armor":    "Plasteel Armor",
+
+  "default_guns": [
+    { "offset_body": [-1.5, 0.0, 2.0], "type": "mass_driver" },
+    { "offset_body": [ 1.5, 0.0, 2.0], "type": "mass_driver" },
+    { "offset_body": [ 0.0, 0.4, 2.5], "type": "particle_cannon" }
+  ],
+
+  "energy_max":      150,
+  "energy_recharge": 25
+}
