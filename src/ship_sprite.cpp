@@ -1,4 +1,6 @@
 #include "ship_sprite.h"
+
+#include "world_scale.h"
 #include "json.h"
 
 #include <cmath>
@@ -380,10 +382,17 @@ void update_ship_sprite_motion(std::vector<ShipSpriteObject>& ships, float dt) {
         }
 
         if (moving) {
+            // Linear-velocity scaling per world_scale.h: ships slide
+            // through space at the global pacing rate. Turn rates
+            // (angular_velocity above) intentionally unscaled so AI
+            // tracking responsiveness stays at canonical levels —
+            // halving turns too would make the dogfight feel laggy
+            // even at slower travel speeds.
             const HMM_Mat4 R = HMM_QToM4(s.orientation);
             const HMM_Vec4 fwd_world4 = HMM_MulM4V4(R, HMM_V4(0.0f, 0.0f, s.forward_speed, 0.0f));
             s.position = HMM_AddV3(s.position,
-                HMM_MulV3F(HMM_V3(fwd_world4.X, fwd_world4.Y, fwd_world4.Z), dt));
+                HMM_MulV3F(HMM_V3(fwd_world4.X, fwd_world4.Y, fwd_world4.Z),
+                           dt * world_scale::k_world_velocity_scale));
         }
     }
 }

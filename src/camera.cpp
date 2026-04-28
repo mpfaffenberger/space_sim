@@ -1,5 +1,7 @@
 #include "camera.h"
 
+#include "world_scale.h"
+
 #include <algorithm>
 #include <cmath>
 
@@ -105,7 +107,23 @@ void Camera::integrate(float dt) {
     if (damp > 0.0f) {
         velocity = HMM_MulV3F(velocity, std::exp(-damp * dt));
     }
-    position = HMM_AddV3(position, HMM_MulV3F(velocity, dt));
+
+    // Speed cap. Lerps from max_speed_cruise0 (no afterburner) to
+    // max_speed_cruise1 (full afterburner) by cruise_level. Applied
+    // after damping so the cap reflects the actual end-of-frame
+    // velocity; clamps the magnitude without changing direction.
+    const float max_speed = max_speed_cruise0
+        + (max_speed_cruise1 - max_speed_cruise0) * cruise_level;
+    const float v2 = HMM_DotV3(velocity, velocity);
+    if (v2 > max_speed * max_speed) {
+        velocity = HMM_MulV3F(velocity, max_speed / std::sqrt(v2));
+    }
+
+    // Global game-pacing knob — see world_scale.h. Scales movement
+    // through space without affecting damping, cruise-engagement
+    // timing, or any other dt-driven feedback.
+    position = HMM_AddV3(position,
+        HMM_MulV3F(velocity, dt * world_scale::k_world_velocity_scale));
 }
 
 void Camera::brake() { velocity = HMM_V3(0.0f, 0.0f, 0.0f); }

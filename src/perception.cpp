@@ -45,10 +45,14 @@ void perception::tick(std::vector<Ship>& ships, const PlayerReputation& player_r
         if (!observer.alive) continue;
 
         // Player has no class -> use a generous default radar range so
-        // the player's HUD shows nearby contacts. NPCs use their
-        // class-defined radar reach; this preserves Privateer's
-        // "merchant ship can't see as far as a Confed corvette" feel.
-        constexpr float k_player_radar_m = 25000.0f;
+        // the player's HUD shows nearby contacts. Bumped to 35 km so
+        // the targeting cycle (T key) reaches well past most engagement
+        // distances — chasing ships through their afterburner extensions
+        // routinely opens the gap to 10+ km and you don't want to lose
+        // your target lock just because you can't see far enough. NPCs
+        // still use their class radar (Privateer-canonical 25 km), so
+        // the player has a small "my HUD is enhanced" advantage.
+        constexpr float k_player_radar_m = 35000.0f;
         const float radar_r = observer.is_player ? k_player_radar_m
                             : (observer.klass ? observer.klass->radar_range : 0.0f);
         if (radar_r <= 0.0f) continue;

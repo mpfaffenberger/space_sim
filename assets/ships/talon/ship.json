@@ -13,9 +13,17 @@
   "afterburner_speed": 1000,
   "acceleration":      "very good",
   "max_ypr":           "good",
+  // Pilot tuning: this Talon variant turns 1.75x faster than its
+  // catalog Good tier (60 deg/s base). Net yaw ~105 deg/s, pitch
+  // ~87 deg/s — closes BreakOff arcs faster, follows jinking targets
+  // more tightly, makes the dogfight read as aggressive rather than
+  // ponderous.
+  "ypr_rate_multiplier": 1.75,
 
   "radar_range":   25000,
-  "weapons_range": 3000,
+  // Doubled from canonical 3000 m — gives the AI room to start firing
+  // before getting in scissors range, more interesting opening passes.
+  "weapons_range": 6000,
 
   "max_engine_level": 1,
   "max_shield_level": 1,

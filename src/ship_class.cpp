@@ -96,9 +96,21 @@ bool parse_one(const fs::path& path) {
                           c.name.c_str(), s.c_str());
     }
 
+    // Per-class agility override (default 1.0).
+    c.ypr_rate_multiplier = opt_num(root, "ypr_rate_multiplier", c.ypr_rate_multiplier);
+
     // Sensing.
     c.radar_range   = opt_num(root, "radar_range",   c.radar_range);
     c.weapons_range = opt_num(root, "weapons_range", c.weapons_range);
+
+    // AI personality. "standard" / "coward" — small enum today, room
+    // for berserker/cautious/etc. as we add subtler behaviours.
+    if (auto s = opt_str(root, "personality"); !s.empty()) {
+        if      (s == "standard") c.personality = AIPersonality::Standard;
+        else if (s == "coward")   c.personality = AIPersonality::Coward;
+        else std::fprintf(stderr, "[ship_class] '%s': unknown personality '%s'\n",
+                          c.name.c_str(), s.c_str());
+    }
 
     // Slot caps.
     c.max_engine_level = (uint8_t)opt_num(root, "max_engine_level", c.max_engine_level);

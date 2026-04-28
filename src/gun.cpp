@@ -80,17 +80,58 @@ bool gun::load_table(const std::string& json_path) {
         GunStats& g = g_gun_stats[(int)nm.type];
         g.name           = nm.json_name;
         g.tracer_color   = nm.tracer_color;
+        // Load canonical fields verbatim from the source data.
+        // Source lists projectile speed in kps; we treat as m/s so the
+        // same numbers feel right at engine scale ("k" is flavour, not
+        // literal — see the speed-table design discussion).
         g.damage_cm      = v.find("Damage (cm)")    ? v["Damage (cm)"].as_float() : 0.0f;
         g.range_m        = v.find("Range (m)")      ? v["Range (m)"].as_float()   : 0.0f;
-        // Source data lists projectile speed in kps; we treat it as m/s so
-        // the same numbers feel right at the engine's coordinate scale.
-        // The "k" is flavour, not literal — matches the speed-table
-        // discussion in the design pass.
         g.speed_mps      = v.find("Speed (kps)")    ? v["Speed (kps)"].as_float() : 0.0f;
         bool refire_null = false, energy_null = false;
         g.refire_delay_s = read_num_or_null(v.find("Refire Delay (s)"), refire_null);
         g.energy_cost_gj = read_num_or_null(v.find("Energy Use (GJ)"),  energy_null);
         g.complete       = !refire_null && !energy_null;
+
+        // Demo-time tuning. Five knobs scale the canonical numbers for
+        // the feel Mike wants. Applied AFTER load so they actually
+        // multiply the loaded values rather than the zero-initialised
+        // pre-load values.
+        //
+        //   range  × 2.0   — bullets relevant at long engagement
+        //                     distances after afterburner extensions.
+        //   speed  × 2.0   — projectiles snap to target instead of
+        //                     drifting; proper space-shooter feel.
+        //   refire × 0.167 — 0.6s Mass Driver -> ~0.1s rapid-fire.
+        //                     Sustained streams of tracers.
+        //   energy × 0.167 — same factor as refire, so per-second
+        //                     energy DRAIN stays at canonical levels.
+        //                     Without this, 6x faster firing produces
+        //                     6x faster energy drain and the
+        //                     higher-cost guns (Particle, Tachyon)
+        //                     get starved out — only Mass Drivers
+        //                     fire because they're cheapest.
+        //   damage × 0.167 — same factor as refire, so per-second
+        //                     DAMAGE OUTPUT also stays at canonical
+        //                     levels. Without this, 6x faster firing
+        //                     produces 6x faster kills — Tarsus and
+        //                     Talon both die in under 2 seconds, the
+        //                     player dies in <1s once the AI locks on,
+        //                     and the demo collapses to "everyone dead,
+        //                     no one shooting". Visual texture (rapid
+        //                     tracer streams) preserved; balance
+        //                     restored.
+        //
+        // Drop any multiplier to 1.0 to revert to canon.
+        constexpr float k_range_multiplier  = 2.0f;
+        constexpr float k_speed_multiplier  = 2.0f;
+        constexpr float k_refire_multiplier = 0.167f;
+        constexpr float k_energy_multiplier = 0.167f;
+        constexpr float k_damage_multiplier = 0.167f;
+        g.range_m        *= k_range_multiplier;
+        g.speed_mps      *= k_speed_multiplier;
+        g.refire_delay_s *= k_refire_multiplier;
+        g.energy_cost_gj *= k_energy_multiplier;
+        g.damage_cm      *= k_damage_multiplier;
         ++n_loaded;
         if (g.complete) ++n_complete;
     }

@@ -92,6 +92,15 @@ struct PlacedShipSpriteDef {
     // derives the class from the atlas path ("ships/talon/..." -> "talon").
     std::string ship_class;
 
+    // Optional faction override. When non-empty, replaces the class's
+    // default_faction at spawn time — same hull, different colours.
+    // Names are the lowercase faction:: enum strings ("pirate",
+    // "militia", "confed", etc.). Useful for spawning the same ship
+    // class as different factions in the same scene (a Talon is
+    // canonically used by pirates, militia, AND Retros — same hull,
+    // different stance toward the player).
+    std::string faction_override;
+
     // Optional behavior. "" / "none" = no controller (legacy motion).
     // "pursue_target" = turn toward `behavior_target_pos` and throttle
     // to cruise. More behaviors land as the AI layer grows.

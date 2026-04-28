@@ -9,13 +9,24 @@
   "armor_aft_cm":  10,
   "armor_side_cm":  8,
 
+  // Back to canonical Privateer numbers (300 / 600) — Mike's call to
+  // keep NPC Tarsuses on the same hull-feel page as the player's Tarsus
+  // (which caps at 300/600 in camera.h). The brief 380/800 experiment
+  // was to give fleeing merchants a sporting chance against the
+  // 400-cruise Talon; at canon they're slower than the pursuer, which
+  // is the intended dynamic anyway (merchants need help, hence Militia).
   "cruise_speed":      300,
   "afterburner_speed": 600,
   "acceleration":      "average",
   "max_ypr":           "average",
 
+  // Merchant role: flee on sight. Personality drives the AI state
+  // transition — "hostile in radar" maps to Flee, regardless of HP.
+  "personality":       "coward",
+
   "radar_range":   25000,
-  "weapons_range": 2500,
+  // Doubled from canonical 2500 m to match the longer-range demo regime.
+  "weapons_range": 5000,
 
   "max_engine_level": 1,
   "max_shield_level": 2,

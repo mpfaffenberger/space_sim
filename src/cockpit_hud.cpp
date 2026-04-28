@@ -17,11 +17,18 @@
 //           textbook (1 - ndc_y) inversion.
 #include "cockpit_hud.h"
 
+#include "armor.h"
 #include "camera.h"
+#include "perception.h"
+#include "shield.h"
+#include "ship.h"
+#include "ship_class.h"
+#include "ship_sprite.h"
 #include "system_def.h"
 
 #include "imgui.h"
 #include "sokol_app.h"
+#include "sokol_imgui.h"   // simgui_imtextureid for sprite thumbnails
 
 #include <algorithm>
 #include <cctype>
@@ -240,7 +247,11 @@ void draw_nav_reticle(const Camera& cam, const StarSystem& system, int selected_
 // Compact data panel — TARGET name, DIST, AZ/EL. No graphs, no
 // animation; the player's reading this during combat and doesn't
 // need eye-candy fighting for attention.
-void draw_target_mfd(const Camera& cam, const StarSystem& system, int selected_nav) {
+// Bottom-right NAV panel — info on the currently-cycled nav point
+// (selected with the N key). Renamed from "TARGET" since a real ship
+// target panel now sits separately (top-right) — "target" should mean
+// "the ship I'm shooting at", not "the nav point I'm flying to".
+void draw_nav_mfd(const Camera& cam, const StarSystem& system, int selected_nav) {
     const auto s = screen_size();
     constexpr float w = 240.0f, h = 96.0f, margin = 16.0f;
 
@@ -250,15 +261,15 @@ void draw_target_mfd(const Camera& cam, const StarSystem& system, int selected_n
     ImGui::SetNextWindowBgAlpha(0.55f);
     push_hud_style();
 
-    if (ImGui::Begin("##target_mfd", nullptr, kHudWindowFlags)) {
+    if (ImGui::Begin("##nav_mfd", nullptr, kHudWindowFlags)) {
         ImGui::PushStyleColor(ImGuiCol_Text, kAmber);
-        ImGui::TextUnformatted("TARGET");
+        ImGui::TextUnformatted("NAV");
         ImGui::PopStyleColor();
         ImGui::Separator();
 
         if (selected_nav < 0 || selected_nav >= (int)system.nav_points.size()) {
             ImGui::PushStyleColor(ImGuiCol_Text, kDimAmber);
-            ImGui::TextUnformatted("[ NO TARGET ]");
+            ImGui::TextUnformatted("[ NO NAV SELECTED ]");
             ImGui::TextUnformatted("press N to cycle");
             ImGui::PopStyleColor();
         } else {
@@ -298,10 +309,170 @@ void draw_target_mfd(const Camera& cam, const StarSystem& system, int selected_n
 // no extra fanfare. A slow sweep line (~one revolution per 4 s)
 // keeps the HUD feeling 'live' even when nothing is moving.
 //
-// Altitude (up_dot) is currently dropped — keeps the radar a clean 2D
-// reading. A future enhancement could colour-tint dots by Δalt or
-// add a vertical strip showing relative altitude.
-void draw_radar_mfd(const Camera& cam, const StarSystem& system, int selected_nav) {
+// Top-right TARGET panel — info on the currently-locked SHIP target
+// (T-key cycles). Shows a per-frame thumbnail of the target sprite
+// (picked via the same camera-relative az/el lookup the main render
+// uses), class label, faction stance, distance, and shield/armor
+// breakdown per facing as horizontal bars.
+//
+// Distinct from the NAV panel (bottom-right) which tracks the
+// nav-point N-key cycle. Both panels can be active simultaneously.
+void draw_target_mfd(const Camera& cam, const std::vector<Ship>& ships,
+                     uint32_t target_ship_id) {
+    // Resolve target id -> Ship*. Linear scan; ships count is small.
+    const Ship* target = nullptr;
+    for (const Ship& s : ships) {
+        if (s.id == target_ship_id) { target = &s; break; }
+    }
+
+    const auto sz = screen_size();
+    constexpr float w = 280.0f, h = 152.0f, margin = 16.0f;
+    ImGui::SetNextWindowPos(ImVec2(sz.w - w - margin, margin), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(w, h), ImGuiCond_Always);
+    ImGui::SetNextWindowBgAlpha(0.55f);
+    push_hud_style();
+
+    if (ImGui::Begin("##target_mfd", nullptr, kHudWindowFlags)) {
+        ImGui::PushStyleColor(ImGuiCol_Text, kAmber);
+        ImGui::TextUnformatted("TARGET");
+        ImGui::PopStyleColor();
+        ImGui::Separator();
+
+        if (!target || !target->alive) {
+            ImGui::PushStyleColor(ImGuiCol_Text, kDimAmber);
+            ImGui::TextUnformatted("[ NO TARGET ]");
+            ImGui::TextUnformatted("press T to cycle");
+            ImGui::PopStyleColor();
+        } else {
+            // Left column: sprite thumbnail (if available). Use the
+            // camera-relative cell selector so the thumbnail matches
+            // what the player sees out the window.
+            constexpr float thumb_w = 80.0f, thumb_h = 80.0f;
+            if (target->sprite && target->sprite->atlas) {
+                const ShipSpriteFrame* f = choose_ship_sprite_frame(
+                    *target->sprite->atlas, *target->sprite, cam);
+                if (f && f->art) {
+                    ImGui::Image(simgui_imtextureid(f->art->hull.view),
+                                 ImVec2(thumb_w, thumb_h));
+                } else {
+                    ImGui::Dummy(ImVec2(thumb_w, thumb_h));
+                }
+            } else {
+                ImGui::Dummy(ImVec2(thumb_w, thumb_h));
+            }
+            ImGui::SameLine();
+
+            // Right column: identity + range + stance + HP bars.
+            ImGui::BeginGroup();
+
+            const char* class_name = target->klass
+                ? target->klass->display_name.c_str()
+                : (target->is_player ? "PLAYER" : "?");
+            ImGui::PushStyleColor(ImGuiCol_Text, kHudWhite);
+            ImGui::Text("%s", class_name);
+            ImGui::PopStyleColor();
+
+            // Faction + stance — find the player's perception entry to
+            // get the stance the AI uses (so target-panel colors match
+            // the on-screen indicator + radar). Distance from the
+            // contact entry too — already filtered by radar range.
+            const char*  fac_name = target->klass
+                ? faction::to_name(target->faction) : "?";
+            float        dist_m   = 0.0f;
+            Stance       stance   = Stance::Neutral;
+            if (!ships.empty() && ships.front().is_player) {
+                for (const PerceivedContact& c : ships.front().perception.visible) {
+                    if (c.ship_id == target_ship_id) {
+                        dist_m = c.distance_m;
+                        stance = c.stance;
+                        break;
+                    }
+                }
+            }
+            const ImU32 stance_col =
+                (stance == Stance::Hostile) ? IM_COL32(255,  90,  90, 255)
+              : (stance == Stance::Allied)  ? IM_COL32( 90, 255, 110, 255)
+              :                                IM_COL32(255, 220,  60, 255);
+            const char* stance_str =
+                (stance == Stance::Hostile) ? "HOSTILE"
+              : (stance == Stance::Allied)  ? "ALLIED"
+              :                                "NEUTRAL";
+
+            ImGui::PushStyleColor(ImGuiCol_Text, stance_col);
+            ImGui::Text("%s  %s", fac_name, stance_str);
+            ImGui::PopStyleColor();
+
+            ImGui::PushStyleColor(ImGuiCol_Text, kHudWhite);
+            if (dist_m < 10000.0f) ImGui::Text("DIST  %6.0f m",  dist_m);
+            else                   ImGui::Text("DIST  %5.1f km", dist_m * 0.001f);
+            ImGui::PopStyleColor();
+
+            ImGui::EndGroup();
+
+            // Bottom: per-facing shield + armor bars. F / A / S labels
+            // (Fore / Aft / Side); each bar fills proportionally to
+            // current vs. max for that facing. Shield max comes from
+            // the fitted ShieldType, armor max from class hull +
+            // fitted ArmorType.
+            ImGui::Separator();
+            const ShipClass* k = target->klass;
+            float shield_max[3] = {0,0,0}, armor_max[3] = {0,0,0};
+            if (k) {
+                if (k->default_shield) {
+                    shield_max[0] = k->default_shield->front_cm;
+                    shield_max[1] = k->default_shield->back_cm;
+                    shield_max[2] = k->default_shield->side_cm;
+                }
+                armor_max[0] = k->armor_fore_cm;
+                armor_max[1] = k->armor_aft_cm;
+                armor_max[2] = k->armor_side_cm;
+                if (k->default_armor) {
+                    armor_max[0] += k->default_armor->front_cm;
+                    armor_max[1] += k->default_armor->back_cm;
+                    armor_max[2] += k->default_armor->side_cm;
+                }
+            }
+            const float shield_cur[3] = { target->shield_fore_cm,
+                                          target->shield_aft_cm,
+                                          target->shield_side_cm };
+            const float armor_cur[3]  = { target->armor_fore_cm,
+                                          target->armor_aft_cm,
+                                          target->armor_side_cm };
+            const char* facing_lbl[3] = { "F", "A", "S" };
+
+            ImGui::PushStyleColor(ImGuiCol_FrameBg,        IM_COL32(20,20,30,180));
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram,  IM_COL32(80,160,255,220));
+            for (int i = 0; i < 3; ++i) {
+                const float frac = shield_max[i] > 0.0f
+                    ? std::clamp(shield_cur[i] / shield_max[i], 0.0f, 1.0f) : 0.0f;
+                char buf[24];
+                std::snprintf(buf, sizeof(buf), "S%s %.0f/%.0f",
+                              facing_lbl[i], shield_cur[i], shield_max[i]);
+                ImGui::ProgressBar(frac, ImVec2(80.0f, 14.0f), buf);
+                if (i < 2) ImGui::SameLine();
+            }
+            ImGui::PopStyleColor(2);
+
+            ImGui::PushStyleColor(ImGuiCol_FrameBg,        IM_COL32(20,20,30,180));
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram,  IM_COL32(255,140,60,220));
+            for (int i = 0; i < 3; ++i) {
+                const float frac = armor_max[i] > 0.0f
+                    ? std::clamp(armor_cur[i] / armor_max[i], 0.0f, 1.0f) : 0.0f;
+                char buf[24];
+                std::snprintf(buf, sizeof(buf), "A%s %.0f/%.0f",
+                              facing_lbl[i], armor_cur[i], armor_max[i]);
+                ImGui::ProgressBar(frac, ImVec2(80.0f, 14.0f), buf);
+                if (i < 2) ImGui::SameLine();
+            }
+            ImGui::PopStyleColor(2);
+        }
+    }
+    ImGui::End();
+    pop_hud_style();
+}
+
+void draw_radar_mfd(const Camera& cam, const StarSystem& system, int selected_nav,
+                    const std::vector<Ship>& ships, uint32_t target_ship_id) {
     const auto s = screen_size();
     constexpr float w = 168.0f, h = 168.0f, margin = 16.0f;
 
@@ -370,6 +541,45 @@ void draw_radar_mfd(const Camera& cam, const StarSystem& system, int selected_na
             if (sel) dl->AddCircle(dot, dot_r + 2.5f, kAmber, 0, 1.5f);
         }
 
+        // Plot ship contacts from the player's perception. Same
+        // camera-relative projection as the nav loop above; stance
+        // colors mirror the on-screen target indicator (red=hostile,
+        // green=allied, yellow=neutral) so the radar reads at a glance.
+        // Ships at < ~14% of radar (35 km vs 250 km) cluster near
+        // center — that's the steady-state engagement bubble; nav
+        // points spread out farther because they're system-scale
+        // (planets, jump points 100+ km away).
+        if (!ships.empty() && ships.front().is_player) {
+            const Ship& player = ships.front();
+            for (const PerceivedContact& c : player.perception.visible) {
+                // Reconstruct world position from cached unit + distance.
+                const HMM_Vec3 contact_pos =
+                    HMM_AddV3(player.position, HMM_MulV3F(c.to_unit, c.distance_m));
+                const HMM_Vec3 d = HMM_SubV3(contact_pos, cam.position);
+                const float fwd_dot   = HMM_DotV3(d, cam.forward());
+                const float right_dot = HMM_DotV3(d, cam.right());
+                const float plane_len = std::sqrt(fwd_dot * fwd_dot + right_dot * right_dot);
+
+                float dx_norm, dy_norm;
+                if (plane_len < 1.0f) { dx_norm = 0.0f; dy_norm = 0.0f; }
+                else                  { dx_norm =  right_dot / plane_len;
+                                        dy_norm = -fwd_dot   / plane_len; }
+
+                const float r_norm = std::min(plane_len / max_range, 1.0f);
+                const ImVec2 dot { ctr.x + dx_norm * r_norm * rad,
+                                   ctr.y + dy_norm * r_norm * rad };
+
+                const ImU32 col =
+                    (c.stance == Stance::Hostile) ? IM_COL32(255,  90,  90, 255)
+                  : (c.stance == Stance::Allied)  ? IM_COL32( 90, 255, 110, 255)
+                  :                                 IM_COL32(255, 220,  60, 255);
+                const bool   sel = (c.ship_id == target_ship_id);
+                const float  dot_r = sel ? 4.0f : 2.5f;
+                dl->AddCircleFilled(dot, dot_r, col);
+                if (sel) dl->AddCircle(dot, dot_r + 2.5f, kAmber, 0, 1.5f);
+            }
+        }
+
         // Player ship — small triangle at centre pointing 'up' (forward).
         const ImVec2 p_tip { ctr.x,        ctr.y - 6.0f };
         const ImVec2 p_bl  { ctr.x - 4.0f, ctr.y + 4.0f };
@@ -388,12 +598,161 @@ void draw_radar_mfd(const Camera& cam, const StarSystem& system, int selected_na
 } // anonymous namespace
 
 void build(const Camera& cam, const StarSystem& system, int selected_nav,
-           float mouse_x, float mouse_y, bool fly_by_wire) {
+           float mouse_x, float mouse_y, bool fly_by_wire,
+           const std::vector<Ship>& ships, uint32_t target_ship_id) {
     draw_crosshair(fly_by_wire);
     draw_aim_cursor(mouse_x, mouse_y, fly_by_wire);
     draw_nav_reticle(cam, system, selected_nav);
-    draw_target_mfd(cam, system, selected_nav);
-    draw_radar_mfd(cam, system, selected_nav);
+    draw_nav_mfd   (cam, system, selected_nav);
+    draw_target_mfd(cam, ships, target_ship_id);
+    draw_radar_mfd (cam, system, selected_nav, ships, target_ship_id);
+}
+
+// ---- big navmap overlay --------------------------------------------------
+//
+// Centered fullscreen-ish window with a top-down projection of the
+// system. World-space (X, Z) -> map (X, Y), auto-scaled so all nav
+// points fit with margin. Clickable nav-point dots; the player position
+// gets a triangle marker; ship contacts (player perception) are
+// stance-coloured pips overlaid. Closes on the X button or ESC.
+//
+// World-up (cam.up) ignored — this is a system-overhead map, not a
+// 3D viewport. Future enhancement: a second small panel showing
+// vertical (X, Y) projection so altitude is also legible.
+void build_navmap(const Camera& cam, const StarSystem& system,
+                  int& selected_nav_in_out,
+                  const std::vector<Ship>& ships,
+                  bool& shown_in_out) {
+    if (!shown_in_out) return;
+
+    const auto sz = screen_size();
+    const float w = std::min(sz.w * 0.85f, 1100.0f);
+    const float h = std::min(sz.h * 0.85f,  800.0f);
+    ImGui::SetNextWindowPos(ImVec2((sz.w - w) * 0.5f, (sz.h - h) * 0.5f),
+                            ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(w, h), ImGuiCond_Always);
+    ImGui::SetNextWindowBgAlpha(0.92f);
+
+    push_hud_style();
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoCollapse
+                           | ImGuiWindowFlags_NoResize
+                           | ImGuiWindowFlags_NoSavedSettings;
+    bool open = true;
+    if (ImGui::Begin("NAVIGATION MAP   (Alt+N to close)", &open, flags)) {
+
+        // Compute bounding box of all nav points + camera so the auto-
+        // scale frames everything visible. Adds the camera so the
+        // player marker is always inside the box.
+        float min_x = cam.position.X, max_x = cam.position.X;
+        float min_z = cam.position.Z, max_z = cam.position.Z;
+        for (const auto& nv : system.nav_points) {
+            if (nv.position.X < min_x) min_x = nv.position.X;
+            if (nv.position.X > max_x) max_x = nv.position.X;
+            if (nv.position.Z < min_z) min_z = nv.position.Z;
+            if (nv.position.Z > max_z) max_z = nv.position.Z;
+        }
+        const float span_x = std::max(1.0f, max_x - min_x);
+        const float span_z = std::max(1.0f, max_z - min_z);
+        // Equal-aspect scaling — pick the smaller of the two so both
+        // axes fit. 90% margin so dots don't sit on the panel edge.
+        const ImVec2 area_p0 = ImGui::GetCursorScreenPos();
+        const ImVec2 area_sz = ImGui::GetContentRegionAvail();
+        const float  scale = 0.92f * std::min(area_sz.x / span_x,
+                                              area_sz.y / span_z);
+        // Center of the data in world space; we'll project so it
+        // lands at the center of the map area.
+        const float cx_w = 0.5f * (min_x + max_x);
+        const float cz_w = 0.5f * (min_z + max_z);
+        const ImVec2 ctr = ImVec2(area_p0.x + area_sz.x * 0.5f,
+                                  area_p0.y + area_sz.y * 0.5f);
+        auto to_screen = [&](float wx, float wz) {
+            return ImVec2(ctr.x + (wx - cx_w) * scale,
+                          ctr.y + (wz - cz_w) * scale);
+        };
+
+        ImDrawList* dl = ImGui::GetWindowDrawList();
+
+        // Background panel (the window bg already fills it; this is
+        // the actual map area outline).
+        dl->AddRect(area_p0,
+                    ImVec2(area_p0.x + area_sz.x, area_p0.y + area_sz.y),
+                    IM_COL32(80, 100, 120, 200), 0.0f, 0, 1.0f);
+
+        // Ship contacts under nav points so navs don't get hidden by
+        // densely packed ship dots.
+        if (!ships.empty() && ships.front().is_player) {
+            const Ship& player = ships.front();
+            for (const PerceivedContact& c : player.perception.visible) {
+                const HMM_Vec3 p = HMM_AddV3(
+                    player.position, HMM_MulV3F(c.to_unit, c.distance_m));
+                const ImVec2 sp = to_screen(p.X, p.Z);
+                const ImU32 col =
+                    (c.stance == Stance::Hostile) ? IM_COL32(255,  90,  90, 230)
+                  : (c.stance == Stance::Allied)  ? IM_COL32( 90, 255, 110, 230)
+                  :                                  IM_COL32(255, 220,  60, 230);
+                dl->AddCircleFilled(sp, 3.0f, col, 8);
+            }
+        }
+
+        // Nav points — clickable. Hit-test in screen space against a
+        // generous radius so dots are easy to click. Selecting a nav
+        // mirrors the N-key cycle's effect (sets selected_nav).
+        const ImVec2 mouse = ImGui::GetMousePos();
+        const bool mouse_in_panel =
+            mouse.x >= area_p0.x && mouse.x <= area_p0.x + area_sz.x &&
+            mouse.y >= area_p0.y && mouse.y <= area_p0.y + area_sz.y;
+        const bool clicked = ImGui::IsMouseClicked(ImGuiMouseButton_Left)
+                          && mouse_in_panel;
+        for (int i = 0; i < (int)system.nav_points.size(); ++i) {
+            const auto& nv = system.nav_points[i];
+            const ImVec2 sp = to_screen(nv.position.X, nv.position.Z);
+            const ImU32  col = color_for_kind(nv.kind);
+            const bool   sel = (i == selected_nav_in_out);
+            const float  r   = sel ? 8.0f : 5.0f;
+            dl->AddCircleFilled(sp, r, col, 16);
+            if (sel) dl->AddCircle(sp, r + 3.0f, kAmber, 0, 1.5f);
+            // Label.
+            dl->AddText(ImVec2(sp.x + r + 4.0f, sp.y - 7.0f),
+                        kHudWhite, nv.name.c_str());
+            // Click hit-test.
+            if (clicked) {
+                const float dxs = mouse.x - sp.x;
+                const float dys = mouse.y - sp.y;
+                if (dxs * dxs + dys * dys < (r + 8.0f) * (r + 8.0f)) {
+                    selected_nav_in_out = i;
+                }
+            }
+        }
+
+        // Player marker — small triangle at camera position, pointing
+        // along camera-forward projected onto the XZ plane.
+        const ImVec2 pp = to_screen(cam.position.X, cam.position.Z);
+        const HMM_Vec3 cf = cam.forward();
+        const float fx = cf.X, fz = cf.Z;
+        const float fl = std::sqrt(fx * fx + fz * fz);
+        const float ux = (fl > 1e-3f) ? (fx / fl) : 0.0f;
+        const float uz = (fl > 1e-3f) ? (fz / fl) : 1.0f;
+        constexpr float kSize = 9.0f;
+        const ImVec2 tip { pp.x + ux * kSize,           pp.y + uz * kSize };
+        const ImVec2 bl  { pp.x - ux * kSize * 0.4f - uz * kSize * 0.6f,
+                            pp.y - uz * kSize * 0.4f + ux * kSize * 0.6f };
+        const ImVec2 br  { pp.x - ux * kSize * 0.4f + uz * kSize * 0.6f,
+                            pp.y - uz * kSize * 0.4f - ux * kSize * 0.6f };
+        dl->AddTriangleFilled(tip, bl, br, kHudWhite);
+
+        // Footer help.
+        ImGui::SetCursorScreenPos(ImVec2(area_p0.x, area_p0.y + area_sz.y + 4.0f));
+        ImGui::PushStyleColor(ImGuiCol_Text, kDimAmber);
+        ImGui::TextUnformatted("Click a nav point to select it.  Alt+N to close.");
+        ImGui::PopStyleColor();
+    }
+    ImGui::End();
+    pop_hud_style();
+
+    // ESC closes too. Title-bar X also flips `open` to false.
+    if (!open || ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+        shown_in_out = false;
+    }
 }
 
 } // namespace cockpit_hud

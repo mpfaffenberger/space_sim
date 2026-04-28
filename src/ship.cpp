@@ -5,6 +5,7 @@
 #include "ship_class.h"
 #include "ship_sprite.h"
 #include "shield.h"
+#include "world_scale.h"
 
 #include <algorithm>
 #include <cmath>
@@ -112,6 +113,7 @@ void flight_controller_step(Ship& s, float dt) {
         constexpr float Kp = 4.0f;
         const float max_rate_rad = std::min(mobility::yaw_rate_deg(s.klass->max_ypr),
                                             mobility::pitch_rate_deg(s.klass->max_ypr))
+                                   * s.klass->ypr_rate_multiplier
                                    * k_deg_to_rad;
         const float omega_mag    = std::min(Kp * angle, max_rate_rad);
         s.sprite->angular_velocity = HMM_MulV3F(axis_body, omega_mag);
@@ -180,6 +182,13 @@ Ship ship::spawn(const ShipClass& klass) {
     }
     s.energy_gj = klass.energy_max;
 
+    // Mount loadout: copy the class default. gun_cooldowns sized to
+    // match, all starting at 0 (fully ready to fire). Per-instance
+    // copy lets the player upgrade individual ships without mutating
+    // the shared ShipClass.
+    s.mounts        = klass.default_guns;
+    s.gun_cooldowns.assign(s.mounts.size(), 0.0f);
+
     // Controller idle until a behavior fills it in.
     s.controller.desired_forward = HMM_V3(0.0f, 0.0f, 1.0f);
     s.controller.desired_speed   = 0.0f;
@@ -202,5 +211,172 @@ void ship::tick(Ship& s, float dt) {
         behavior_pursue_target(s);
         flight_controller_step(s, dt);
         return;
+
+    case ShipBehavior::ChaseTarget: {
+        // "Fly toward this point at full cruise, never slow." The dogfight
+        // counterpart to PursueTarget: PursueTarget is for *arriving at*
+        // a waypoint and stopping; ChaseTarget is for *attacking through*
+        // a target — we want overshoot, not docking, so the kinematic-
+        // arrival ramp would actively hurt (it'd drop speed below the
+        // fleer's cruise and produce the orbital tail-chase pattern).
+        //
+        // Honors the controller.afterburner flag: AI's BreakOff state
+        // sets it true so extensions plow out fast; Engage / Flee leave
+        // it false for cruise-speed pursuit / weave. afterburner_speed=0
+        // means "no afterburner fitted" (the JSON default for ships
+        // missing one); fall back to cruise in that case.
+        if (!s.sprite || !s.klass) return;
+        const HMM_Vec3 to = HMM_SubV3(s.behavior.target_pos, s.sprite->position);
+        const float d2 = HMM_DotV3(to, to);
+        if (d2 > 1e-3f) {
+            s.controller.desired_forward = HMM_DivV3F(to, std::sqrt(d2));
+        }
+        const float ab = s.klass->afterburner_speed;
+        const float base =
+            (s.controller.afterburner && ab > 0.0f) ? ab : s.klass->cruise_speed;
+        s.controller.desired_speed = base * s.controller.speed_scale;
+        flight_controller_step(s, dt);
+        return;
     }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Damage pipeline — see ship.h for declarations.
+// ----------------------------------------------------------------------------
+
+namespace {
+
+// How long shield regen pauses on the hit facing after taking damage.
+// Privateer-canonical "shields can't recover under sustained fire" feel —
+// continuous fire keeps the timer pegged so shields stay down until the
+// shooter lays off. 3 seconds is the original game's number; tune
+// per-class later (capships might pause longer, ace shields shorter).
+constexpr float k_shield_pause_after_hit = 3.0f;
+
+// Map a HitFacing to the right (shield, armor, pause) triplet on a Ship.
+// References-by-pointer because there's no clean way to return references
+// to a varying-trio in C++ without a helper struct; the pointers are
+// always non-null after the switch.
+struct HitTarget { float* shield; float* armor; float* pause;
+                   float shield_max; };
+HitTarget hit_target(Ship& s, HitFacing f) {
+    const float sh_max_fore = s.klass && s.klass->default_shield
+                            ? s.klass->default_shield->front_cm : 0.0f;
+    const float sh_max_aft  = s.klass && s.klass->default_shield
+                            ? s.klass->default_shield->back_cm  : 0.0f;
+    const float sh_max_side = s.klass && s.klass->default_shield
+                            ? s.klass->default_shield->side_cm  : 0.0f;
+    switch (f) {
+        case HitFacing::Fore: return { &s.shield_fore_cm, &s.armor_fore_cm,
+                                       &s.shield_pause_fore, sh_max_fore };
+        case HitFacing::Aft:  return { &s.shield_aft_cm,  &s.armor_aft_cm,
+                                       &s.shield_pause_aft,  sh_max_aft  };
+        case HitFacing::Side: return { &s.shield_side_cm, &s.armor_side_cm,
+                                       &s.shield_pause_side, sh_max_side };
+    }
+    // Unreachable (enum exhausted), but the compiler wants a return.
+    return { &s.shield_fore_cm, &s.armor_fore_cm, &s.shield_pause_fore, sh_max_fore };
+}
+
+const char* facing_name(HitFacing f) {
+    switch (f) { case HitFacing::Fore: return "fore";
+                 case HitFacing::Aft:  return "aft";
+                 case HitFacing::Side: return "side"; }
+    return "?";
+}
+
+} // namespace
+
+void ship::take_damage(Ship& s, float damage_cm, HitFacing facing) {
+    if (!s.alive || damage_cm <= 0.0f) return;
+    HitTarget t = hit_target(s, facing);
+
+    // Reset regen pause on the affected facing — sustained fire keeps
+    // shields suppressed until the shooter lays off.
+    *t.pause = k_shield_pause_after_hit;
+
+    // Shield first (with implicit effect_pct = 100% for v1; the per-shield
+    // multiplier is loaded but not yet folded in — TODO before L5).
+    if (*t.shield > 0.0f) {
+        const float absorbed = std::min(*t.shield, damage_cm);
+        *t.shield  -= absorbed;
+        damage_cm  -= absorbed;
+    }
+    // Armor (spillover). Goes negative on a kill blow; we clamp at 0
+    // for display but flag the kill.
+    if (damage_cm > 0.0f) {
+        *t.armor -= damage_cm;
+        if (*t.armor <= 0.0f) {
+            *t.armor    = 0.0f;
+            s.alive     = false;
+            // Hide the visual instantly. world_size = 0 makes the
+            // billboard collapse; explosion FX is a future feature.
+            if (s.sprite) s.sprite->world_size = 0.001f;
+            std::printf("[ship] killed: id=%u (%s hit)\n",
+                        s.id, facing_name(facing));
+        }
+    }
+}
+
+void ship::regen_shields(Ship& s, float dt) {
+    if (!s.alive || !s.klass || !s.klass->default_shield) return;
+    // Scale regen by its dedicated knob (world_scale.h). Separate from
+    // the velocity scale because regen plays a different role: it sets
+    // attrition pacing, not movement feel. At 0.0167 a Shield
+    // Generator 1's canonical 4 cm/s becomes ~0.067 cm/s — ~15 seconds
+    // per cm, so damage actually accumulates between attack runs.
+    const float regen_rate = s.klass->default_shield->regen_cm_per_s
+                           * world_scale::k_shield_regen_scale;
+
+    auto tick_quad = [&](float& q, float& pause, float max_cm) {
+        if (pause > 0.0f) {
+            pause -= dt;
+            if (pause < 0.0f) pause = 0.0f;
+            return;          // suppressed this frame
+        }
+        if (q < max_cm) {
+            q = std::min(q + regen_rate * dt, max_cm);
+        }
+    };
+    tick_quad(s.shield_fore_cm, s.shield_pause_fore, s.klass->default_shield->front_cm);
+    tick_quad(s.shield_aft_cm,  s.shield_pause_aft,  s.klass->default_shield->back_cm);
+    tick_quad(s.shield_side_cm, s.shield_pause_side, s.klass->default_shield->side_cm);
+}
+
+float ship::hit_radius_m(const Ship& s) {
+    // NPCs: half the rendered length feels right as a hit sphere — most
+    // sprite ships are roughly as wide as they are tall, and capturing a
+    // hit anywhere inside that sphere reads correctly with our bullet
+    // sizes. Note: ship sprites are spawned with world_size already
+    // multiplied by k_ship_size_scale (see main.cpp), so this read
+    // automatically picks up the global ship-scale.
+    //
+    // Player without a visible ship: 30 m typical-fighter default,
+    // also scaled by k_ship_size_scale so the player's collision
+    // matches the same global knob NPCs respect.
+    if (s.sprite)    return s.sprite->world_size * 0.5f;
+    if (s.is_player) return 30.0f * world_scale::k_ship_size_scale;
+    return 0.0f;
+}
+
+HitFacing ship::facing_of_hit(const Ship& s, const HMM_Vec3& hit_pos_world) {
+    // Take hit position into body frame and look at which axis dominates.
+    // Body +Z forward = Fore, -Z = Aft, |X| or |Y| dominant = Side.
+    HMM_Vec3 to_hit = HMM_SubV3(hit_pos_world, s.position);
+    const HMM_Mat4 R_inv = HMM_QToM4(HMM_InvQ(s.orientation));
+    const HMM_Vec4 v = HMM_MulM4V4(R_inv, HMM_V4(to_hit.X, to_hit.Y, to_hit.Z, 0.0f));
+
+    // Player uses camera convention (forward = -Z), so flip Z axis to
+    // match ship convention before classifying the facing.
+    float bz = s.is_player ? -v.Z : v.Z;
+    const float bx = v.X, by = v.Y;
+
+    // Threshold: pick fore/aft only if the Z-axis component is at least
+    // half the magnitude of the lateral axes. Otherwise it's a side hit.
+    const float lateral = std::sqrt(bx * bx + by * by);
+    if (std::fabs(bz) > lateral) {
+        return (bz > 0.0f) ? HitFacing::Fore : HitFacing::Aft;
+    }
+    return HitFacing::Side;
 }

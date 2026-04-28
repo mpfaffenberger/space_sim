@@ -69,8 +69,20 @@ float max_roll_rate   = 2.0f;
 // half-screen radius. 0.05 = ignore the inner 5 % so the player
 // can fly straight without micrometre-perfect cursor placement.
 float mouse_dead_zone = 0.05f;
-    float thrust_accel      = 80.0f;    // units / s^2, normal flight
+    // Tuned so terminal velocity (accel/damping = 200/0.5) exceeds the
+    // 300 m/s cap below — the player reaches 300 quickly under W thrust
+    // and the cap clamps there. With cruise engaged the cap rises to
+    // 600; the same physics underneath, just a higher ceiling.
+    float thrust_accel      = 200.0f;   // units / s^2, normal flight
     float linear_damping    = 0.5f;     // terminal v ≈ accel / damping
+
+    // Hard velocity cap, applied in integrate() AFTER damping. Mike's
+    // preferred feel: top speed is fixed at 300 m/s normal, 600 m/s
+    // afterburner (TAB). Lerps with cruise_level so engaging cruise
+    // smoothly raises the ceiling. Inertia + damping still drive
+    // acceleration / coast feel; the cap just limits the peak.
+    float max_speed_cruise0 = 300.0f;
+    float max_speed_cruise1 = 600.0f;
 
     // ---- Cruise engine (Freelancer-style high-speed traversal) ---------
     // Hold TAB in main to drive `cruise_target` up; integrate() lerps

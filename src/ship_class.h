@@ -30,6 +30,16 @@
 #include "gun.h"
 #include "mobility.h"
 
+// AI personality — gates how the state machine reacts to perceived
+// hostiles. Standard ships fight (Engage) and only flee at low HP;
+// Cowards (merchants, civilians) flee on sight regardless of health.
+// Lives on the class because it's a property of the ship's role, not
+// the spawn — every Tarsus is a merchant by trade.
+enum class AIPersonality : uint8_t {
+    Standard = 0,   // Engage hostiles; Flee only when hurt (default)
+    Coward,         // Flee on sight, never Engage
+};
+
 #include <cstdint>
 #include <string>
 #include <string_view>
@@ -60,11 +70,25 @@ struct ShipClass {
     MobilityTier acceleration       = MobilityTier::Average;
     MobilityTier max_ypr            = MobilityTier::Average;
 
+    // Per-class agility override on top of the mobility tier. Multiplied
+    // into the tier-derived rate, so 1.0 = no override (default), 1.75 =
+    // "this ship turns 75% faster than its catalog tier suggests". Lets
+    // an ace-pilot variant or a hot-rod retrofit feel sharper than its
+    // class's nominal YPR without inventing new mobility tiers above
+    // Excellent. Applies uniformly to yaw + pitch + roll.
+    float        ypr_rate_multiplier = 1.0f;
+
     // ---- sensing / engagement -----------------------------------------
     // Privateer-canonical radar reach. weapons_range is a soft AI hint —
     // "engage within this distance". Each gun has its own true range_m.
     float radar_range   = 25000.0f;   // m
     float weapons_range =  3000.0f;   // m
+
+    // ---- AI personality -----------------------------------------------
+    // Gates the state machine's response to perceived hostiles.
+    // Standard ships fight; Cowards (merchants, civilians) flee on
+    // sight. See the enum at the bottom of this header.
+    AIPersonality personality = AIPersonality::Standard;
 
     // ---- slot caps for the upgrade economy (informational v1) ---------
     uint8_t max_engine_level = 1;

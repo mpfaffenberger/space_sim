@@ -118,6 +118,20 @@ struct SpriteRenderer {
               const Camera& cam,
               float aspect,
               float time_sec) const;
+
+    // Draws a list of free-standing additive glow points (no texture,
+    // no light animation, no UV-into-billboard math). Used for projectile
+    // tracers — same pipeline + shader as the animated light spots, just
+    // taking world position + radius + colour directly. No depth write
+    // so tracers stack additively when they overlap.
+    struct Tracer {
+        HMM_Vec3 position;
+        HMM_Vec3 color;       // pre-bloom; bright values OK
+        float    size = 5.0f; // world-unit radius
+    };
+    void draw_tracers(const std::vector<Tracer>& tracers,
+                      const Camera& cam,
+                      float aspect) const;
 };
 
 // Load the `<base_path>.png` + `<base_path>_lights.png` pair into `art`.

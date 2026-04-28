@@ -51,6 +51,9 @@ enum class AIState : uint8_t {
     Idle = 0,
     Patrol,
     Engage,
+    BreakOff,        // Engage triggered "too close" → afterburn perpendicular,
+                     // hold for ~2.5s, then re-enter Engage from a fresh angle.
+                     // Breaks the scissors / orbital tail-chase pattern.
     Flee,
     Count
 };
@@ -71,6 +74,34 @@ struct ShipAIState {
     // to Idle). When OrbitAnchor behaviour lands, Patrol will read these.
     HMM_Vec3  patrol_anchor = { 0.0f, 0.0f, 0.0f };
     bool      has_patrol_anchor = false;
+
+    // BreakOff parameters. Cached at state entry so the break direction
+    // stays stable for the duration of the maneuver — picking a fresh
+    // direction every tick would just reproduce the orbital chase we're
+    // trying to break out of. break_dir_world is unit world-space; the
+    // BreakOff act phase uses (position + dir * far_distance) as its
+    // ChaseTarget waypoint. break_duration_s is randomised per entry
+    // (range below in ship_ai.cpp) so repeated breaks don't feel
+    // metronomic — pursuer can't predict exactly when the prey turns.
+    HMM_Vec3  break_dir_world  = { 0.0f, 0.0f, 0.0f };
+    float     break_duration_s = 5.0f;
+
+    // Maximum continuous-FIRING duration (seconds). Randomised on
+    // Engage entry. The trigger is bound to fire_guns being held
+    // true, NOT to time-in-Engage — a ship that's still closing the
+    // distance and not yet shooting shouldn't burn its window. The
+    // result: 3-6 seconds of actual blasting, then forced break.
+    // Privateer-feel "don't be a sitting duck on someone's six":
+    // even with tail position, pilots periodically extend so the prey
+    // gets repositioning room and the fight doesn't degenerate into
+    // a single sustained tail chase.
+    float     firing_max_duration_s = 4.5f;
+
+    // Wall-clock time at which the current uninterrupted firing burst
+    // started, or -1 if not currently firing. Reset to -1 whenever
+    // controller.fire_guns goes false (out of arc, out of range, AI
+    // doesn't have a solution) or the ship leaves Engage.
+    float     firing_started_at = -1.0f;
 };
 
 namespace ship_ai {

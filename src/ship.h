@@ -34,14 +34,20 @@
 // -----------------------------------------------------------------------------
 
 #include "faction.h"
+#include "gun.h"
 #include "perception.h"
 #include "ship_ai.h"
 
 #include <HandmadeMath.h>
 #include <cstdint>
+#include <vector>
 
 struct ShipClass;
 struct ShipSpriteObject;
+
+// Hit facing classification — top-level so collision code (projectile.cpp)
+// and ship code (ship.cpp) can share without nested-namespace gymnastics.
+enum class HitFacing : uint8_t { Fore, Aft, Side };
 
 // What the controller is aiming for THIS tick. Behaviors write here;
 // the flight controller reads here.
@@ -50,11 +56,19 @@ struct ShipFlightController {
     float    desired_speed   = 0.0f;                   // m/s
     bool     afterburner     = false;
     bool     fire_guns       = false;
+
+    // Multiplier on the behavior-supplied target speed. Engage uses
+    // 0.5 to throttle down for combat tracking (full cruise overshoots
+    // the target faster than the ship can track its evasion); BreakOff
+    // uses 1.0 with afterburner=true for clean separation. Other states
+    // default to 1.0. Read by ChaseTarget when picking desired_speed.
+    float    speed_scale     = 1.0f;
 };
 
 enum class ShipBehavior : uint8_t {
     None = 0,         // controller idle; sprite keeps externally-set kinematics
-    PursueTarget,     // turn toward target_pos, throttle to cruise
+    PursueTarget,     // turn toward target_pos, kinematic-arrival throttle
+    ChaseTarget,      // turn toward target_pos, FULL CRUISE (no slow-on-approach)
 };
 
 struct ShipBehaviorState {
@@ -117,13 +131,37 @@ struct Ship {
     ShipPerception perception;
 
     // ---- health (cm of durasteel; same unit as gun damage) ------------
+    // current values per facing — start at max from class+armor+shield,
+    // ticked down by ship::take_damage, regenerated for shields by
+    // ship::regen_shields after a per-facing pause window.
     float armor_fore_cm  = 0.0f;
     float armor_aft_cm   = 0.0f;
     float armor_side_cm  = 0.0f;
     float shield_fore_cm = 0.0f;
     float shield_aft_cm  = 0.0f;
     float shield_side_cm = 0.0f;
-    float energy_gj      = 0.0f;
+    // Regen-pause timers (seconds remaining) per facing. Set to
+    // k_shield_pause_after_hit when that quadrant takes damage; the
+    // shield can't refill until this hits zero. Privateer-canonical
+    // "shields drop, can't immediately recover" feel.
+    float shield_pause_fore = 0.0f;
+    float shield_pause_aft  = 0.0f;
+    float shield_pause_side = 0.0f;
+    float energy_gj         = 0.0f;
+
+    // ---- weapons ------------------------------------------------------
+    // Per-instance copy of the fitted gun mounts. Initialised from
+    // klass->default_guns at spawn for NPCs; for the player ship
+    // (klass=nullptr) we hardcode a default loadout in main.cpp until
+    // the upgrade-economy commit lets the player pick one. Per-mount
+    // because future code will swap weapons at-rest, and that's where
+    // GunMount::type changes — keeping it on Ship rather than ShipClass.
+    std::vector<GunMount> mounts;
+    // Cooldown timers (seconds remaining) sized to mounts.size(). A
+    // gun fires when its cooldown reaches 0; firing::tick decrements
+    // every tick. Vector instead of fixed array because Privateer's
+    // capships have up to 8 mounts plus turrets.
+    std::vector<float>    gun_cooldowns;
 
     bool  alive = true;
 };
@@ -150,6 +188,13 @@ Ship spawn_player();
 // two field copies — but bundled into a function so the per-frame
 // sync code in main.cpp reads cleanly.
 void sync_from_sprite(Ship& s);
+
+// Damage-pipeline support — see implementation in ship.cpp for
+// per-function notes. All in cm-of-durasteel (same unit as gun damage).
+void       take_damage(Ship& s, float damage_cm, ::HitFacing facing);
+void       regen_shields(Ship& s, float dt);
+float      hit_radius_m(const Ship& s);
+::HitFacing  facing_of_hit(const Ship& s, const HMM_Vec3& hit_pos_world);
 
 // Per-frame controller + behavior step. Call BEFORE
 // update_ship_sprite_motion: the behaviour writes the controller's

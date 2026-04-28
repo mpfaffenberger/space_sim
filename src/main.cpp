@@ -31,7 +31,11 @@
 #include "faction.h"
 #include "gun.h"
 #include "mesh_render.h"
+#include "explosion.h"
+#include "firing.h"
 #include "perception.h"
+#include "world_scale.h"
+#include "projectile.h"
 #include "ship.h"
 #include "ship_ai.h"
 #include "ship_class.h"
@@ -105,6 +109,50 @@ struct AppState {
     // (-30 baseline), Confeds tolerate you (0), Kilrathi attack on sight
     // (-100). Future commits will mutate this on kills / quests.
     PlayerReputation                                     player_rep;
+
+    // Live projectiles. Spawned by firing::tick (when controller.fire_guns
+    // is set on a ship with off-cooldown mounts), advanced by
+    // projectile::tick, drawn by SpriteRenderer::draw_tracers. Empty in
+    // the steady state until someone pulls a trigger.
+    std::vector<Projectile>                              projectiles;
+
+    // Active explosion FX. One Explosion per ship death, lifetime ~1.2s.
+    // Drawn additively via the same spot pipeline as tracers, just with
+    // a per-explosion size+color curve (see explosion.h for the
+    // flash + shockwave layering rationale).
+    std::vector<Explosion>                               explosions;
+
+    // Shield-impact flashes. One per ship-facing that took shield damage
+    // this frame; brief cyan bubble around the ship — reads as shield
+    // lighting up under fire. Spawned in the damage-detection pass via
+    // a before/after shield-value comparison.
+    struct ShieldFlash {
+        HMM_Vec3 position;
+        float    radius;
+        float    age_s;
+        float    lifetime_s;
+    };
+    std::vector<ShieldFlash>                             shield_flashes;
+
+    // Armor-impact flashes. Same structure as ShieldFlash but rendered
+    // smaller (no shield bubble — hits land ON the hull) and orange-red
+    // (sparking metal). Triggered when armor cm drops, NOT shields —
+    // signals "shields down, hull taking damage" without needing a
+    // separate UI cue.
+    struct ArmorFlash {
+        HMM_Vec3 position;
+        float    radius;
+        float    age_s;
+        float    lifetime_s;
+    };
+    std::vector<ArmorFlash>                              armor_flashes;
+
+    // Player damage indicator — screen-edge red vignette intensity. Set
+    // to 1.0 whenever the player ship takes any damage (shield or armor),
+    // decays exponentially each frame. Renders as a red gradient on the
+    // screen border, fading toward center. The classic FPS "you're being
+    // hit" cue without needing a dedicated full-screen shader.
+    float                                                player_hit_intensity = 0.0f;
     std::vector<SpriteObject>                            frame_sprites;
 
     // Held-key flags, indexed by sapp key code. Flight physics reads these
@@ -145,6 +193,18 @@ struct AppState {
     // (we don't currently swap systems at runtime; if/when we do, reset
     // this when the new system loads).
     int selected_nav = -1;
+
+    // Player ship target. Cycled by the T key through every contact in
+    // perception.visible[] sorted by distance ascending. 0 = no target.
+    // Stored as a Ship::id rather than an index so it stays valid across
+    // any future ship-array reshuffles. Resolved to a pointer each frame
+    // when we need to display it.
+    uint32_t player_target_id = 0;
+
+    // Navmap overlay (Alt+N to toggle, Alt+N or ESC to close). Big
+    // top-down view of the system's nav points + ship contacts; clicking
+    // a nav selects it (matches the N-key cycle's effect).
+    bool show_navmap = false;
 };
 
 AppState g;
@@ -505,7 +565,12 @@ void init_cb() {
         ShipSpriteObject s{};
         s.atlas          = &it->second;
         s.position       = sd.position;
-        s.world_size     = sd.length_meters;
+        // Ships scaled by k_ship_size_scale (world_scale.h). Both the
+        // rendered billboard AND the hit-radius derived from world_size
+        // (see ship::hit_radius_m) grow together, so visual size and
+        // collision stay locked in sync — the player can target what
+        // they see and trust the bullet will register.
+        s.world_size     = sd.length_meters * world_scale::k_ship_size_scale;
         s.lights_enabled = sd.lights_enabled;
         s.tint           = HMM_V4(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -538,6 +603,50 @@ void init_cb() {
     g.ships.push_back(ship::spawn_player());
     g.ships.front().position    = g.camera.position;
     g.ships.front().orientation = g.camera.orientation;
+
+    // Player ship — Tarsus class until the ship-picker flow lands.
+    // Class assignment gives the player real armor/shield/energy from
+    // the ShipClass data (matters once L4.2 damage lands; today it
+    // just feeds firing.cpp's energy budget). Player still moves via
+    // camera input, not the flight controller — class.cruise_speed /
+    // accel / max_ypr are not consulted for player kinematics.
+    {
+        Ship& player = g.ships.front();
+        if (const ShipClass* tarsus = ship_class::find("tarsus")) {
+            player.klass = tarsus;
+            // Mirror ship::spawn()'s health-from-class init since the
+            // player path doesn't go through that function. (When the
+            // ship-picker flow lands, this'll move into a shared
+            // ship::init_from_class helper.)
+            player.armor_fore_cm = tarsus->armor_fore_cm;
+            player.armor_aft_cm  = tarsus->armor_aft_cm;
+            player.armor_side_cm = tarsus->armor_side_cm;
+            if (tarsus->default_armor) {
+                player.armor_fore_cm += tarsus->default_armor->front_cm;
+                player.armor_aft_cm  += tarsus->default_armor->back_cm;
+                player.armor_side_cm += tarsus->default_armor->side_cm;
+            }
+            if (tarsus->default_shield) {
+                player.shield_fore_cm = tarsus->default_shield->front_cm;
+                player.shield_aft_cm  = tarsus->default_shield->back_cm;
+                player.shield_side_cm = tarsus->default_shield->side_cm;
+            }
+            player.energy_gj = tarsus->energy_max;
+        }
+        // Custom loadout: 2x Meson Blaster, mirrored left/right and
+        // below the eye line. Mesons are stronger per-shot than Lasers
+        // (3.2 cm vs 2.0 cm) and have higher range, so the player
+        // packs more punch in fewer shots. Body offsets put muzzles
+        // at lower-left and lower-right; gun convergence (firing.cpp)
+        // toes them in at 1 km so tracers cross at the crosshair.
+        GunMount meson_l, meson_r;
+        meson_l.type        = GunType::MesonBlaster;
+        meson_r.type        = GunType::MesonBlaster;
+        meson_l.offset_body = HMM_V3(-10.0f, 10.0f, 0.0f);
+        meson_r.offset_body = HMM_V3( 10.0f, 10.0f, 0.0f);
+        player.mounts        = { meson_l, meson_r };
+        player.gun_cooldowns = { 0.0f, 0.0f };
+    }
 
     int n_with_behavior = 0;
     for (size_t i = 0; i < g.system.placed_ship_sprites.size(); ++i) {
@@ -573,6 +682,19 @@ void init_cb() {
 
         Ship inst = ship::spawn(*klass);
         inst.sprite = &g.placed_ship_sprites[i];
+
+        // Faction override — same Talon hull can spawn as Pirate (the
+        // class default), Militia, or Retro. Empty string keeps the
+        // class default.
+        if (!sd.faction_override.empty()) {
+            const Faction f = faction::from_name(sd.faction_override);
+            if (f != Faction::Count) {
+                inst.faction = f;
+            } else {
+                std::fprintf(stderr, "[main] unknown faction '%s' on '%s' — using class default\n",
+                             sd.faction_override.c_str(), class_name.c_str());
+            }
+        }
 
         // Translate the JSON behaviour string into the Ship enum.
         if (sd.behavior_kind == "pursue_target") {
@@ -691,6 +813,164 @@ void frame_cb() {
         for (Ship& s : g.ships) ship_ai::tick(s, g.ships, t_now);
     }
 
+    // Player firing input. Hold LEFT_CTRL to fire — clear, modifier-style
+    // key that doesn't conflict with the existing W/A/S/D thrust + Q/E
+    // roll + SPACE / TAB / X / N controls. The flag drains every frame
+    // it's held; firing::tick consumes it and respects per-mount
+    // cooldowns + energy budget.
+    //
+    // Aim direction is just camera-forward — "shoot where I'm looking".
+    // (An earlier draft had a Freelancer-style mouse-driven gun gimbal
+    // up to ±40° off the ship's nose; reverted because it didn't feel
+    // right — guns lagging the camera read as decoupled rather than
+    // responsive. The convergence math in firing.cpp still applies so
+    // muzzle-offset wing guns toe-in toward a point 1 km ahead.)
+    if (!g.ships.empty() && g.ships.front().is_player) {
+        Ship& player = g.ships.front();
+        player.controller.fire_guns =
+            g.keys_down[SAPP_KEYCODE_LEFT_CONTROL] ||
+            g.keys_down[SAPP_KEYCODE_RIGHT_CONTROL];
+        player.controller.desired_forward = g.camera.forward();
+    }
+
+    // Firing -> spawn projectiles. Runs after AI/player set fire_guns,
+    // before projectile motion so a freshly-spawned projectile gets a
+    // first-frame integration step (otherwise it'd appear stuck at the
+    // muzzle for one frame).
+    firing::tick(g.ships, g.projectiles, dt);
+    projectile::tick(g.projectiles, dt);
+
+    // Snapshot alive flags BEFORE damage so we can detect kills this
+    // frame and spawn explosions at the right positions. Cheap (one
+    // bool per ship); a static thread-local buffer reuses storage so
+    // we don't allocate every frame in the steady state.
+    static thread_local std::vector<bool> was_alive;
+    was_alive.resize(g.ships.size());
+    for (size_t i = 0; i < g.ships.size(); ++i) was_alive[i] = g.ships[i].alive;
+
+    // Same idea for shield + armor values — record per-facing cm so we
+    // can spawn flashes whenever any facing decreases. 6 floats per ship
+    // total; ~400 bytes per frame at the demo's scale.
+    struct HpSnap { float sh_fore, sh_aft, sh_side, ar_fore, ar_aft, ar_side; };
+    static thread_local std::vector<HpSnap> hp_prev;
+    hp_prev.resize(g.ships.size());
+    for (size_t i = 0; i < g.ships.size(); ++i) {
+        hp_prev[i] = { g.ships[i].shield_fore_cm,
+                       g.ships[i].shield_aft_cm,
+                       g.ships[i].shield_side_cm,
+                       g.ships[i].armor_fore_cm,
+                       g.ships[i].armor_aft_cm,
+                       g.ships[i].armor_side_cm };
+    }
+
+    // Collision + damage. Runs AFTER projectile::tick — by this point
+    // each alive projectile sits at its post-integration position, and
+    // collide_and_damage reconstructs the previous position via velocity
+    // for the swept-segment test against ship hit spheres. A successful
+    // hit subtracts shield-then-armor from the right facing, sets
+    // alive=false on a kill, and marks the projectile dead so it stops
+    // rendering. Shield regen ticks afterwards on the same frame so
+    // recently-hit facings honour their pause-after-hit timer before
+    // refilling.
+    projectile::collide_and_damage(g.projectiles, g.ships, dt);
+    for (Ship& s : g.ships) ship::regen_shields(s, dt);
+
+    // Death detection: any ship that flipped alive: true -> false this
+    // frame just got killed; spawn an explosion at its last visible
+    // position. Use sprite->position (the post-integration latest)
+    // when available so the FX lines up with the rendered death pose.
+    for (size_t i = 0; i < g.ships.size() && i < was_alive.size(); ++i) {
+        if (was_alive[i] && !g.ships[i].alive) {
+            const HMM_Vec3 pos = g.ships[i].sprite
+                ? g.ships[i].sprite->position
+                : g.ships[i].position;
+            // Capture the camera basis at the moment of death so the
+            // disc shockwave stays where it was if the camera rotates
+            // afterwards. Player-facing disc at t=0 reads as a clean
+            // expanding ring; later frames the ring may be at a slight
+            // angle if the camera moved, which adds parallax.
+            explosion::spawn(g.explosions, pos,
+                             g.camera.right(), g.camera.up());
+        }
+    }
+    explosion::tick(g.explosions, dt);
+
+    // Shield + armor impact detection. Walk every ship and check if any
+    // facing dropped this frame; spawn the appropriate flash. Skip dead
+    // ships — the explosion FX already covers their final visual. The
+    // PLAYER ship is special-cased: its bubble would render at the
+    // camera position and just fill the view, so we only flag the
+    // screen-edge vignette for the player rather than spawning a
+    // bubble. NPC armor / shield bubbles render as world-space glows.
+    for (size_t i = 0; i < g.ships.size() && i < hp_prev.size(); ++i) {
+        const Ship& s = g.ships[i];
+        if (!s.alive) continue;
+        const HpSnap& prev = hp_prev[i];
+        const bool sh_hit = (prev.sh_fore > s.shield_fore_cm)
+                         || (prev.sh_aft  > s.shield_aft_cm)
+                         || (prev.sh_side > s.shield_side_cm);
+        const bool ar_hit = (prev.ar_fore > s.armor_fore_cm)
+                         || (prev.ar_aft  > s.armor_aft_cm)
+                         || (prev.ar_side > s.armor_side_cm);
+        if (!(sh_hit || ar_hit)) continue;
+
+        if (s.is_player) {
+            // Player: screen-edge vignette instead of a bubble.
+            g.player_hit_intensity = 1.0f;
+            continue;
+        }
+
+        const HMM_Vec3 pos = s.sprite ? s.sprite->position : s.position;
+        const float r = ship::hit_radius_m(s);
+
+        if (sh_hit) {
+            AppState::ShieldFlash f;
+            f.position   = pos;
+            f.radius     = r * 1.8f;
+            f.age_s      = 0.0f;
+            f.lifetime_s = 0.25f;
+            g.shield_flashes.push_back(f);
+        }
+        if (ar_hit) {
+            // Armor flash sits ON the hull (1.0x radius, not the
+            // wider shield bubble), shorter lifetime, sparkier — these
+            // are the "shields down, you're hitting metal now" cue.
+            AppState::ArmorFlash f;
+            f.position   = pos;
+            f.radius     = r * 1.0f;
+            f.age_s      = 0.0f;
+            f.lifetime_s = 0.18f;
+            g.armor_flashes.push_back(f);
+        }
+    }
+
+    // Flash tick + prune. Inline (small structs, single use site each).
+    for (auto& f : g.shield_flashes) {
+        f.age_s += dt;
+        if (f.age_s >= f.lifetime_s) f.lifetime_s = -1.0f;
+    }
+    g.shield_flashes.erase(
+        std::remove_if(g.shield_flashes.begin(), g.shield_flashes.end(),
+                       [](const AppState::ShieldFlash& f){ return f.lifetime_s < 0.0f; }),
+        g.shield_flashes.end());
+    for (auto& f : g.armor_flashes) {
+        f.age_s += dt;
+        if (f.age_s >= f.lifetime_s) f.lifetime_s = -1.0f;
+    }
+    g.armor_flashes.erase(
+        std::remove_if(g.armor_flashes.begin(), g.armor_flashes.end(),
+                       [](const AppState::ArmorFlash& f){ return f.lifetime_s < 0.0f; }),
+        g.armor_flashes.end());
+
+    // Player hit-indicator decay. ~0.5s fade-out (e^(-2*dt) per frame)
+    // so the vignette pulses cleanly — bright on impact, gone in half
+    // a second. Sustained fire keeps refreshing it via the spawn path
+    // above, so it reads as steady-red "you're being hit".
+    if (g.player_hit_intensity > 0.0f) {
+        g.player_hit_intensity *= std::exp(-2.0f * dt);
+        if (g.player_hit_intensity < 0.001f) g.player_hit_intensity = 0.0f;
+    }
+
     // One-shot perception summary on first tick — confirms the wiring
     // without spamming stdout. Static gate flips after the first call.
     {
@@ -759,6 +1039,21 @@ void frame_cb() {
         if (g.show_ship_frame_hud && !g.placed_ship_sprites.empty()) {
             sdtx_color3f(1.0f, 0.85f, 0.4f);
             sdtx_puts("\n");                       // 1 blank line gap
+
+            // Player HP block. Sums per-facing shield + armor; if
+            // anything's missing (no class) we just don't print.
+            if (!g.ships.empty() && g.ships.front().is_player
+                && g.ships.front().klass) {
+                const Ship& pl = g.ships.front();
+                if (pl.alive) {
+                    sdtx_printf("PLAYER  shield F%.0f A%.0f S%.0f  armor F%.0f A%.0f S%.0f\n",
+                                pl.shield_fore_cm, pl.shield_aft_cm, pl.shield_side_cm,
+                                pl.armor_fore_cm,  pl.armor_aft_cm,  pl.armor_side_cm);
+                } else {
+                    sdtx_puts("PLAYER  *** DEAD ***\n");
+                }
+            }
+
             sdtx_puts("SHIP SPRITE FRAMES (F3)\n");
             for (size_t i = 0; i < g.placed_ship_sprites.size(); ++i) {
                 const ShipSpriteObject& s = g.placed_ship_sprites[i];
@@ -779,20 +1074,32 @@ void frame_cb() {
                 // Perception column: H/A/N counts pulled from the matching
                 // Ship. ships[0] is the player; NPC sprites[i] pair with
                 // ships[i+1], hence the +1 offset. Empty string when no
-                // Ship has perception (placeholder rows).
+                // Ship has perception (placeholder rows). HP column is
+                // sum-of-shields and sum-of-armor across all 3 facings —
+                // compact "how alive is this thing" readout.
                 char percept_buf[32] = {0};
+                char hp_buf[64] = {0};
                 const size_t ship_idx = i + 1;
                 if (ship_idx < g.ships.size() && g.ships[ship_idx].klass) {
-                    const ShipPerception& p = g.ships[ship_idx].perception;
+                    const Ship& sh = g.ships[ship_idx];
+                    const ShipPerception& p = sh.perception;
                     std::snprintf(percept_buf, sizeof(percept_buf),
                                   " [H%d A%d N%d]",
                                   p.n_hostile, p.n_allied, p.n_neutral);
+                    if (sh.alive) {
+                        const float sh_sum = sh.shield_fore_cm + sh.shield_aft_cm + sh.shield_side_cm;
+                        const float ar_sum = sh.armor_fore_cm  + sh.armor_aft_cm  + sh.armor_side_cm;
+                        std::snprintf(hp_buf, sizeof(hp_buf),
+                                      " S%.0f A%.0f", sh_sum, ar_sum);
+                    } else {
+                        std::snprintf(hp_buf, sizeof(hp_buf), " DEAD");
+                    }
                 }
-                sdtx_printf(" %zu %-10s cam(az %+4.0f el %+4.0f) -> cell(az %+4.0f el %+4.0f)%s%s\n",
+                sdtx_printf(" %zu %-10s cam(az %+4.0f el %+4.0f) -> cell(az %+4.0f el %+4.0f)%s%s%s\n",
                             i, short_buf,
                             s.debug_cam_az_deg, s.debug_cam_el_deg,
                             s.debug_last_az_deg, s.debug_last_el_deg,
-                            tag, percept_buf);
+                            tag, percept_buf, hp_buf);
             }
             sdtx_color3f(0.7f, 1.0f, 0.9f);   // restore default for any later block
         }
@@ -803,7 +1110,7 @@ void frame_cb() {
         sdtx_pos(1.0f, fb_h * 0.5f / 8.0f - 4.0f);   // 4 lines up from bottom
         sdtx_puts("W/S throttle   A/D strafe   R/F up/down\n");
         sdtx_puts("mouse aim      SPACE toggle cursor   TAB cruise\n");
-        sdtx_puts("X brake        N cycle nav target\n");
+        sdtx_puts("X brake        N cycle nav target  T cycle ship target\n");
         sdtx_puts("CTRL+M debug   F2 lights   F3 ship-frame HUD   ESC x2 quit\n");
     }
 
@@ -844,6 +1151,114 @@ void frame_cb() {
         g.frame_sprites = g.placed_sprites;
         append_ship_sprites_for_camera(g.placed_ship_sprites, g.camera, g.frame_sprites);
         g.sprite_render.draw(g.frame_sprites, g.camera, aspect, time_sec);
+
+        // Additive glow billboards via the sprite spot pipeline.
+        // Combines projectile tracers + explosion FX (flash + shockwave)
+        // into one tracer list and submits in one draw call. HDR color
+        // values >1.0 are intentional — bloom catches them and blooms
+        // explosions look properly bright.
+        {
+            std::vector<SpriteRenderer::Tracer> tracers;
+            tracers.reserve(g.projectiles.size() + g.explosions.size() * 2);
+
+            // Projectile tracers. Color from the gun type, size scales
+            // with damage so Plasma reads chunkier than Laser.
+            for (const Projectile& p : g.projectiles) {
+                if (!p.alive) continue;
+                const GunStats& gs = g_gun_stats[(int)p.type];
+                SpriteRenderer::Tracer t;
+                t.position = p.position;
+                t.color    = gs.tracer_color;
+                t.size = 5.0f + p.damage_cm;
+                tracers.push_back(t);
+            }
+
+            // Explosions: per-explosion two-layer composite.
+            //   * Flash: small, near-white, exponentially decaying. Most
+            //     of its life is concentrated in the first ~150ms.
+            //   * Shockwave: large, expanding, orange. Reads as fireball.
+            // Color values >1.0 push past the LDR clamp so bloom
+            // amplifies; the bigger the value, the brighter the halo.
+            for (const Explosion& e : g.explosions) {
+                if (!e.alive) continue;
+                const float p = (e.lifetime_s > 0.0f)
+                    ? std::clamp(e.age_s / e.lifetime_s, 0.0f, 1.0f) : 1.0f;
+
+                // Flash — exponential decay, peaks at t=0. The (1-p)
+                // factor is a small linear taper so it fully extinguishes
+                // by end-of-life rather than just asymptoting near zero.
+                const float flash_i = std::exp(-p * 8.0f) * (1.0f - p);
+                if (flash_i > 0.005f) {
+                    SpriteRenderer::Tracer t;
+                    t.position = e.position;
+                    t.color = HMM_V3(3.5f * flash_i, 3.0f * flash_i, 2.4f * flash_i);
+                    t.size  = 80.0f + 60.0f * p;   // small, slowly grows
+                    tracers.push_back(t);
+                }
+
+                // (Shield flash drawing happens after the explosion
+                // loop; see the next block.)
+
+                // Shockwave — radius grows aggressively early then
+                // plateaus (the (1 - exp(-3p)) curve). Intensity fades
+                // linearly so the halo dims as it expands. Orange-red
+                // tint shifts slightly toward red over time so the late
+                // frames read as smouldering rather than bright fire.
+                const float wave_size  = 50.0f + 450.0f * (1.0f - std::exp(-p * 3.0f));
+                const float wave_i     = (1.0f - p) * 1.8f;
+                if (wave_i > 0.005f) {
+                    SpriteRenderer::Tracer t;
+                    t.position = e.position;
+                    t.color = HMM_V3(2.5f * wave_i,
+                                      1.0f * wave_i * (1.0f - 0.5f * p),
+                                      0.3f * wave_i * (1.0f - p));
+                    t.size  = wave_size;
+                    tracers.push_back(t);
+                }
+            }
+
+            // Shield flashes — short cyan glow at the ship's center,
+            // sized to the hit sphere. Intensity decays linearly with
+            // a slight bias toward the front of life so a fresh hit
+            // pops bright and fades fast. Color tuned to match the UI
+            // shield bar (cyan-blue) so the player intuitively links
+            // "flash" to "shield".
+            for (const AppState::ShieldFlash& f : g.shield_flashes) {
+                const float p = (f.lifetime_s > 0.0f)
+                    ? std::clamp(f.age_s / f.lifetime_s, 0.0f, 1.0f) : 1.0f;
+                const float intensity = (1.0f - p) * (1.0f - p) * 2.5f;
+                if (intensity <= 0.005f) continue;
+                SpriteRenderer::Tracer t;
+                t.position = f.position;
+                t.color = HMM_V3(0.4f * intensity,
+                                  1.6f * intensity,
+                                  2.6f * intensity);
+                t.size = f.radius;
+                tracers.push_back(t);
+            }
+
+            // Armor flashes — orange-red sparks at the hull. Smaller +
+            // shorter than the shield bubble so it reads as "hits ON
+            // the metal" rather than "shield envelope flickering".
+            // Color matches the orange UI armor bar (and the explosion
+            // shockwave palette) for visual consistency.
+            for (const AppState::ArmorFlash& f : g.armor_flashes) {
+                const float p = (f.lifetime_s > 0.0f)
+                    ? std::clamp(f.age_s / f.lifetime_s, 0.0f, 1.0f) : 1.0f;
+                const float intensity = (1.0f - p) * (1.0f - p) * 3.0f;
+                if (intensity <= 0.005f) continue;
+                SpriteRenderer::Tracer t;
+                t.position = f.position;
+                t.color = HMM_V3(2.8f * intensity,
+                                  1.0f * intensity,
+                                  0.2f * intensity);
+                t.size = f.radius;
+                tracers.push_back(t);
+            }
+
+            g.sprite_render.draw_tracers(tracers, g.camera, aspect);
+        }
+
         g.sun.draw(g.camera, aspect, time_sec);
         sg_end_pass();
     }
@@ -880,7 +1295,261 @@ void frame_cb() {
     atlas_grid_viewer::build(g.ship_sprite_atlases);
     if (!g.capture_clean) {
         cockpit_hud::build(g.camera, g.system, g.selected_nav,
-                           g.mouse_x, g.mouse_y, g.fly_by_wire);
+                           g.mouse_x, g.mouse_y, g.fly_by_wire,
+                           g.ships, g.player_target_id);
+        // Big system navmap (Alt+N to toggle). Drawn AFTER the regular
+        // HUD so it overlays on top. Mutates selected_nav when the
+        // player clicks a nav point — same effect as the N-cycle.
+        cockpit_hud::build_navmap(g.camera, g.system, g.selected_nav,
+                                   g.ships, g.show_navmap);
+    }
+
+    // ---- ship-target indicator ------------------------------------
+    // If the player has a target ship locked (T cycles through nearby
+    // contacts), draw a screen-space marker. On-screen targets get a
+    // four-corner bracket; off-screen ones get an arrow on the screen
+    // edge pointing toward where they are. Text below shows class
+    // name + distance + faction stance. Drawn into the simgui
+    // foreground draw list so it renders on top of everything.
+    if (!g.capture_clean && g.player_target_id != 0 && !g.ships.empty()) {
+        const Ship* target = nullptr;
+        for (const Ship& s : g.ships) {
+            if (s.id == g.player_target_id) { target = &s; break; }
+        }
+        if (target && target->alive) {
+            // Engine quirks (mirror cockpit_hud.cpp's well-tested path):
+            //   1. ImGui draw lists work in LOGICAL pixels; sapp_width/
+            //      _height return PHYSICAL (HiDPI-scaled) pixels, so
+            //      divide by sapp_dpi_scale() to get the logical canvas.
+            //   2. Our perspective pipeline maps world-up to +screen_y
+            //      already (no NDC Y-flip needed), so the textbook
+            //      `(1 - ndc_y) * 0.5` inversion would put the bracket
+            //      vertically MIRRORED from the ship.
+            const float dpi  = sapp_dpi_scale();
+            const float fb_w = (float)sapp_width()  / dpi;
+            const float fb_h = (float)sapp_height() / dpi;
+            const float aspect_loc = fb_w / fb_h;
+
+            // Use the LIVE sprite position when available — the Ship's
+            // `position` field is synced from the sprite at frame start,
+            // before kinematic integration. By render time the sprite
+            // has moved one tick further, and reading sprite->position
+            // keeps the bracket locked on the visual ship instead of
+            // lagging it by a frame.
+            const HMM_Vec3 target_pos = target->sprite ? target->sprite->position
+                                                       : target->position;
+            const HMM_Mat4 vp_loc = HMM_MulM4(g.camera.projection(aspect_loc), g.camera.view());
+            const HMM_Vec4 clip   = HMM_MulM4V4(vp_loc,
+                HMM_V4(target_pos.X, target_pos.Y, target_pos.Z, 1.0f));
+            const bool behind     = clip.W < 0.0f;
+
+            // NDC. When the target is BEHIND the camera, dividing by a
+            // negative W produces a sign-flipped projection — the
+            // "true" screen direction is the NEGATIVE of what the
+            // divide gives. Negating restores the geometric direction
+            // so off-screen arrows point correctly. (My first cut here
+            // wrote `-clip.X / -clip.W` which is algebraically the same
+            // as `clip.X / clip.W` — a no-op bug.)
+            float ndc_x = clip.X / clip.W;
+            float ndc_y = clip.Y / clip.W;
+            if (behind) { ndc_x = -ndc_x; ndc_y = -ndc_y; }
+            const bool offscreen = behind
+                                || std::fabs(ndc_x) > 1.0f
+                                || std::fabs(ndc_y) > 1.0f;
+
+            // Stance from the player's perception entry for this ship.
+            // Drives indicator color: red=hostile, yellow=neutral,
+            // green=allied. Default red if not in perception (e.g. the
+            // moment after acquisition before the next perception tick).
+            ImU32 col_hostile = IM_COL32(255,  80,  80, 255);
+            ImU32 col_neutral = IM_COL32(255, 220,  60, 255);
+            ImU32 col_allied  = IM_COL32( 80, 255,  80, 255);
+            ImU32 color = col_hostile;
+            float distance_m = HMM_LenV3(HMM_SubV3(target->position, g.ships.front().position));
+            const ShipPerception& pp = g.ships.front().perception;
+            for (const PerceivedContact& c : pp.visible) {
+                if (c.ship_id == g.player_target_id) {
+                    distance_m = c.distance_m;
+                    color = (c.stance == Stance::Hostile) ? col_hostile
+                          : (c.stance == Stance::Allied)  ? col_allied
+                          :                                  col_neutral;
+                    break;
+                }
+            }
+
+            ImDrawList* dl = ImGui::GetForegroundDrawList();
+            if (!offscreen) {
+                // NDC -> screen. Engine convention: NDC y maps DIRECTLY
+                // to screen y (no `(1 - ndc_y)` flip — see cockpit_hud's
+                // header notes for the documented quirk).
+                const float sx = (ndc_x * 0.5f + 0.5f) * fb_w;
+                const float sy = (ndc_y * 0.5f + 0.5f) * fb_h;
+                const float r  = 30.0f;
+                const float k  = 10.0f;
+                const float th = 2.0f;
+                // 8 line segments, two per corner (L shape).
+                dl->AddLine(ImVec2(sx-r, sy-r), ImVec2(sx-r+k, sy-r), color, th);
+                dl->AddLine(ImVec2(sx-r, sy-r), ImVec2(sx-r, sy-r+k), color, th);
+                dl->AddLine(ImVec2(sx+r, sy-r), ImVec2(sx+r-k, sy-r), color, th);
+                dl->AddLine(ImVec2(sx+r, sy-r), ImVec2(sx+r, sy-r+k), color, th);
+                dl->AddLine(ImVec2(sx-r, sy+r), ImVec2(sx-r+k, sy+r), color, th);
+                dl->AddLine(ImVec2(sx-r, sy+r), ImVec2(sx-r, sy+r-k), color, th);
+                dl->AddLine(ImVec2(sx+r, sy+r), ImVec2(sx+r-k, sy+r), color, th);
+                dl->AddLine(ImVec2(sx+r, sy+r), ImVec2(sx+r, sy+r-k), color, th);
+
+                // Label below the bracket.
+                char buf[96];
+                const char* tname = target->klass ? target->klass->name.c_str()
+                                  : target->is_player ? "player" : "?";
+                std::snprintf(buf, sizeof(buf), "%s   %.1f km", tname, distance_m * 0.001f);
+                dl->AddText(ImVec2(sx - r, sy + r + 6.0f), color, buf);
+            } else {
+                // Off-screen: arrow on screen-edge box pointing in the
+                // (ndc_x, ndc_y) direction from screen center. Margin
+                // pulls the arrow inward so it doesn't get clipped.
+                const float cx = fb_w * 0.5f;
+                const float cy = fb_h * 0.5f;
+                const float margin = 80.0f;
+                const float half_w = fb_w * 0.5f - margin;
+                const float half_h = fb_h * 0.5f - margin;
+                const float dxlen = std::sqrt(ndc_x * ndc_x + ndc_y * ndc_y);
+                if (dxlen > 1e-6f) {
+                    const float dx = ndc_x / dxlen;
+                    const float dy = ndc_y / dxlen;
+                    // Scale to land on the rectangular edge. NO Y-flip
+                    // here either — same engine convention as the
+                    // bracket path: NDC y already maps to screen y.
+                    const float scale = std::min(
+                        half_w / std::max(std::fabs(dx), 1e-6f),
+                        half_h / std::max(std::fabs(dy), 1e-6f));
+                    const float ax = cx + dx * scale;
+                    const float ay = cy + dy * scale;
+                    const float arrow = 14.0f;
+                    const float perp_x = -dy;
+                    const float perp_y =  dx;
+                    ImVec2 tip(   ax + dx * arrow,            ay + dy * arrow);
+                    ImVec2 base_l(ax + perp_x * arrow * 0.6f, ay + perp_y * arrow * 0.6f);
+                    ImVec2 base_r(ax - perp_x * arrow * 0.6f, ay - perp_y * arrow * 0.6f);
+                    dl->AddTriangleFilled(tip, base_l, base_r, color);
+
+                    // Label tucked just inside the arrow toward center.
+                    char buf[96];
+                    const char* tname = target->klass ? target->klass->name.c_str()
+                                      : target->is_player ? "player" : "?";
+                    std::snprintf(buf, sizeof(buf), "%s  %.1f km", tname, distance_m * 0.001f);
+                    const float lx = ax - dx * 60.0f - 30.0f;
+                    const float ly = ay - dy * 60.0f - 7.0f;
+                    dl->AddText(ImVec2(lx, ly), color, buf);
+                }
+            }
+
+            // ---- ITTS (Improved Targeting and Tracking System) -------
+            // Wing-Commander-style lead reticle: where to aim to hit the
+            // moving target given the player's projectile flight time.
+            // Compute the target's world-frame velocity (forward * speed
+            // for NPCs that have a sprite), the average projectile
+            // speed across the player's mounts, and predict an
+            // intercept point one iteration deep:
+            //
+            //   t_int = |target - me| / proj_speed
+            //   lead  = target_pos + target_vel * t_int
+            //
+            // Single-pass is within a few metres at our engagement
+            // ranges; a two-pass refinement (re-evaluate distance from
+            // lead) tightens it further but isn't worth the math.
+            //
+            // Drawn ONLY when on-screen (in the camera's view frustum)
+            // — an off-screen ITTS would be confusing because it isn't
+            // the target itself, just where to aim. Off-screen targets
+            // already have the directional arrow above.
+            if (!offscreen) {
+                const Ship& player = g.ships.front();
+                HMM_Vec3 t_pos = target->sprite ? target->sprite->position
+                                                 : target->position;
+                HMM_Vec3 t_vel = HMM_V3(0, 0, 0);
+                if (target->sprite) {
+                    const HMM_Mat4 tR  = HMM_QToM4(target->orientation);
+                    const HMM_Vec4 tf  = HMM_MulM4V4(tR, HMM_V4(0, 0, 1, 0));
+                    t_vel = HMM_MulV3F(HMM_V3(tf.X, tf.Y, tf.Z),
+                                        target->sprite->forward_speed);
+                }
+
+                // Average player projectile speed (skip null-stat guns).
+                float proj_speed = 1100.0f;
+                {
+                    int n_complete = 0; float sum = 0.0f;
+                    for (const auto& m : player.mounts) {
+                        if ((int)m.type < 0 || (int)m.type >= kGunTypeCount) continue;
+                        const GunStats& gs = g_gun_stats[(int)m.type];
+                        if (!gs.complete) continue;
+                        sum += gs.speed_mps; ++n_complete;
+                    }
+                    if (n_complete > 0) proj_speed = sum / n_complete;
+                }
+
+                const HMM_Vec3 to_t = HMM_SubV3(t_pos, player.position);
+                const float    dist = std::sqrt(HMM_DotV3(to_t, to_t));
+                const float    t_int = (proj_speed > 1.0f) ? dist / proj_speed : 0.0f;
+                const HMM_Vec3 lead = HMM_AddV3(t_pos, HMM_MulV3F(t_vel, t_int));
+
+                // Project lead to screen with the same vp_loc + Y-quirk
+                // we used for the target bracket.
+                const HMM_Vec4 lc = HMM_MulM4V4(vp_loc,
+                    HMM_V4(lead.X, lead.Y, lead.Z, 1.0f));
+                if (lc.W > 0.0f) {
+                    const float lndc_x = lc.X / lc.W;
+                    const float lndc_y = lc.Y / lc.W;
+                    if (std::fabs(lndc_x) <= 1.0f && std::fabs(lndc_y) <= 1.0f) {
+                        const float lsx = (lndc_x * 0.5f + 0.5f) * fb_w;
+                        const float lsy = (lndc_y * 0.5f + 0.5f) * fb_h;
+                        // Reticle: open circle + small inset crosshair,
+                        // bright green so it pops against any backdrop.
+                        const ImU32 itts_col = IM_COL32(140, 255, 140, 230);
+                        dl->AddCircle(ImVec2(lsx, lsy), 9.0f, itts_col, 16, 1.5f);
+                        dl->AddLine(ImVec2(lsx - 5, lsy),
+                                    ImVec2(lsx + 5, lsy), itts_col, 1.0f);
+                        dl->AddLine(ImVec2(lsx, lsy - 5),
+                                    ImVec2(lsx, lsy + 5), itts_col, 1.0f);
+                    }
+                }
+            }
+        } else {
+            // Target died or fell off the world — clear so next T press
+            // starts fresh from the nearest current contact.
+            g.player_target_id = 0;
+        }
+    }
+
+    // ---- player damage vignette ------------------------------------
+    // Red screen-edge gradient when the player took damage recently.
+    // Built from four edge rectangles, each with a multi-color
+    // gradient: red+alpha at the screen edge, transparent toward the
+    // center. Reads as a ring of damage glow without needing a
+    // dedicated post-process shader. Intensity decays exponentially
+    // every frame; sustained fire keeps refreshing it so the player
+    // sees a steady red ring while being hit.
+    if (!g.capture_clean && g.player_hit_intensity > 0.005f) {
+        const float dpi = sapp_dpi_scale();
+        const float w   = (float)sapp_width()  / dpi;
+        const float h   = (float)sapp_height() / dpi;
+        const float band = std::min(w, h) * 0.18f;   // band thickness ~18% of min dim
+        const int   alpha = (int)std::clamp(g.player_hit_intensity * 200.0f, 0.0f, 200.0f);
+        const ImU32 hit  = IM_COL32(255, 30, 30, alpha);
+        const ImU32 zero = IM_COL32(255, 30, 30, 0);
+
+        ImDrawList* dl = ImGui::GetForegroundDrawList();
+        // Top band — red along screen-top edge, fades downward.
+        dl->AddRectFilledMultiColor(ImVec2(0,    0),    ImVec2(w, band),
+                                    hit, hit, zero, zero);
+        // Bottom band — red along screen-bottom edge, fades upward.
+        dl->AddRectFilledMultiColor(ImVec2(0,    h-band), ImVec2(w, h),
+                                    zero, zero, hit, hit);
+        // Left band — red along screen-left edge, fades rightward.
+        dl->AddRectFilledMultiColor(ImVec2(0,    0),    ImVec2(band, h),
+                                    hit, zero, zero, hit);
+        // Right band — red along screen-right edge, fades leftward.
+        dl->AddRectFilledMultiColor(ImVec2(w-band, 0),  ImVec2(w, h),
+                                    zero, hit, hit, zero);
     }
 
     // Pass 4: composite to swapchain with lens flare + HUD + ImGui
@@ -977,11 +1646,56 @@ void event_cb(const sapp_event* ev) {
         // N — cycle target through nav_points. KEY_DOWN (not keys_down
         // polled per frame) so a single press advances exactly one slot,
         // not however-many frames the key was physically held.
-        if (ev->key_code == SAPP_KEYCODE_N && !g.system.nav_points.empty()) {
-            const int n = (int)g.system.nav_points.size();
-            g.selected_nav = (g.selected_nav + 1) % n;
-            std::printf("[nav] target → %s\n",
-                        g.system.nav_points[g.selected_nav].name.c_str());
+        // Alt+N opens the big navigation map overlay instead.
+        if (ev->key_code == SAPP_KEYCODE_N) {
+            const bool alt_held = (ev->modifiers & SAPP_MODIFIER_ALT) != 0;
+            if (alt_held) {
+                g.show_navmap = !g.show_navmap;
+                std::printf("[navmap] %s\n", g.show_navmap ? "OPEN" : "closed");
+            } else if (!g.system.nav_points.empty()) {
+                const int n = (int)g.system.nav_points.size();
+                g.selected_nav = (g.selected_nav + 1) % n;
+                std::printf("[nav] target → %s\n",
+                            g.system.nav_points[g.selected_nav].name.c_str());
+            }
+        }
+        // T — cycle target through nearby ships (player's perception).
+        // Sorted by distance ascending so repeated presses sweep nearest
+        // -> farthest -> wrap. Picking up the cycle from "no target"
+        // selects the nearest contact; if the current target has fallen
+        // out of perception range since last frame, the search-by-id
+        // fails and we restart at index 0.
+        if (ev->key_code == SAPP_KEYCODE_T && !g.ships.empty()) {
+            const Ship& player = g.ships.front();
+            std::vector<PerceivedContact> sorted = player.perception.visible;
+            std::sort(sorted.begin(), sorted.end(),
+                      [](const PerceivedContact& a, const PerceivedContact& b) {
+                          return a.distance_m < b.distance_m;
+                      });
+            if (sorted.empty()) {
+                g.player_target_id = 0;
+                std::printf("[target] no contacts in range\n");
+            } else {
+                int cur = -1;
+                for (size_t i = 0; i < sorted.size(); ++i) {
+                    if (sorted[i].ship_id == g.player_target_id) {
+                        cur = (int)i; break;
+                    }
+                }
+                const int next = (cur + 1) % (int)sorted.size();
+                g.player_target_id = sorted[next].ship_id;
+                // Look up the ship to print a friendly name.
+                const char* name = "?";
+                for (const Ship& s : g.ships) {
+                    if (s.id == g.player_target_id) {
+                        name = s.klass ? s.klass->name.c_str()
+                             : s.is_player ? "player" : "?";
+                        break;
+                    }
+                }
+                std::printf("[target] → %s (id=%u, %.0f m)\n",
+                            name, g.player_target_id, sorted[next].distance_m);
+            }
         }
         // F3 — toggle the ship-sprite frame HUD. Useful while flying around a
         // sprite ship: lets you see exactly which atlas cell the engine picks

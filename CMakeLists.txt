@@ -127,6 +127,9 @@ add_executable(new_privateer
     src/ship.cpp
     src/ship_ai.cpp
     src/perception.cpp
+    src/firing.cpp
+    src/projectile.cpp
+    src/explosion.cpp
     src/mesh_render.cpp
     src/mesh_render_atmosphere.cpp
     src/sprite.cpp

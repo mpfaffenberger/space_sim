@@ -469,3 +469,51 @@ void SpriteRenderer::draw(const std::vector<SpriteObject>& sprites,
         }
     }
 }
+
+// ----------------------------------------------------------------------------
+// Tracer rendering — same pipeline + shader as the sprite "spot" pass, just
+// without the UV-into-billboard projection. Each tracer is one additive glow
+// quad at a free-standing world position. Used for projectiles (firing.cpp,
+// projectile.cpp); the spot pipeline already does additive blending and
+// vertex-shader depth bias, so the tracers composite over hulls cleanly.
+// ----------------------------------------------------------------------------
+
+void SpriteRenderer::draw_tracers(const std::vector<Tracer>& tracers,
+                                  const Camera& cam,
+                                  float aspect) const {
+    if (tracers.empty()) return;
+
+    const HMM_Mat4 view = cam.view();
+    const HMM_Mat4 vp   = HMM_MulM4(cam.projection(aspect), view);
+    HMM_Vec3 cam_right, cam_up;
+    camera_basis(view, cam_right, cam_up);
+
+    sg_apply_pipeline(spot_pipeline);
+    sg_bindings bs{};
+    bs.vertex_buffers[0] = vbuf;
+    bs.index_buffer      = ibuf;
+    sg_apply_bindings(&bs);
+
+    for (const Tracer& t : tracers) {
+        vs_spot_params_t vsp{};
+        std::memcpy(vsp.view_proj, &vp, sizeof(float) * 16);
+        vsp.cam_right[0] = cam_right.X; vsp.cam_right[1] = cam_right.Y;
+        vsp.cam_right[2] = cam_right.Z; vsp.cam_right[3] = 0.0f;
+        vsp.cam_up[0]    = cam_up.X;    vsp.cam_up[1]    = cam_up.Y;
+        vsp.cam_up[2]    = cam_up.Z;    vsp.cam_up[3]    = 0.0f;
+        vsp.spot_pos[0]  = t.position.X;
+        vsp.spot_pos[1]  = t.position.Y;
+        vsp.spot_pos[2]  = t.position.Z;
+        vsp.spot_pos[3]  = t.size;
+
+        fs_spot_params_t fsp{};
+        fsp.color_and_intensity[0] = t.color.X;
+        fsp.color_and_intensity[1] = t.color.Y;
+        fsp.color_and_intensity[2] = t.color.Z;
+        fsp.color_and_intensity[3] = 1.0f;   // tracers always full intensity
+
+        sg_apply_uniforms(UB_vs_spot_params, SG_RANGE(vsp));
+        sg_apply_uniforms(UB_fs_spot_params, SG_RANGE(fsp));
+        sg_draw(0, 6, 1);
+    }
+}
