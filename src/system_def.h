@@ -97,6 +97,16 @@ struct PlacedShipSpriteDef {
     // to cruise. More behaviors land as the AI layer grows.
     std::string behavior_kind;
     HMM_Vec3    behavior_target_pos = { 0, 0, 0 };
+
+    // Optional AI state-machine driver. When `ai_enabled` is true the
+    // ship_ai layer owns `behavior` every frame (overrides whatever
+    // `behavior_kind` set above — they're mutually exclusive in
+    // practice). The initial state seeds the machine; transitions are
+    // pure functions of perception + hp from there.
+    bool        ai_enabled            = false;
+    std::string ai_initial_state;     // "idle" / "patrol" / "engage" / "flee"
+    HMM_Vec3    ai_patrol_anchor      = { 0, 0, 0 };
+    bool        ai_has_patrol_anchor  = false;
 };
 
 struct PlacedMeshDef {

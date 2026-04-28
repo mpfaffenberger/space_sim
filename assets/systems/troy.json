@@ -113,28 +113,24 @@
         "angular_velocity_deg": [0.0, 6.0, 0.0]
       }
     },
-    // Talon spawned 500u east of the Tarsus's anchor. First taste of the
-    // new flight controller: PursueTarget points it at the Tarsus's
-    // orbit center, controller writes angular_velocity + forward_speed
-    // every tick to close the gap — class params drive the actual rates
-    // (Talon = Very Good accel + Good YPR -> max yaw ~75°/s, accel
-    // ~100 m/s², cruise 400 m/s). Visual outcome: Talon yaws hard
-    // toward (-X), accelerates from 0 to cruise, flies through the
-    // target point, overshoots (no "stop within range" yet), turns
-    // around, oscillates near the Tarsus's orbit center. Tarsus stays
-    // on its legacy clean circle — the side-by-side is the controller-
-    // vs-no-controller A/B.
+    // Talon spawned 500u east of the Tarsus's anchor. AI state machine
+    // drives this one: starts in Idle, perception sees the Tarsus
+    // (matrix Pirate-vs-Merchant = Hostile) and the player (baseline
+    // -30 -> Hostile too) inside its 25 km radar, transitions to
+    // Engage with whichever is nearest. Engage state writes
+    // PursueTarget pointed at the target's CURRENT position every
+    // frame, so the Talon dynamically chases the moving Tarsus rather
+    // than parking at a static waypoint. This is the L3 "AI is alive"
+    // moment — the Talon now reacts to the world.
     //
-    // Revert to legacy circle: drop the `behavior` block and put the
-    // old `motion` block back (forward_speed=40, angular_velocity_deg=
-    // [0,-6,0]).
+    // Revert to scripted PursueTarget by replacing the `ai` block with
+    // `behavior: { kind: "pursue_target", target_pos: [...] }`.
     {
       "atlas":         "ships/talon/atlas_manifest",
       "position":      [50500, -100000, 33150],
       "length_meters": 80,
-      "behavior": {
-        "kind":       "pursue_target",
-        "target_pos": [50000, -100000, 33150]
+      "ai": {
+        "initial_state": "idle"
       }
     }
   ],

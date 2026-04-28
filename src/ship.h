@@ -35,6 +35,7 @@
 
 #include "faction.h"
 #include "perception.h"
+#include "ship_ai.h"
 
 #include <HandmadeMath.h>
 #include <cstdint>
@@ -98,6 +99,14 @@ struct Ship {
     // ---- behaviour + controller ---------------------------------------
     ShipFlightController controller;
     ShipBehaviorState    behavior;
+
+    // ---- AI state machine (L3) ----------------------------------------
+    // When ai.enabled is true, ship_ai::tick OWNS behavior — it'll be
+    // overwritten every frame based on perception + state. When false,
+    // the JSON-set or scripted behaviour stands. This split keeps the
+    // demo's legacy-motion ships (Tarsus circle) working alongside
+    // AI-driven ships (Talon engaging) in the same scene.
+    ShipAIState ai;
 
     // ---- perception ---------------------------------------------------
     // Refreshed by perception::tick once per frame, BEFORE ship::tick.

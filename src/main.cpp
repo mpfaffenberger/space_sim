@@ -33,6 +33,7 @@
 #include "mesh_render.h"
 #include "perception.h"
 #include "ship.h"
+#include "ship_ai.h"
 #include "ship_class.h"
 #include "shield.h"
 #include "sprite.h"
@@ -586,6 +587,19 @@ void init_cb() {
                          sd.behavior_kind.c_str(), class_name.c_str());
         }
 
+        // Translate the optional `ai` JSON block into the AI state.
+        // ai_enabled wins over behavior — ship_ai::tick will overwrite
+        // it every frame.
+        if (sd.ai_enabled) {
+            inst.ai.enabled = true;
+            const AIState seeded = sd.ai_initial_state.empty()
+                ? AIState::Idle
+                : ship_ai::from_name(sd.ai_initial_state);
+            inst.ai.state = (seeded == AIState::Count) ? AIState::Idle : seeded;
+            inst.ai.has_patrol_anchor = sd.ai_has_patrol_anchor;
+            inst.ai.patrol_anchor     = sd.ai_patrol_anchor;
+        }
+
         g.ships.push_back(inst);
     }
     std::printf("[ship] %zu instances spawned (%d with active behavior)\n",
@@ -666,6 +680,16 @@ void frame_cb() {
     // data. O(N²) over alive ships; cheap at the demo's scale, will
     // need spatial bucketing past ~100 ships.
     perception::tick(g.ships, g.player_rep);
+
+    // AI state machine: between perception (input) and ship::tick
+    // (output). For each ai-enabled ship it transitions the state and
+    // writes a fresh behaviour for the controller to consume this same
+    // tick. ai-disabled ships fall through unchanged — their behaviour
+    // came from JSON or stays at None for legacy motion.
+    {
+        const float t_now = (float)stm_sec(stm_now());   // process uptime
+        for (Ship& s : g.ships) ship_ai::tick(s, g.ships, t_now);
+    }
 
     // One-shot perception summary on first tick — confirms the wiring
     // without spamming stdout. Static gate flips after the first call.

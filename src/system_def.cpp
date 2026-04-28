@@ -82,6 +82,19 @@ PlacedShipSpriteDef parse_ship_sprite(const json::Value& v) {
         if (auto* k = b->find("kind")) s.behavior_kind = k->as_string();
         s.behavior_target_pos = vec3_or(b->find("target_pos"), s.behavior_target_pos);
     }
+
+    // Optional `ai` block. When present the AI state machine drives
+    // the ship — initial_state seeds the machine, patrol_anchor (if
+    // set) tells the Patrol state where to loiter. Mutually exclusive
+    // with `behavior` for any given ship: ai_enabled wins.
+    if (auto* ai = v.find("ai")) {
+        s.ai_enabled = true;
+        if (auto* p = ai->find("initial_state")) s.ai_initial_state = p->as_string();
+        if (auto* anchor = ai->find("patrol_anchor")) {
+            s.ai_patrol_anchor     = vec3_or(anchor, s.ai_patrol_anchor);
+            s.ai_has_patrol_anchor = true;
+        }
+    }
     return s;
 }
 
