@@ -31,6 +31,7 @@
 #include "faction.h"
 #include "gun.h"
 #include "mesh_render.h"
+#include "perception.h"
 #include "ship.h"
 #include "ship_class.h"
 #include "shield.h"
@@ -628,6 +629,36 @@ void frame_cb() {
     g.camera.apply_thrust(thrust_from_keys(), dt);
     g.camera.integrate(dt);
 
+    // Perception: every ship learns who's in radar range this tick and
+    // how the faction matrix classifies them. Runs BEFORE behaviour so
+    // any AI that wants to read perception ("chase nearest hostile")
+    // sees fresh data. O(N²) over alive ships; cheap at the demo's
+    // scale, will need spatial bucketing past ~100 ships.
+    perception::tick(g.ships);
+
+    // One-shot perception summary on first tick — confirms the wiring
+    // without spamming stdout. Static gate flips after the first call.
+    {
+        static bool s_first_perception_dump = true;
+        if (s_first_perception_dump) {
+            s_first_perception_dump = false;
+            for (const Ship& s : g.ships) {
+                if (!s.klass) continue;
+                std::printf("[perception] %-8s sees: %d hostile, %d allied, %d neutral",
+                            s.klass->name.c_str(),
+                            s.perception.n_hostile,
+                            s.perception.n_allied,
+                            s.perception.n_neutral);
+                if (s.perception.nearest_hostile_id) {
+                    std::printf("  (nearest hostile id=%u @ %.0fm)",
+                                s.perception.nearest_hostile_id,
+                                s.perception.nearest_hostile_dist);
+                }
+                std::printf("\n");
+            }
+        }
+    }
+
     // Ship behaviour + flight controller. Runs BEFORE the integrator so
     // any ship with an active behaviour writes fresh angular_velocity /
     // forward_speed onto its sprite this frame. Ships with behavior=None
@@ -688,11 +719,21 @@ void frame_cb() {
                 std::memcpy(short_buf, short_key, copy_len);
                 short_buf[copy_len] = '\0';
                 const char* tag = s.manual_frame_enabled ? " [MANUAL]" : "";
-                sdtx_printf(" %zu %-10s cam(az %+4.0f el %+4.0f) -> cell(az %+4.0f el %+4.0f)%s\n",
+                // Perception column: H/A/N counts pulled from the matching
+                // Ship (lockstep index with placed_ship_sprites). Empty
+                // string when no Ship has perception (placeholder ships).
+                char percept_buf[32] = {0};
+                if (i < g.ships.size() && g.ships[i].klass) {
+                    const ShipPerception& p = g.ships[i].perception;
+                    std::snprintf(percept_buf, sizeof(percept_buf),
+                                  " [H%d A%d N%d]",
+                                  p.n_hostile, p.n_allied, p.n_neutral);
+                }
+                sdtx_printf(" %zu %-10s cam(az %+4.0f el %+4.0f) -> cell(az %+4.0f el %+4.0f)%s%s\n",
                             i, short_buf,
                             s.debug_cam_az_deg, s.debug_cam_el_deg,
                             s.debug_last_az_deg, s.debug_last_el_deg,
-                            tag);
+                            tag, percept_buf);
             }
             sdtx_color3f(0.7f, 1.0f, 0.9f);   // restore default for any later block
         }

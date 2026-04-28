@@ -34,6 +34,7 @@
 // -----------------------------------------------------------------------------
 
 #include "faction.h"
+#include "perception.h"
 
 #include <HandmadeMath.h>
 #include <cstdint>
@@ -77,6 +78,14 @@ struct Ship {
     // ---- behaviour + controller ---------------------------------------
     ShipFlightController controller;
     ShipBehaviorState    behavior;
+
+    // ---- perception ---------------------------------------------------
+    // Refreshed by perception::tick once per frame, BEFORE ship::tick.
+    // Behaviours may read this to pick desired_forward / desired_speed
+    // ("chase nearest hostile", "flee if outnumbered"). The vector
+    // inside is reused across ticks — no per-frame allocation in the
+    // steady state once perceived counts stop growing.
+    ShipPerception perception;
 
     // ---- health (cm of durasteel; same unit as gun damage) ------------
     float armor_fore_cm  = 0.0f;
