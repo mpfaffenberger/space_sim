@@ -6,7 +6,27 @@
 
 #include <cmath>
 
-void perception::tick(std::vector<Ship>& ships) {
+// Stance lookup that handles all four (player, NPC) × (player, NPC)
+// cases. NPC-vs-NPC consults the symmetric matrix; anything involving
+// the player folds the relevant faction's baseline + rep through the
+// -25 / +25 thresholds. The player-self case is impossible (only one
+// player ship) — perception::tick already skips self-observation.
+static Stance classify_pair(const Ship& observer, const Ship& other,
+                             const PlayerReputation& rep) {
+    if (other.is_player) {
+        // "How does this NPC observer feel about the player?"
+        return faction::stance_npc_vs_player(observer.faction, rep);
+    }
+    if (observer.is_player) {
+        // "What stance is this NPC contact taking toward me?" — same
+        // lookup, just inverted, so the player's perception list
+        // colours hostiles/allies the way the NPC's AI sees the player.
+        return faction::stance_npc_vs_player(other.faction, rep);
+    }
+    return faction::stance_npc_vs_npc(observer.faction, other.faction);
+}
+
+void perception::tick(std::vector<Ship>& ships, const PlayerReputation& player_rep) {
     // O(N²) double-loop. Each observer's perception is rebuilt from
     // scratch — no incremental updates today (fast enough at N ≤ 50).
     // Inside the inner loop we early-out on dead/sprite-less ships and
@@ -22,17 +42,29 @@ void perception::tick(std::vector<Ship>& ships) {
         p.nearest_hostile_id   = p.nearest_friend_id  = 0;
         p.nearest_hostile_dist = p.nearest_friend_dist = 1e30f;
 
-        if (!observer.alive || !observer.sprite || !observer.klass) continue;
+        if (!observer.alive) continue;
 
-        const float    radar_r = observer.klass->radar_range;
-        const float    r2      = radar_r * radar_r;
-        const HMM_Vec3 my_pos  = observer.sprite->position;
+        // Player has no class -> use a generous default radar range so
+        // the player's HUD shows nearby contacts. NPCs use their
+        // class-defined radar reach; this preserves Privateer's
+        // "merchant ship can't see as far as a Confed corvette" feel.
+        constexpr float k_player_radar_m = 25000.0f;
+        const float radar_r = observer.is_player ? k_player_radar_m
+                            : (observer.klass ? observer.klass->radar_range : 0.0f);
+        if (radar_r <= 0.0f) continue;
+        const float    r2     = radar_r * radar_r;
+        const HMM_Vec3 my_pos = observer.position;
 
         for (Ship& other : ships) {
             if (&other == &observer) continue;   // never perceive self
-            if (!other.alive || !other.sprite)   continue;
+            if (!other.alive)        continue;
+            // Position must have been synced this frame — for NPCs by
+            // ship::sync_from_sprite, for the player by main's camera
+            // copy. A ship with neither still has a default-zero
+            // position; that's a bug in the caller, but harmless here
+            // (it just shows up as a contact at origin).
 
-            const HMM_Vec3 to = HMM_SubV3(other.sprite->position, my_pos);
+            const HMM_Vec3 to = HMM_SubV3(other.position, my_pos);
             const float    d2 = HMM_DotV3(to, to);
             if (d2 > r2) continue;                // out of radar range
 
@@ -48,7 +80,7 @@ void perception::tick(std::vector<Ship>& ships) {
             c.ship_id    = other.id;
             c.distance_m = d;
             c.to_unit    = to_unit;
-            c.stance     = faction::stance_npc_vs_npc(observer.faction, other.faction);
+            c.stance     = classify_pair(observer, other, player_rep);
             p.visible.push_back(c);
 
             switch (c.stance) {

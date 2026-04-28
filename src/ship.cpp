@@ -130,9 +130,29 @@ void flight_controller_step(Ship& s, float dt) {
 
 } // namespace
 
-Ship ship::spawn(const ShipClass& klass) {
-    static uint32_t s_next_id = 1;
+namespace { uint32_t s_next_id = 1; }   // shared monotonic counter
 
+Ship ship::spawn_player() {
+    Ship s;
+    s.id        = s_next_id++;
+    s.is_player = true;
+    s.klass     = nullptr;
+    s.faction   = Faction::Civilian;   // unaligned; rep is the real currency
+    s.alive     = true;
+    // No sprite, no controller, no behaviour. Pose is filled in each frame
+    // from the camera before perception runs. Health/energy don't apply
+    // until the player ship has a class — defer to a follow-up that lets
+    // the player pick a Centurion/Tarsus/etc. and inherit its stats.
+    return s;
+}
+
+void ship::sync_from_sprite(Ship& s) {
+    if (!s.sprite) return;
+    s.position    = s.sprite->position;
+    s.orientation = s.sprite->orientation;
+}
+
+Ship ship::spawn(const ShipClass& klass) {
     Ship s;
     s.id      = s_next_id++;
     s.klass   = &klass;
@@ -167,7 +187,8 @@ Ship ship::spawn(const ShipClass& klass) {
 }
 
 void ship::tick(Ship& s, float dt) {
-    if (!s.alive) return;
+    if (!s.alive)     return;
+    if (s.is_player)  return;   // player flies via camera input, not the controller
     switch (s.behavior.kind) {
     case ShipBehavior::None:
         // Controller is idle — leave sprite kinematics alone. This is

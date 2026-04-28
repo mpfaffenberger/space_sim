@@ -63,9 +63,25 @@ struct ShipBehaviorState {
 
 struct Ship {
     // ---- identity ------------------------------------------------------
-    uint32_t          id      = 0;          // monotonic; 0 reserved for "none"
-    const ShipClass*  klass   = nullptr;
-    Faction           faction = Faction::Civilian;
+    uint32_t          id        = 0;        // monotonic; 0 reserved for "none"
+    const ShipClass*  klass     = nullptr;  // nullptr is legal for the player
+    Faction           faction   = Faction::Civilian;
+    bool              is_player = false;    // toggled on by ship::spawn_player()
+
+    // ---- canonical pose ------------------------------------------------
+    // Authoritative for perception + AI logic. Synced once per frame from
+    // the source of truth, which differs by ship kind:
+    //   * NPC ships     — copied from sprite->position/orientation
+    //                     (the integrator owns those, see ship_sprite.cpp).
+    //   * Player ship   — copied from the camera, which is the source of
+    //                     truth for player input. The reverse direction
+    //                     (write back into camera) isn't needed because
+    //                     the player ship doesn't run a controller.
+    // Doing the sync once per frame means perception + AI read a single
+    // unified field (`s.position`) regardless of whether the ship is an
+    // NPC or the player — no special-casing in the inner loops.
+    HMM_Vec3 position    = { 0.0f, 0.0f, 0.0f };
+    HMM_Quat orientation = { 0.0f, 0.0f, 0.0f, 1.0f };
 
     // ---- visual back-pointer ------------------------------------------
     // Non-owning. The ShipSpriteObject vector lives in main's State and
@@ -73,6 +89,10 @@ struct Ship {
     // ownership unchanged from the prior commits — the existing
     // update_ship_sprite_motion path still runs the integration, the
     // controller above just writes its inputs.
+    //
+    // nullptr for the player ship (the player is INSIDE their cockpit;
+    // the cockpit_hud renderer handles their visuals) and for any AI
+    // entity whose visuals are off-screen / abstract.
     ShipSpriteObject* sprite = nullptr;
 
     // ---- behaviour + controller ---------------------------------------
@@ -107,6 +127,20 @@ namespace ship {
 // override `faction` if the spawn context wants something different
 // from the class default (e.g. a captured Talon flying for Confed).
 Ship spawn(const ShipClass& klass);
+
+// Construct a player Ship. No class, no sprite, faction defaults to
+// Civilian (the player has no faction in Privateer's sense — only
+// per-faction reputation). The caller wires position + orientation
+// each frame from the camera. Uses the same monotonic ID counter as
+// spawn(), so the player gets a real ID (>= 1) and 0 stays reserved
+// as the "none" sentinel for nearest_hostile_id / nearest_friend_id.
+Ship spawn_player();
+
+// Snapshot the sprite's pose into the Ship's canonical pose fields.
+// No-op for ships without a sprite (player + abstract AI). Cheap —
+// two field copies — but bundled into a function so the per-frame
+// sync code in main.cpp reads cleanly.
+void sync_from_sprite(Ship& s);
 
 // Per-frame controller + behavior step. Call BEFORE
 // update_ship_sprite_motion: the behaviour writes the controller's

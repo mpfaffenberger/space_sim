@@ -88,15 +88,22 @@ struct AppState {
     std::vector<SpriteObject>                            placed_sprites;
     std::unordered_map<std::string, ShipSpriteAtlas>      ship_sprite_atlases;
     std::vector<ShipSpriteObject>                        placed_ship_sprites;
-    // Per-instance Ship objects, indexed in lockstep with placed_ship_sprites:
-    // ships[i].sprite == &placed_ship_sprites[i] for every i. Holding the
-    // back-pointer means we only have to keep the index correspondence at
-    // construction time — once both vectors stop being resized, the pointer
-    // stays valid and lookups are O(1). The cap-at-construction is OK
-    // because no current code path appends ships after startup; if/when
-    // dynamic spawning lands, this needs to be a slot-map (handle ->
-    // index) rather than vectors of two.
+    // Per-instance Ship objects. ships[0] is reserved for the player
+    // (is_player=true, no sprite, pose synced from camera each frame).
+    // ships[1..] are NPCs in lockstep with placed_ship_sprites:
+    // ships[1+i].sprite == &placed_ship_sprites[i] for every i. The
+    // +1 offset keeps player-vs-NPC the only special case — every
+    // perception / behaviour / damage code path otherwise treats
+    // ships uniformly. The cap-at-construction is OK because no current
+    // code path appends ships after startup; if/when dynamic spawning
+    // lands, this needs to be a slot-map (handle -> index).
     std::vector<Ship>                                    ships;
+
+    // Player's per-faction reputation. Default zero ("unknown stranger")
+    // so faction baselines determine starting stance: Pirates jump you
+    // (-30 baseline), Confeds tolerate you (0), Kilrathi attack on sight
+    // (-100). Future commits will mutate this on kills / quests.
+    PlayerReputation                                     player_rep;
     std::vector<SpriteObject>                            frame_sprites;
 
     // Held-key flags, indexed by sapp key code. Flight physics reads these
@@ -520,7 +527,17 @@ void init_cb() {
     // by extracting the second slash-segment ("ships/talon/atlas_manifest"
     // -> "talon") — every existing scene happens to follow that
     // convention, so we get class binding for free.
-    g.ships.reserve(g.placed_ship_sprites.size());
+    g.ships.reserve(g.placed_ship_sprites.size() + 1);
+
+    // Player ship at index 0. No class, no sprite — pose is filled in
+    // each frame from g.camera before perception runs. Adding the
+    // player to g.ships unifies the perception + AI inner loops on a
+    // single "all ships" iteration; without this every later layer
+    // would need a special case for "target the player".
+    g.ships.push_back(ship::spawn_player());
+    g.ships.front().position    = g.camera.position;
+    g.ships.front().orientation = g.camera.orientation;
+
     int n_with_behavior = 0;
     for (size_t i = 0; i < g.system.placed_ship_sprites.size(); ++i) {
         const auto& sd = g.system.placed_ship_sprites[i];
@@ -629,12 +646,26 @@ void frame_cb() {
     g.camera.apply_thrust(thrust_from_keys(), dt);
     g.camera.integrate(dt);
 
+    // Pose sync: every ship's canonical position/orientation field
+    // (used by perception + AI) gets refreshed from its source of
+    // truth. Player (index 0) gets the camera; NPCs get their sprite
+    // (the integrator's owner). After this, downstream code reads
+    // `s.position` uniformly with no special cases.
+    if (!g.ships.empty() && g.ships.front().is_player) {
+        g.ships.front().position    = g.camera.position;
+        g.ships.front().orientation = g.camera.orientation;
+    }
+    for (size_t i = 1; i < g.ships.size(); ++i) {
+        ship::sync_from_sprite(g.ships[i]);
+    }
+
     // Perception: every ship learns who's in radar range this tick and
-    // how the faction matrix classifies them. Runs BEFORE behaviour so
-    // any AI that wants to read perception ("chase nearest hostile")
-    // sees fresh data. O(N²) over alive ships; cheap at the demo's
-    // scale, will need spatial bucketing past ~100 ships.
-    perception::tick(g.ships);
+    // how the faction matrix (or player reputation, when the player is
+    // involved) classifies them. Runs BEFORE behaviour so any AI that
+    // wants to read perception ("chase nearest hostile") sees fresh
+    // data. O(N²) over alive ships; cheap at the demo's scale, will
+    // need spatial bucketing past ~100 ships.
+    perception::tick(g.ships, g.player_rep);
 
     // One-shot perception summary on first tick — confirms the wiring
     // without spamming stdout. Static gate flips after the first call.
@@ -643,9 +674,11 @@ void frame_cb() {
         if (s_first_perception_dump) {
             s_first_perception_dump = false;
             for (const Ship& s : g.ships) {
-                if (!s.klass) continue;
+                const char* name = s.klass     ? s.klass->name.c_str()
+                                  : s.is_player ? "player"
+                                  :               "?";
                 std::printf("[perception] %-8s sees: %d hostile, %d allied, %d neutral",
-                            s.klass->name.c_str(),
+                            name,
                             s.perception.n_hostile,
                             s.perception.n_allied,
                             s.perception.n_neutral);
@@ -720,11 +753,13 @@ void frame_cb() {
                 short_buf[copy_len] = '\0';
                 const char* tag = s.manual_frame_enabled ? " [MANUAL]" : "";
                 // Perception column: H/A/N counts pulled from the matching
-                // Ship (lockstep index with placed_ship_sprites). Empty
-                // string when no Ship has perception (placeholder ships).
+                // Ship. ships[0] is the player; NPC sprites[i] pair with
+                // ships[i+1], hence the +1 offset. Empty string when no
+                // Ship has perception (placeholder rows).
                 char percept_buf[32] = {0};
-                if (i < g.ships.size() && g.ships[i].klass) {
-                    const ShipPerception& p = g.ships[i].perception;
+                const size_t ship_idx = i + 1;
+                if (ship_idx < g.ships.size() && g.ships[ship_idx].klass) {
+                    const ShipPerception& p = g.ships[ship_idx].perception;
                     std::snprintf(percept_buf, sizeof(percept_buf),
                                   " [H%d A%d N%d]",
                                   p.n_hostile, p.n_allied, p.n_neutral);

@@ -75,6 +75,11 @@ namespace perception {
 // Refresh every alive ship's `perception` field. Call once per frame
 // (or 30 Hz tick when we wire that), BEFORE ship::tick — behaviours
 // may consult perception when picking desired_forward / desired_speed.
-void tick(std::vector<Ship>& ships);
+//
+// `player_rep` is the player's reputation vector (rep[0..7]); used
+// when classifying contacts that involve the player ship
+// (is_player==true on either side of the relationship). For NPC-vs-NPC
+// pairs it's unused — the symmetric stance matrix is consulted instead.
+void tick(std::vector<Ship>& ships, const PlayerReputation& player_rep);
 
 } // namespace perception
