@@ -31,6 +31,7 @@
 #include "faction.h"
 #include "gun.h"
 #include "mesh_render.h"
+#include "ship.h"
 #include "ship_class.h"
 #include "shield.h"
 #include "sprite.h"
@@ -86,6 +87,15 @@ struct AppState {
     std::vector<SpriteObject>                            placed_sprites;
     std::unordered_map<std::string, ShipSpriteAtlas>      ship_sprite_atlases;
     std::vector<ShipSpriteObject>                        placed_ship_sprites;
+    // Per-instance Ship objects, indexed in lockstep with placed_ship_sprites:
+    // ships[i].sprite == &placed_ship_sprites[i] for every i. Holding the
+    // back-pointer means we only have to keep the index correspondence at
+    // construction time — once both vectors stop being resized, the pointer
+    // stays valid and lookups are O(1). The cap-at-construction is OK
+    // because no current code path appends ships after startup; if/when
+    // dynamic spawning lands, this needs to be a slot-map (handle ->
+    // index) rather than vectors of two.
+    std::vector<Ship>                                    ships;
     std::vector<SpriteObject>                            frame_sprites;
 
     // Held-key flags, indexed by sapp key code. Flight physics reads these
@@ -221,6 +231,33 @@ void init_cb() {
         std::exit(1);
     }
     g.camera.position = g.system.player_start;
+
+    // Optional spawn aim. The camera's default forward is -Z (identity
+    // orientation). To point it at an arbitrary world position, build
+    // the shortest-arc rotation from -Z to the desired direction. World
+    // +Y is the implicit up reference; if the look_at is exactly above
+    // or below the spawn the resulting orientation has an arbitrary
+    // roll, which the player can correct with mouse input — fine for a
+    // first-frame nudge, not worth a full "keep up vector vertical"
+    // pipeline yet.
+    if (g.system.player_look_at_set) {
+        const HMM_Vec3 to_target = HMM_SubV3(g.system.player_look_at, g.camera.position);
+        const float    dist2     = HMM_DotV3(to_target, to_target);
+        if (dist2 > 1e-6f) {
+            const HMM_Vec3 dir = HMM_DivV3F(to_target, std::sqrt(dist2));
+            const HMM_Vec3 def_fwd = HMM_V3(0.0f, 0.0f, -1.0f);
+            const HMM_Vec3 axis = HMM_Cross(def_fwd, dir);
+            const float sin2 = HMM_DotV3(axis, axis);
+            if (sin2 > 1e-10f) {
+                const float sin_a = std::sqrt(sin2);
+                const float cos_a = std::clamp(HMM_DotV3(def_fwd, dir), -1.0f, 1.0f);
+                const float angle = std::atan2(sin_a, cos_a);
+                const HMM_Vec3 unit = HMM_DivV3F(axis, sin_a);
+                g.camera.orientation = HMM_QFromAxisAngle_RH(unit, angle);
+            }
+            // else: dir parallel to default forward — identity is already correct.
+        }
+    }
 
     // ---- load the design-data tables (factions, guns, shields, armor, ----
     // ship classes). Order matters: ship_class::load_all resolves
@@ -475,6 +512,67 @@ void init_cb() {
         g.placed_ship_sprites.push_back(s);
     }
 
+    // ---- build the Ship array (one per placed sprite) -------------------
+    // Each ShipSpriteObject above is paired with a Ship that owns class /
+    // faction / health / behaviour. Class lookup: explicit `ship_class`
+    // field on the JSON entry first, otherwise derive from the atlas path
+    // by extracting the second slash-segment ("ships/talon/atlas_manifest"
+    // -> "talon") — every existing scene happens to follow that
+    // convention, so we get class binding for free.
+    g.ships.reserve(g.placed_ship_sprites.size());
+    int n_with_behavior = 0;
+    for (size_t i = 0; i < g.system.placed_ship_sprites.size(); ++i) {
+        const auto& sd = g.system.placed_ship_sprites[i];
+        if (i >= g.placed_ship_sprites.size()) break;   // atlas-load failure earlier
+
+        std::string class_name = sd.ship_class;
+        if (class_name.empty()) {
+            // sd.atlas looks like "ships/<class>/atlas_manifest" (or with
+            // a .json suffix); pull out the <class> segment.
+            const std::string& a = sd.atlas;
+            auto slash1 = a.find('/');
+            if (slash1 != std::string::npos) {
+                auto slash2 = a.find('/', slash1 + 1);
+                if (slash2 != std::string::npos) {
+                    class_name = a.substr(slash1 + 1, slash2 - slash1 - 1);
+                }
+            }
+        }
+        const ShipClass* klass = ship_class::find(class_name);
+        if (!klass) {
+            std::fprintf(stderr, "[main] no ship_class for atlas '%s' (derived '%s'); "
+                                 "sprite will run on legacy motion only\n",
+                         sd.atlas.c_str(), class_name.c_str());
+            // Push a placeholder Ship anyway so the indices stay aligned.
+            // Behavior is None, so it does nothing — the existing motion
+            // path drives the sprite as today.
+            Ship placeholder{};
+            placeholder.sprite = &g.placed_ship_sprites[i];
+            g.ships.push_back(placeholder);
+            continue;
+        }
+
+        Ship inst = ship::spawn(*klass);
+        inst.sprite = &g.placed_ship_sprites[i];
+
+        // Translate the JSON behaviour string into the Ship enum.
+        if (sd.behavior_kind == "pursue_target") {
+            inst.behavior.kind       = ShipBehavior::PursueTarget;
+            inst.behavior.target_pos = sd.behavior_target_pos;
+            ++n_with_behavior;
+        } else if (sd.behavior_kind.empty() || sd.behavior_kind == "none") {
+            inst.behavior.kind = ShipBehavior::None;
+        } else {
+            std::fprintf(stderr, "[main] unknown ship behavior '%s' on '%s' "
+                                 "— treating as none\n",
+                         sd.behavior_kind.c_str(), class_name.c_str());
+        }
+
+        g.ships.push_back(inst);
+    }
+    std::printf("[ship] %zu instances spawned (%d with active behavior)\n",
+                g.ships.size(), n_with_behavior);
+
     // Fly-by-wire defaults OFF. Player toggles it with SPACE. This is much
     // friendlier for tools/capture scripts and prevents the camera from
     // drifting because the OS cursor happened to be off-centre. Amazing how
@@ -529,6 +627,14 @@ void frame_cb() {
     if (roll_input != 0.0f) g.camera.apply_roll(roll_input, dt);
     g.camera.apply_thrust(thrust_from_keys(), dt);
     g.camera.integrate(dt);
+
+    // Ship behaviour + flight controller. Runs BEFORE the integrator so
+    // any ship with an active behaviour writes fresh angular_velocity /
+    // forward_speed onto its sprite this frame. Ships with behavior=None
+    // skip the controller entirely and the integrator below sees the
+    // legacy JSON-set motion unchanged — the existing demo flies on this
+    // back-compat path.
+    for (Ship& s : g.ships) ship::tick(s, dt);
 
     // NPC ship motion. Free-strafe lives on the camera (player only); ships
     // get aircraft-style integration — orientation rotates by body-frame

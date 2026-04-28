@@ -73,6 +73,12 @@ struct PlacedSpriteDef {
 // player-only (camera.cpp). For a horizontal turning circle, set
 // `angular_velocity_deg = (0, yaw_rate, 0)` and `forward_speed = v`; the
 // path radius is implicit (= v / |omega|). Default = static.
+//
+// Optional behavior block: when present, drives the ship via the
+// flight controller (src/ship.h) instead of the static angular_velocity
+// + forward_speed. The two paths are mutually exclusive in practice —
+// behavior=None (the default) honours the legacy motion fields, any
+// other behavior overwrites them every tick.
 struct PlacedShipSpriteDef {
     std::string atlas;
     HMM_Vec3    position       = { 0, 0, 0 };
@@ -81,6 +87,16 @@ struct PlacedShipSpriteDef {
 
     HMM_Vec3    angular_velocity_deg = { 0.0f, 0.0f, 0.0f };  // body frame, deg/s
     float       forward_speed        = 0.0f;                  // body +Z, m/s
+
+    // Optional explicit class name (e.g. "talon"). When empty, main.cpp
+    // derives the class from the atlas path ("ships/talon/..." -> "talon").
+    std::string ship_class;
+
+    // Optional behavior. "" / "none" = no controller (legacy motion).
+    // "pursue_target" = turn toward `behavior_target_pos` and throttle
+    // to cruise. More behaviors land as the AI layer grows.
+    std::string behavior_kind;
+    HMM_Vec3    behavior_target_pos = { 0, 0, 0 };
 };
 
 struct PlacedMeshDef {
@@ -168,6 +184,13 @@ struct StarSystem {
     std::vector<NavPointDef>         nav_points;
 
     HMM_Vec3    player_start = { 0.0f, 0.0f, 30000.0f };
+
+    // Optional aim point at spawn. When `player_look_at_set` is true,
+    // main.cpp builds a camera orientation that points the default
+    // forward (-Z) at this world position. Useful for showing the
+    // demo's interesting bits without a turn-around-and-find-it step.
+    HMM_Vec3    player_look_at      = { 0.0f, 0.0f, 0.0f };
+    bool        player_look_at_set  = false;
 };
 
 // Load a system from `assets/systems/<name>.json` — the common case. Pass

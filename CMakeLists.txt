@@ -124,6 +124,7 @@ add_executable(new_privateer
     src/shield.cpp
     src/armor.cpp
     src/ship_class.cpp
+    src/ship.cpp
     src/mesh_render.cpp
     src/mesh_render_atmosphere.cpp
     src/sprite.cpp

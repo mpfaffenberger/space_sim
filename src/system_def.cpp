@@ -68,6 +68,20 @@ PlacedShipSpriteDef parse_ship_sprite(const json::Value& v) {
                                          s.angular_velocity_deg);
         if (auto* p = m->find("forward_speed")) s.forward_speed = p->as_float();
     }
+
+    // Optional explicit ship_class — useful when the atlas path doesn't
+    // match the registry key (rare, but possible if someone aliases
+    // assets). Empty default lets main.cpp derive from the atlas path.
+    if (auto* p = v.find("ship_class")) s.ship_class = p->as_string();
+
+    // Optional `behavior` block. Drives the flight controller instead
+    // of (or alongside) the legacy motion fields — see ship.h. When
+    // absent, the ship runs on whatever motion was set above, which is
+    // the back-compat path every existing scene relies on.
+    if (auto* b = v.find("behavior")) {
+        if (auto* k = b->find("kind")) s.behavior_kind = k->as_string();
+        s.behavior_target_pos = vec3_or(b->find("target_pos"), s.behavior_target_pos);
+    }
     return s;
 }
 
@@ -165,6 +179,10 @@ std::optional<StarSystem> load_system(const std::string& name_or_path) {
 
     if (auto* ps = root.find("player_start")) {
         s.player_start = vec3_or(ps->find("position"), s.player_start);
+        if (auto* la = ps->find("look_at")) {
+            s.player_look_at     = vec3_or(la, s.player_look_at);
+            s.player_look_at_set = true;
+        }
     }
 
     std::printf("[system] loaded '%s' — %s (skybox=%s, star=%s, fields=%zu, meshes=%zu, sprites=%zu, ship_sprites=%zu, navs=%zu)\n",

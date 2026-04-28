@@ -113,24 +113,28 @@
         "angular_velocity_deg": [0.0, 6.0, 0.0]
       }
     },
-    // Talon parked 500u to starboard of the Tarsus's anchor. Now also
-    // motion-enabled — counter-clockwise wide circle (viewed from +Y).
-    // ω.Y < 0 = left-hand yaw → orbit center is to the ship's RIGHT (=
-    // world +X at identity), so the orbit extends EASTWARD from the
-    // anchor: from X=50500 up to ~X=51264 (anchor.X + 2r). That's the
-    // mirror of the Tarsus's westward sweep — the two ships' orbits
-    // can't overlap because their centers are on opposite sides of the
-    // gap between them. Smaller radius (forward_speed 40 vs Tarsus's
-    // 60) gives a tighter loop so the demo doesn't look like a copy-
-    // paste; same |ω|=6°/s keeps both ships on the same 60s lap so
-    // their cell handoffs stay in sync if you watch them side-by-side.
+    // Talon spawned 500u east of the Tarsus's anchor. First taste of the
+    // new flight controller: PursueTarget points it at the Tarsus's
+    // orbit center, controller writes angular_velocity + forward_speed
+    // every tick to close the gap — class params drive the actual rates
+    // (Talon = Very Good accel + Good YPR -> max yaw ~75°/s, accel
+    // ~100 m/s², cruise 400 m/s). Visual outcome: Talon yaws hard
+    // toward (-X), accelerates from 0 to cruise, flies through the
+    // target point, overshoots (no "stop within range" yet), turns
+    // around, oscillates near the Tarsus's orbit center. Tarsus stays
+    // on its legacy clean circle — the side-by-side is the controller-
+    // vs-no-controller A/B.
+    //
+    // Revert to legacy circle: drop the `behavior` block and put the
+    // old `motion` block back (forward_speed=40, angular_velocity_deg=
+    // [0,-6,0]).
     {
       "atlas":         "ships/talon/atlas_manifest",
       "position":      [50500, -100000, 33150],
       "length_meters": 80,
-      "motion": {
-        "forward_speed":        40.0,
-        "angular_velocity_deg": [0.0, -6.0, 0.0]
+      "behavior": {
+        "kind":       "pursue_target",
+        "target_pos": [50000, -100000, 33150]
       }
     }
   ],
@@ -159,6 +163,11 @@
   // and Z=33333 (slightly behind world origin in our -Z-forward
   // convention).
   "player_start": {
-    "position": [50000, -100000, 33333]
+    "position": [50000, -100000, 33333],
+    // Aim the camera at the Talon's spawn so the demo's most interesting
+    // ship (the one running the new flight controller) is on-screen at
+    // t=0. The Tarsus's circle anchor is right next to it, so this puts
+    // both ships in frame.
+    "look_at":  [50500, -100000, 33150]
   }
 }
