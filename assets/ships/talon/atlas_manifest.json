@@ -32,8 +32,8 @@
   "palette_size": 40,
   "samples": [
     {
-      "az": 0.0,
-      "el": 60.0,
+      "az": 0,
+      "el": 60,
       "sprite": "ships/talon/sprites/talon_az000_el-060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az000_el-060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az000_el-060_newmodel_512_clean_cell_on_black.png",
@@ -42,7 +42,7 @@
     },
     {
       "az": 22.5,
-      "el": 60.0,
+      "el": 60,
       "sprite": "ships/talon/sprites/talon_az022p5_el-060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az022p5_el-060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az022p5_el-060_newmodel_512_clean_cell_on_black.png",
@@ -50,8 +50,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az022p5_el-060_newmodel_512_clean.png"
     },
     {
-      "az": 45.0,
-      "el": 60.0,
+      "az": 45,
+      "el": 60,
       "sprite": "ships/talon/sprites/talon_az045_el-060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az045_el-060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az045_el-060_newmodel_512_clean_cell_on_black.png",
@@ -60,7 +60,7 @@
     },
     {
       "az": 67.5,
-      "el": 60.0,
+      "el": 60,
       "sprite": "ships/talon/sprites/talon_az067p5_el-060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az067p5_el-060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az067p5_el-060_newmodel_512_clean_cell_on_black.png",
@@ -68,8 +68,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az067p5_el-060_newmodel_512_clean.png"
     },
     {
-      "az": 90.0,
-      "el": 60.0,
+      "az": 90,
+      "el": 60,
       "sprite": "ships/talon/sprites/talon_az090_el-060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az090_el-060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az090_el-060_newmodel_512_clean_cell_on_black.png",
@@ -78,7 +78,7 @@
     },
     {
       "az": 112.5,
-      "el": 60.0,
+      "el": 60,
       "sprite": "ships/talon/sprites/talon_az112p5_el-060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az112p5_el-060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az112p5_el-060_newmodel_512_clean_cell_on_black.png",
@@ -86,8 +86,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az112p5_el-060_newmodel_512_clean.png"
     },
     {
-      "az": 135.0,
-      "el": 60.0,
+      "az": 135,
+      "el": 60,
       "sprite": "ships/talon/sprites/talon_az135_el-060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az135_el-060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az135_el-060_newmodel_512_clean_cell_on_black.png",
@@ -96,7 +96,7 @@
     },
     {
       "az": 157.5,
-      "el": 60.0,
+      "el": 60,
       "sprite": "ships/talon/sprites/talon_az157p5_el-060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az157p5_el-060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az157p5_el-060_newmodel_512_clean_cell_on_black.png",
@@ -104,8 +104,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az157p5_el-060_newmodel_512_clean.png"
     },
     {
-      "az": 180.0,
-      "el": 60.0,
+      "az": 180,
+      "el": 60,
       "sprite": "ships/talon/sprites/talon_az180_el-060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az180_el-060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az180_el-060_newmodel_512_clean_cell_on_black.png",
@@ -114,7 +114,7 @@
     },
     {
       "az": 202.5,
-      "el": 60.0,
+      "el": 60,
       "sprite": "ships/talon/sprites/talon_az202p5_el-060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az202p5_el-060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az202p5_el-060_newmodel_512_clean_cell_on_black.png",
@@ -122,8 +122,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az202p5_el-060_newmodel_512_clean.png"
     },
     {
-      "az": 225.0,
-      "el": 60.0,
+      "az": 225,
+      "el": 60,
       "sprite": "ships/talon/sprites/talon_az225_el-060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az225_el-060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az225_el-060_newmodel_512_clean_cell_on_black.png",
@@ -132,7 +132,7 @@
     },
     {
       "az": 247.5,
-      "el": 60.0,
+      "el": 60,
       "sprite": "ships/talon/sprites/talon_az247p5_el-060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az247p5_el-060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az247p5_el-060_newmodel_512_clean_cell_on_black.png",
@@ -140,8 +140,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az247p5_el-060_newmodel_512_clean.png"
     },
     {
-      "az": 270.0,
-      "el": 60.0,
+      "az": 270,
+      "el": 60,
       "sprite": "ships/talon/sprites/talon_az270_el-060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az270_el-060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az270_el-060_newmodel_512_clean_cell_on_black.png",
@@ -150,7 +150,7 @@
     },
     {
       "az": 292.5,
-      "el": 60.0,
+      "el": 60,
       "sprite": "ships/talon/sprites/talon_az292p5_el-060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az292p5_el-060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az292p5_el-060_newmodel_512_clean_cell_on_black.png",
@@ -158,8 +158,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az292p5_el-060_newmodel_512_clean.png"
     },
     {
-      "az": 315.0,
-      "el": 60.0,
+      "az": 315,
+      "el": 60,
       "sprite": "ships/talon/sprites/talon_az315_el-060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az315_el-060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az315_el-060_newmodel_512_clean_cell_on_black.png",
@@ -168,7 +168,7 @@
     },
     {
       "az": 337.5,
-      "el": 60.0,
+      "el": 60,
       "sprite": "ships/talon/sprites/talon_az337p5_el-060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az337p5_el-060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az337p5_el-060_newmodel_512_clean_cell_on_black.png",
@@ -176,8 +176,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az337p5_el-060_newmodel_512_clean.png"
     },
     {
-      "az": 0.0,
-      "el": 30.0,
+      "az": 0,
+      "el": 30,
       "sprite": "ships/talon/sprites/talon_az000_el-030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az000_el-030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az000_el-030_newmodel_512_clean_cell_on_black.png",
@@ -186,7 +186,7 @@
     },
     {
       "az": 22.5,
-      "el": 30.0,
+      "el": 30,
       "sprite": "ships/talon/sprites/talon_az022p5_el-030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az022p5_el-030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az022p5_el-030_newmodel_512_clean_cell_on_black.png",
@@ -194,8 +194,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az022p5_el-030_newmodel_512_clean.png"
     },
     {
-      "az": 45.0,
-      "el": 30.0,
+      "az": 45,
+      "el": 30,
       "sprite": "ships/talon/sprites/talon_az045_el-030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az045_el-030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az045_el-030_newmodel_512_clean_cell_on_black.png",
@@ -204,7 +204,7 @@
     },
     {
       "az": 67.5,
-      "el": 30.0,
+      "el": 30,
       "sprite": "ships/talon/sprites/talon_az067p5_el-030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az067p5_el-030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az067p5_el-030_newmodel_512_clean_cell_on_black.png",
@@ -212,8 +212,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az067p5_el-030_newmodel_512_clean.png"
     },
     {
-      "az": 90.0,
-      "el": 30.0,
+      "az": 90,
+      "el": 30,
       "sprite": "ships/talon/sprites/talon_az090_el-030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az090_el-030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az090_el-030_newmodel_512_clean_cell_on_black.png",
@@ -222,7 +222,7 @@
     },
     {
       "az": 112.5,
-      "el": 30.0,
+      "el": 30,
       "sprite": "ships/talon/sprites/talon_az112p5_el-030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az112p5_el-030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az112p5_el-030_newmodel_512_clean_cell_on_black.png",
@@ -230,8 +230,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az112p5_el-030_newmodel_512_clean.png"
     },
     {
-      "az": 135.0,
-      "el": 30.0,
+      "az": 135,
+      "el": 30,
       "sprite": "ships/talon/sprites/talon_az135_el-030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az135_el-030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az135_el-030_newmodel_512_clean_cell_on_black.png",
@@ -240,7 +240,7 @@
     },
     {
       "az": 157.5,
-      "el": 30.0,
+      "el": 30,
       "sprite": "ships/talon/sprites/talon_az157p5_el-030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az157p5_el-030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az157p5_el-030_newmodel_512_clean_cell_on_black.png",
@@ -248,8 +248,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az157p5_el-030_newmodel_512_clean.png"
     },
     {
-      "az": 180.0,
-      "el": 30.0,
+      "az": 180,
+      "el": 30,
       "sprite": "ships/talon/sprites/talon_az180_el-030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az180_el-030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az180_el-030_newmodel_512_clean_cell_on_black.png",
@@ -258,7 +258,7 @@
     },
     {
       "az": 202.5,
-      "el": 30.0,
+      "el": 30,
       "sprite": "ships/talon/sprites/talon_az202p5_el-030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az202p5_el-030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az202p5_el-030_newmodel_512_clean_cell_on_black.png",
@@ -266,8 +266,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az202p5_el-030_newmodel_512_clean.png"
     },
     {
-      "az": 225.0,
-      "el": 30.0,
+      "az": 225,
+      "el": 30,
       "sprite": "ships/talon/sprites/talon_az225_el-030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az225_el-030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az225_el-030_newmodel_512_clean_cell_on_black.png",
@@ -276,7 +276,7 @@
     },
     {
       "az": 247.5,
-      "el": 30.0,
+      "el": 30,
       "sprite": "ships/talon/sprites/talon_az247p5_el-030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az247p5_el-030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az247p5_el-030_newmodel_512_clean_cell_on_black.png",
@@ -284,8 +284,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az247p5_el-030_newmodel_512_clean.png"
     },
     {
-      "az": 270.0,
-      "el": 30.0,
+      "az": 270,
+      "el": 30,
       "sprite": "ships/talon/sprites/talon_az270_el-030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az270_el-030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az270_el-030_newmodel_512_clean_cell_on_black.png",
@@ -294,7 +294,7 @@
     },
     {
       "az": 292.5,
-      "el": 30.0,
+      "el": 30,
       "sprite": "ships/talon/sprites/talon_az292p5_el-030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az292p5_el-030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az292p5_el-030_newmodel_512_clean_cell_on_black.png",
@@ -302,8 +302,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az292p5_el-030_newmodel_512_clean.png"
     },
     {
-      "az": 315.0,
-      "el": 30.0,
+      "az": 315,
+      "el": 30,
       "sprite": "ships/talon/sprites/talon_az315_el-030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az315_el-030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az315_el-030_newmodel_512_clean_cell_on_black.png",
@@ -312,7 +312,7 @@
     },
     {
       "az": 337.5,
-      "el": 30.0,
+      "el": 30,
       "sprite": "ships/talon/sprites/talon_az337p5_el-030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az337p5_el-030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az337p5_el-030_newmodel_512_clean_cell_on_black.png",
@@ -320,8 +320,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az337p5_el-030_newmodel_512_clean.png"
     },
     {
-      "az": 0.0,
-      "el": 0.0,
+      "az": 0,
+      "el": 0,
       "sprite": "ships/talon/sprites/talon_az000_el+000_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az000_el+000_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az000_el+000_newmodel_512_clean_cell_on_black.png",
@@ -330,7 +330,7 @@
     },
     {
       "az": 22.5,
-      "el": 0.0,
+      "el": 0,
       "sprite": "ships/talon/sprites/talon_az022p5_el+000_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az022p5_el+000_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az022p5_el+000_newmodel_512_clean_cell_on_black.png",
@@ -338,8 +338,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az022p5_el+000_newmodel_512_clean.png"
     },
     {
-      "az": 45.0,
-      "el": 0.0,
+      "az": 45,
+      "el": 0,
       "sprite": "ships/talon/sprites/talon_az045_el+000_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az045_el+000_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az045_el+000_newmodel_512_clean_cell_on_black.png",
@@ -348,7 +348,7 @@
     },
     {
       "az": 67.5,
-      "el": 0.0,
+      "el": 0,
       "sprite": "ships/talon/sprites/talon_az067p5_el+000_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az067p5_el+000_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az067p5_el+000_newmodel_512_clean_cell_on_black.png",
@@ -356,8 +356,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az067p5_el+000_newmodel_512_clean.png"
     },
     {
-      "az": 90.0,
-      "el": 0.0,
+      "az": 90,
+      "el": 0,
       "sprite": "ships/talon/sprites/talon_az090_el+000_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az090_el+000_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az090_el+000_newmodel_512_clean_cell_on_black.png",
@@ -366,7 +366,7 @@
     },
     {
       "az": 112.5,
-      "el": 0.0,
+      "el": 0,
       "sprite": "ships/talon/sprites/talon_az112p5_el+000_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az112p5_el+000_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az112p5_el+000_newmodel_512_clean_cell_on_black.png",
@@ -374,8 +374,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az112p5_el+000_newmodel_512_clean.png"
     },
     {
-      "az": 135.0,
-      "el": 0.0,
+      "az": 135,
+      "el": 0,
       "sprite": "ships/talon/sprites/talon_az135_el+000_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az135_el+000_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az135_el+000_newmodel_512_clean_cell_on_black.png",
@@ -384,7 +384,7 @@
     },
     {
       "az": 157.5,
-      "el": 0.0,
+      "el": 0,
       "sprite": "ships/talon/sprites/talon_az157p5_el+000_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az157p5_el+000_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az157p5_el+000_newmodel_512_clean_cell_on_black.png",
@@ -392,8 +392,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az157p5_el+000_newmodel_512_clean_cell_vfix_on_black.png"
     },
     {
-      "az": 180.0,
-      "el": 0.0,
+      "az": 180,
+      "el": 0,
       "sprite": "ships/talon/sprites/talon_az180_el+000_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az180_el+000_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az180_el+000_newmodel_512_clean_cell_on_black.png",
@@ -402,7 +402,7 @@
     },
     {
       "az": 202.5,
-      "el": 0.0,
+      "el": 0,
       "sprite": "ships/talon/sprites/talon_az202p5_el+000_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az202p5_el+000_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az202p5_el+000_newmodel_512_clean_cell_on_black.png",
@@ -410,8 +410,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az202p5_el+000_newmodel_512_clean.png"
     },
     {
-      "az": 225.0,
-      "el": 0.0,
+      "az": 225,
+      "el": 0,
       "sprite": "ships/talon/sprites/talon_az225_el+000_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az225_el+000_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az225_el+000_newmodel_512_clean_cell_on_black.png",
@@ -420,7 +420,7 @@
     },
     {
       "az": 247.5,
-      "el": 0.0,
+      "el": 0,
       "sprite": "ships/talon/sprites/talon_az247p5_el+000_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az247p5_el+000_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az247p5_el+000_newmodel_512_clean_cell_on_black.png",
@@ -428,8 +428,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az247p5_el+000_newmodel_512_clean.png"
     },
     {
-      "az": 270.0,
-      "el": 0.0,
+      "az": 270,
+      "el": 0,
       "sprite": "ships/talon/sprites/talon_az270_el+000_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az270_el+000_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az270_el+000_newmodel_512_clean_cell_on_black.png",
@@ -438,7 +438,7 @@
     },
     {
       "az": 292.5,
-      "el": 0.0,
+      "el": 0,
       "sprite": "ships/talon/sprites/talon_az292p5_el+000_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az292p5_el+000_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az292p5_el+000_newmodel_512_clean_cell_on_black.png",
@@ -446,8 +446,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az292p5_el+000_newmodel_512_clean.png"
     },
     {
-      "az": 315.0,
-      "el": 0.0,
+      "az": 315,
+      "el": 0,
       "sprite": "ships/talon/sprites/talon_az315_el+000_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az315_el+000_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az315_el+000_newmodel_512_clean_cell_on_black.png",
@@ -456,7 +456,7 @@
     },
     {
       "az": 337.5,
-      "el": 0.0,
+      "el": 0,
       "sprite": "ships/talon/sprites/talon_az337p5_el+000_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az337p5_el+000_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az337p5_el+000_newmodel_512_clean_cell_on_black.png",
@@ -464,8 +464,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az337p5_el+000_newmodel_512_clean.png"
     },
     {
-      "az": 0.0,
-      "el": -30.0,
+      "az": 0,
+      "el": -30,
       "sprite": "ships/talon/sprites/talon_az000_el+030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az000_el+030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az000_el+030_newmodel_512_clean_cell_on_black.png",
@@ -474,7 +474,7 @@
     },
     {
       "az": 22.5,
-      "el": -30.0,
+      "el": -30,
       "sprite": "ships/talon/sprites/talon_az022p5_el+030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az022p5_el+030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az022p5_el+030_newmodel_512_clean_cell_on_black.png",
@@ -482,8 +482,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az022p5_el+030_newmodel_512_clean.png"
     },
     {
-      "az": 45.0,
-      "el": -30.0,
+      "az": 45,
+      "el": -30,
       "sprite": "ships/talon/sprites/talon_az045_el+030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az045_el+030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az045_el+030_newmodel_512_clean_cell_on_black.png",
@@ -492,7 +492,7 @@
     },
     {
       "az": 67.5,
-      "el": -30.0,
+      "el": -30,
       "sprite": "ships/talon/sprites/talon_az067p5_el+030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az067p5_el+030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az067p5_el+030_newmodel_512_clean_cell_on_black.png",
@@ -500,8 +500,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az067p5_el+030_newmodel_512_clean.png"
     },
     {
-      "az": 90.0,
-      "el": -30.0,
+      "az": 90,
+      "el": -30,
       "sprite": "ships/talon/sprites/talon_az090_el+030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az090_el+030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az090_el+030_newmodel_512_clean_cell_on_black.png",
@@ -510,7 +510,7 @@
     },
     {
       "az": 112.5,
-      "el": -30.0,
+      "el": -30,
       "sprite": "ships/talon/sprites/talon_az112p5_el+030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az112p5_el+030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az112p5_el+030_newmodel_512_clean_cell_on_black.png",
@@ -518,8 +518,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az112p5_el+030_newmodel_512_clean.png"
     },
     {
-      "az": 135.0,
-      "el": -30.0,
+      "az": 135,
+      "el": -30,
       "sprite": "ships/talon/sprites/talon_az135_el+030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az135_el+030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az135_el+030_newmodel_512_clean_cell_on_black.png",
@@ -528,7 +528,7 @@
     },
     {
       "az": 157.5,
-      "el": -30.0,
+      "el": -30,
       "sprite": "ships/talon/sprites/talon_az157p5_el+030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az157p5_el+030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az157p5_el+030_newmodel_512_clean_cell_on_black.png",
@@ -536,8 +536,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az157p5_el+030_newmodel_512_clean.png"
     },
     {
-      "az": 180.0,
-      "el": -30.0,
+      "az": 180,
+      "el": -30,
       "sprite": "ships/talon/sprites/talon_az180_el+030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az180_el+030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az180_el+030_newmodel_512_clean_cell_on_black.png",
@@ -546,7 +546,7 @@
     },
     {
       "az": 202.5,
-      "el": -30.0,
+      "el": -30,
       "sprite": "ships/talon/sprites/talon_az202p5_el+030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az202p5_el+030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az202p5_el+030_newmodel_512_clean_cell_on_black.png",
@@ -554,8 +554,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az202p5_el+030_newmodel_512_clean.png"
     },
     {
-      "az": 225.0,
-      "el": -30.0,
+      "az": 225,
+      "el": -30,
       "sprite": "ships/talon/sprites/talon_az225_el+030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az225_el+030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az225_el+030_newmodel_512_clean_cell_on_black.png",
@@ -564,7 +564,7 @@
     },
     {
       "az": 247.5,
-      "el": -30.0,
+      "el": -30,
       "sprite": "ships/talon/sprites/talon_az247p5_el+030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az247p5_el+030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az247p5_el+030_newmodel_512_clean_cell_on_black.png",
@@ -572,8 +572,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az247p5_el+030_newmodel_512_clean.png"
     },
     {
-      "az": 270.0,
-      "el": -30.0,
+      "az": 270,
+      "el": -30,
       "sprite": "ships/talon/sprites/talon_az270_el+030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az270_el+030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az270_el+030_newmodel_512_clean_cell_on_black.png",
@@ -582,7 +582,7 @@
     },
     {
       "az": 292.5,
-      "el": -30.0,
+      "el": -30,
       "sprite": "ships/talon/sprites/talon_az292p5_el+030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az292p5_el+030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az292p5_el+030_newmodel_512_clean_cell_on_black.png",
@@ -590,8 +590,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az292p5_el+030_newmodel_512_clean.png"
     },
     {
-      "az": 315.0,
-      "el": -30.0,
+      "az": 315,
+      "el": -30,
       "sprite": "ships/talon/sprites/talon_az315_el+030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az315_el+030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az315_el+030_newmodel_512_clean_cell_on_black.png",
@@ -600,7 +600,7 @@
     },
     {
       "az": 337.5,
-      "el": -30.0,
+      "el": -30,
       "sprite": "ships/talon/sprites/talon_az337p5_el+030_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az337p5_el+030_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az337p5_el+030_newmodel_512_clean_cell_on_black.png",
@@ -608,8 +608,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az337p5_el+030_newmodel_512_clean.png"
     },
     {
-      "az": 0.0,
-      "el": -60.0,
+      "az": 0,
+      "el": -60,
       "sprite": "ships/talon/sprites/talon_az000_el+060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az000_el+060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az000_el+060_newmodel_512_clean_cell_on_black.png",
@@ -618,7 +618,7 @@
     },
     {
       "az": 22.5,
-      "el": -60.0,
+      "el": -60,
       "sprite": "ships/talon/sprites/talon_az022p5_el+060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az022p5_el+060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az022p5_el+060_newmodel_512_clean_cell_on_black.png",
@@ -626,8 +626,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az022p5_el+060_newmodel_512_clean.png"
     },
     {
-      "az": 45.0,
-      "el": -60.0,
+      "az": 45,
+      "el": -60,
       "sprite": "ships/talon/sprites/talon_az045_el+060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az045_el+060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az045_el+060_newmodel_512_clean_cell_on_black.png",
@@ -636,7 +636,7 @@
     },
     {
       "az": 67.5,
-      "el": -60.0,
+      "el": -60,
       "sprite": "ships/talon/sprites/talon_az067p5_el+060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az067p5_el+060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az067p5_el+060_newmodel_512_clean_cell_on_black.png",
@@ -644,8 +644,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az067p5_el+060_newmodel_512_clean.png"
     },
     {
-      "az": 90.0,
-      "el": -60.0,
+      "az": 90,
+      "el": -60,
       "sprite": "ships/talon/sprites/talon_az090_el+060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az090_el+060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az090_el+060_newmodel_512_clean_cell_on_black.png",
@@ -654,7 +654,7 @@
     },
     {
       "az": 112.5,
-      "el": -60.0,
+      "el": -60,
       "sprite": "ships/talon/sprites/talon_az112p5_el+060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az112p5_el+060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az112p5_el+060_newmodel_512_clean_cell_on_black.png",
@@ -662,8 +662,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az112p5_el+060_newmodel_512_clean.png"
     },
     {
-      "az": 135.0,
-      "el": -60.0,
+      "az": 135,
+      "el": -60,
       "sprite": "ships/talon/sprites/talon_az135_el+060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az135_el+060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az135_el+060_newmodel_512_clean_cell_on_black.png",
@@ -672,7 +672,7 @@
     },
     {
       "az": 157.5,
-      "el": -60.0,
+      "el": -60,
       "sprite": "ships/talon/sprites/talon_az157p5_el+060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az157p5_el+060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az157p5_el+060_newmodel_512_clean_cell_on_black.png",
@@ -680,8 +680,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az157p5_el+060_newmodel_512_clean.png"
     },
     {
-      "az": 180.0,
-      "el": -60.0,
+      "az": 180,
+      "el": -60,
       "sprite": "ships/talon/sprites/talon_az180_el+060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az180_el+060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az180_el+060_newmodel_512_clean_cell_on_black.png",
@@ -690,7 +690,7 @@
     },
     {
       "az": 202.5,
-      "el": -60.0,
+      "el": -60,
       "sprite": "ships/talon/sprites/talon_az202p5_el+060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az202p5_el+060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az202p5_el+060_newmodel_512_clean_cell_on_black.png",
@@ -698,8 +698,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az202p5_el+060_newmodel_512_clean.png"
     },
     {
-      "az": 225.0,
-      "el": -60.0,
+      "az": 225,
+      "el": -60,
       "sprite": "ships/talon/sprites/talon_az225_el+060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az225_el+060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az225_el+060_newmodel_512_clean_cell_on_black.png",
@@ -708,7 +708,7 @@
     },
     {
       "az": 247.5,
-      "el": -60.0,
+      "el": -60,
       "sprite": "ships/talon/sprites/talon_az247p5_el+060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az247p5_el+060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az247p5_el+060_newmodel_512_clean_cell_on_black.png",
@@ -716,8 +716,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az247p5_el+060_newmodel_512_clean.png"
     },
     {
-      "az": 270.0,
-      "el": -60.0,
+      "az": 270,
+      "el": -60,
       "sprite": "ships/talon/sprites/talon_az270_el+060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az270_el+060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az270_el+060_newmodel_512_clean_cell_on_black.png",
@@ -726,7 +726,7 @@
     },
     {
       "az": 292.5,
-      "el": -60.0,
+      "el": -60,
       "sprite": "ships/talon/sprites/talon_az292p5_el+060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az292p5_el+060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az292p5_el+060_newmodel_512_clean_cell_on_black.png",
@@ -734,8 +734,8 @@
       "preview_uncropped": "ships/talon/sprites/talon_az292p5_el+060_newmodel_512_clean.png"
     },
     {
-      "az": 315.0,
-      "el": -60.0,
+      "az": 315,
+      "el": -60,
       "sprite": "ships/talon/sprites/talon_az315_el+060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az315_el+060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az315_el+060_newmodel_512_clean_cell_on_black.png",
@@ -744,7 +744,7 @@
     },
     {
       "az": 337.5,
-      "el": -60.0,
+      "el": -60,
       "sprite": "ships/talon/sprites/talon_az337p5_el+060_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az337p5_el+060_newmodel_512.png",
       "preview": "ships/talon/sprites/talon_az337p5_el+060_newmodel_512_clean_cell_on_black.png",
@@ -752,16 +752,16 @@
       "preview_uncropped": "ships/talon/sprites/talon_az337p5_el+060_newmodel_512_clean.png"
     },
     {
-      "az": 0.0,
-      "el": 90.0,
+      "az": 0,
+      "el": -90,
       "sprite": "ships/talon/sprites/talon_az000_el+090_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az000_el+090_newmodel_512.png",
       "sprite_uncropped": "ships/talon/sprites/talon_az000_el+090_newmodel_512_clean.png",
       "preview": "ships/talon/sprites/talon_az000_el+090_newmodel_512_clean_cell_on_black.png"
     },
     {
-      "az": 0.0,
-      "el": -90.0,
+      "az": 0,
+      "el": 90,
       "sprite": "ships/talon/sprites/talon_az000_el-090_newmodel_512_clean_cell.png",
       "raw": "ships/talon/sprites/talon_az000_el-090_newmodel_512.png",
       "sprite_uncropped": "ships/talon/sprites/talon_az000_el-090_newmodel_512_clean.png",

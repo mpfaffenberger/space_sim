@@ -67,3 +67,14 @@ Target:
 - palette around 40 colors
 - transparent background
 - large source sprite suitable for later downsampling into in-game atlas frames
+
+Additional per-frame art direction from inspector:
+CRITICAL — DO NOT MISREAD THE REFERENCE: This view shows ONE single
+ship from BEHIND and SLIGHTLY ABOVE. The reference image has two
+visually-rounded sections (large V wings up top, smaller rounded
+lobe at the bottom) that BELONG TO THE SAME HULL. The lower
+rounded shape is the cockpit/nose underside seen from this elevation
+— it must appear as the continuous TIP of the same fuselage, not
+a separate cockpit, not a second ship, not a second canopy, not
+detached. Do NOT add a second windscreen, second nose, second pair
+of wings, second tail, or any duplicated ship structure.

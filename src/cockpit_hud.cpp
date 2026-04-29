@@ -471,6 +471,115 @@ void draw_target_mfd(const Camera& cam, const std::vector<Ship>& ships,
     pop_hud_style();
 }
 
+// Top-left STATUS panel — player ship's hull integrity at a glance.
+// Mirrors the TARGET panel's layout (class label + 6 progress bars
+// for shield + armor per facing) but for ships[0] = player. No
+// thumbnail since the player has no sprite. Energy displayed as a
+// numeric current/max instead of a bar — energy ticks fast enough
+// during sustained fire that a bar would just look noisy.
+void draw_player_status(const std::vector<Ship>& ships) {
+    if (ships.empty() || !ships.front().is_player) return;
+    const Ship& player = ships.front();
+
+    const auto sz = screen_size();
+    constexpr float w = 280.0f, h = 184.0f, margin = 16.0f;
+    ImGui::SetNextWindowPos(ImVec2(margin, margin), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(w, h), ImGuiCond_Always);
+    ImGui::SetNextWindowBgAlpha(0.55f);
+    push_hud_style();
+
+    if (ImGui::Begin("##player_status", nullptr, kHudWindowFlags)) {
+        ImGui::PushStyleColor(ImGuiCol_Text, kAmber);
+        ImGui::TextUnformatted("STATUS");
+        ImGui::PopStyleColor();
+        ImGui::Separator();
+
+        if (!player.alive) {
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 80, 80, 255));
+            ImGui::TextUnformatted("*** DESTROYED ***");
+            ImGui::PopStyleColor();
+        } else {
+            // Header line: class name.
+            const char* class_name = player.klass
+                ? player.klass->display_name.c_str() : "PLAYER";
+            ImGui::PushStyleColor(ImGuiCol_Text, kHudWhite);
+            ImGui::Text("%s", class_name);
+            ImGui::PopStyleColor();
+
+            // Energy bar — full width, yellow. Drains during sustained
+            // fire, recharges at klass->energy_recharge per second.
+            // Visible bar makes it easy to see when you're about to
+            // run dry mid-burst.
+            const float energy_max = player.klass ? player.klass->energy_max : 0.0f;
+            const float e_frac = energy_max > 0.0f
+                ? std::clamp(player.energy_gj / energy_max, 0.0f, 1.0f) : 0.0f;
+            char ebuf[32];
+            std::snprintf(ebuf, sizeof(ebuf), "ENERGY  %.0f / %.0f GJ",
+                          player.energy_gj, energy_max);
+            ImGui::PushStyleColor(ImGuiCol_FrameBg,        IM_COL32(20,20,30,180));
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram,  IM_COL32(255,210,60,220));
+            ImGui::ProgressBar(e_frac, ImVec2(-1.0f, 14.0f), ebuf);
+            ImGui::PopStyleColor(2);
+
+            ImGui::Separator();
+
+            // Per-facing maxes (same math as target panel).
+            const ShipClass* k = player.klass;
+            float shield_max[3] = {0,0,0}, armor_max[3] = {0,0,0};
+            if (k) {
+                if (k->default_shield) {
+                    shield_max[0] = k->default_shield->front_cm;
+                    shield_max[1] = k->default_shield->back_cm;
+                    shield_max[2] = k->default_shield->side_cm;
+                }
+                armor_max[0] = k->armor_fore_cm;
+                armor_max[1] = k->armor_aft_cm;
+                armor_max[2] = k->armor_side_cm;
+                if (k->default_armor) {
+                    armor_max[0] += k->default_armor->front_cm;
+                    armor_max[1] += k->default_armor->back_cm;
+                    armor_max[2] += k->default_armor->side_cm;
+                }
+            }
+            const float shield_cur[3] = { player.shield_fore_cm,
+                                          player.shield_aft_cm,
+                                          player.shield_side_cm };
+            const float armor_cur[3]  = { player.armor_fore_cm,
+                                          player.armor_aft_cm,
+                                          player.armor_side_cm };
+            const char* facing_lbl[3] = { "F", "A", "S" };
+
+            ImGui::PushStyleColor(ImGuiCol_FrameBg,        IM_COL32(20,20,30,180));
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram,  IM_COL32(80,160,255,220));
+            for (int i = 0; i < 3; ++i) {
+                const float frac = shield_max[i] > 0.0f
+                    ? std::clamp(shield_cur[i] / shield_max[i], 0.0f, 1.0f) : 0.0f;
+                char buf[24];
+                std::snprintf(buf, sizeof(buf), "S%s %.0f/%.0f",
+                              facing_lbl[i], shield_cur[i], shield_max[i]);
+                ImGui::ProgressBar(frac, ImVec2(80.0f, 14.0f), buf);
+                if (i < 2) ImGui::SameLine();
+            }
+            ImGui::PopStyleColor(2);
+
+            ImGui::PushStyleColor(ImGuiCol_FrameBg,        IM_COL32(20,20,30,180));
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram,  IM_COL32(255,140,60,220));
+            for (int i = 0; i < 3; ++i) {
+                const float frac = armor_max[i] > 0.0f
+                    ? std::clamp(armor_cur[i] / armor_max[i], 0.0f, 1.0f) : 0.0f;
+                char buf[24];
+                std::snprintf(buf, sizeof(buf), "A%s %.0f/%.0f",
+                              facing_lbl[i], armor_cur[i], armor_max[i]);
+                ImGui::ProgressBar(frac, ImVec2(80.0f, 14.0f), buf);
+                if (i < 2) ImGui::SameLine();
+            }
+            ImGui::PopStyleColor(2);
+        }
+    }
+    ImGui::End();
+    pop_hud_style();
+}
+
 void draw_radar_mfd(const Camera& cam, const StarSystem& system, int selected_nav,
                     const std::vector<Ship>& ships, uint32_t target_ship_id) {
     const auto s = screen_size();
@@ -603,6 +712,7 @@ void build(const Camera& cam, const StarSystem& system, int selected_nav,
     draw_crosshair(fly_by_wire);
     draw_aim_cursor(mouse_x, mouse_y, fly_by_wire);
     draw_nav_reticle(cam, system, selected_nav);
+    draw_player_status(ships);
     draw_nav_mfd   (cam, system, selected_nav);
     draw_target_mfd(cam, ships, target_ship_id);
     draw_radar_mfd (cam, system, selected_nav, ships, target_ship_id);

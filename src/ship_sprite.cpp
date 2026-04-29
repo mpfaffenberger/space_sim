@@ -385,14 +385,28 @@ void update_ship_sprite_motion(std::vector<ShipSpriteObject>& ships, float dt) {
             // Linear-velocity scaling per world_scale.h: ships slide
             // through space at the global pacing rate. Turn rates
             // (angular_velocity above) intentionally unscaled so AI
-            // tracking responsiveness stays at canonical levels —
-            // halving turns too would make the dogfight feel laggy
-            // even at slower travel speeds.
+            // tracking responsiveness stays at canonical levels.
             const HMM_Mat4 R = HMM_QToM4(s.orientation);
             const HMM_Vec4 fwd_world4 = HMM_MulM4V4(R, HMM_V4(0.0f, 0.0f, s.forward_speed, 0.0f));
             s.position = HMM_AddV3(s.position,
                 HMM_MulV3F(HMM_V3(fwd_world4.X, fwd_world4.Y, fwd_world4.Z),
                            dt * world_scale::k_world_velocity_scale));
+        }
+
+        // Collision-drift integration. Added even for ships that aren't
+        // "moving" by forward-speed metrics, because a stationary ship
+        // can still be drifting after being rammed. Decays exponentially
+        // (half-life ~1.4s at the 0.5/s rate); without decay the bounce
+        // would persist forever in Newtonian space, which is
+        // technically correct but reads as "ship is permanently drifting
+        // sideways" instead of "ship got hit and is recovering".
+        const float cv2 = HMM_DotV3(s.collision_velocity, s.collision_velocity);
+        if (cv2 > 1e-6f) {
+            s.position = HMM_AddV3(s.position,
+                HMM_MulV3F(s.collision_velocity,
+                           dt * world_scale::k_world_velocity_scale));
+            s.collision_velocity = HMM_MulV3F(s.collision_velocity,
+                                              std::exp(-0.5f * dt));
         }
     }
 }

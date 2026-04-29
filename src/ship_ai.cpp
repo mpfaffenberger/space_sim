@@ -94,7 +94,13 @@ void ship_ai::tick(Ship& s, const std::vector<Ship>& all_ships, float t_now) {
     // per entry (5-10s) so the pursuer can't predict the exact moment
     // a fight resumes. Per-class tuning later (an ace pilot might
     // break off at 800m, a rookie at 400m).
-    constexpr float k_break_distance_m   = 600.0f;
+    // 150m (was 600m) — only break when uncomfortably close. With the
+    // wider trigger every brush past target distance was kicking the
+    // AI into a 3-8s afterburner extension, which read as "every time
+    // I get them near, they bail". Tighter threshold lets the AI
+    // press attacks at typical engagement distances and only break
+    // when an actual collision risk is imminent.
+    constexpr float k_break_distance_m   = 150.0f;
     constexpr float k_break_duration_min = 3.0f;
     constexpr float k_break_duration_max = 8.0f;
 
@@ -405,6 +411,36 @@ void ship_ai::tick(Ship& s, const std::vector<Ship>& all_ships, float t_now) {
             HMM_Vec3 unit = (len2 > 1e-6f)
                 ? HMM_DivV3F(away, std::sqrt(len2))
                 : HMM_V3(0.0f, 0.0f, 1.0f);
+
+            // Home tether: blend escape direction with a pull back
+            // toward patrol_anchor, weighted by how far from home the
+            // ship has wandered. At home the blend is 0 (pure flee);
+            // farther out, an increasing fraction of the desired
+            // direction is "toward home" so the ship orbits-and-returns
+            // instead of running to infinity. Capped at 0.7 so SOME
+            // flee instinct always survives — at full home-pull a
+            // merchant would happily fly back through its attacker.
+            //
+            // Tether radius (5 km) is the "trying to stay home"
+            // engagement bubble. Adjust per-class via patrol_anchor
+            // setup if some ships should roam farther.
+            if (s.ai.has_patrol_anchor) {
+                const HMM_Vec3 to_home = HMM_SubV3(s.ai.patrol_anchor, s.position);
+                const float    dh2     = HMM_DotV3(to_home, to_home);
+                if (dh2 > 1.0f) {
+                    const float    dh       = std::sqrt(dh2);
+                    const HMM_Vec3 home_dir = HMM_DivV3F(to_home, dh);
+                    constexpr float k_tether_radius_m = 5000.0f;
+                    constexpr float k_max_pull        = 0.7f;
+                    const float blend = std::clamp(
+                        dh / k_tether_radius_m, 0.0f, k_max_pull);
+                    HMM_Vec3 mixed = HMM_AddV3(
+                        HMM_MulV3F(unit,     1.0f - blend),
+                        HMM_MulV3F(home_dir, blend));
+                    const float mlen2 = HMM_DotV3(mixed, mixed);
+                    if (mlen2 > 1e-6f) unit = HMM_DivV3F(mixed, std::sqrt(mlen2));
+                }
+            }
 
             // Evasion: jink perpendicular to the escape vector on a
             // sinusoid. Without this the fleer flies a clean line and

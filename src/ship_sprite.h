@@ -60,6 +60,13 @@ struct ShipSpriteObject {
     HMM_Vec3 angular_velocity{0.0f, 0.0f, 0.0f};
     float    forward_speed = 0.0f;
 
+    // World-frame drift velocity from ship-vs-ship collisions. Decays
+    // exponentially every frame; integrator adds it to position
+    // alongside the normal forward * forward_speed term. Lets ships
+    // bounce off each other after a collision, slide sideways for a
+    // bit, then settle back to pure aircraft-style motion.
+    HMM_Vec3 collision_velocity{0.0f, 0.0f, 0.0f};
+
     // Atlas inspector override. When enabled, the in-world ship displays
     // the nearest authored frame to manual_{az,el}_deg instead of selecting
     // from camera position. This lets Mike scrub the Tarsus pose while the
