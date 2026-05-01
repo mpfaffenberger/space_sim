@@ -135,6 +135,7 @@ add_executable(new_privateer
     src/sprite.cpp
     src/ship_sprite.cpp
     src/sprite_light_editor.cpp
+    src/sprite_generation_tool.cpp
     src/planet_texture.cpp
     src/debug_panel.cpp
     src/atlas_grid_viewer.cpp

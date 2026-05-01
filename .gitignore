@@ -91,6 +91,9 @@ assets/ships/*/sprites_ingame/
 # Local AI sprite regeneration experiments (promote intentionally if useful)
 assets/ships/*/regen_trials/
 
+# In-game sprite-generation workbench requests/logs/status files
+assets/shipgen/
+
 # Original Origin/EA WC sprite cache (do not redistribute)
 assets/ships/*/wcnews_sprites/
 

@@ -43,6 +43,7 @@
 #include "sprite.h"
 #include "ship_sprite.h"
 #include "sprite_light_editor.h"
+#include "sprite_generation_tool.h"
 
 #include <unordered_map>
 #include "obj_loader.h"
@@ -437,6 +438,7 @@ void init_cb() {
     debug_panel::init();
     sprite_light_editor::init();
     atlas_grid_viewer::init();
+    sprite_generation_tool::init();
 
     // Dev remote: HTTP control channel on 127.0.0.1. Lets external
     // tools (code puppy, curl, shell scripts) teleport the camera,
@@ -1309,7 +1311,7 @@ void frame_cb() {
         sdtx_puts("W/S throttle   A/D strafe   R/F up/down\n");
         sdtx_puts("mouse aim      SPACE toggle cursor   TAB cruise\n");
         sdtx_puts("X brake        N cycle nav target  T cycle ship target\n");
-        sdtx_puts("CTRL+M debug   F2 lights   F3 ship-frame HUD   ESC x2 quit\n");
+        sdtx_puts("CTRL+M debug   F2 lights   F3 ship-frame HUD   F6 sprite-gen   ESC x2 quit\n");
     }
 
     // --- draw ---------------------------------------------------------------
@@ -1491,6 +1493,8 @@ void frame_cb() {
     // F4 — atlas grid viewer. Mutates ShipSpriteFrame fields directly,
     // so changes flow into the next render frame with no apply step.
     atlas_grid_viewer::build(g.ship_sprite_atlases);
+    // F6 — sprite-generation workbench. Front-end only; launches Python jobs.
+    sprite_generation_tool::build();
     if (!g.capture_clean) {
         cockpit_hud::build(g.camera, g.system, g.selected_nav,
                            g.mouse_x, g.mouse_y, g.fly_by_wire,
@@ -1807,6 +1811,7 @@ void cleanup_cb() {
     g.rt.destroy();
     debug_panel::shutdown();
     atlas_grid_viewer::shutdown();
+    sprite_generation_tool::shutdown();
     for (auto& pm : g.placed_meshes) {
         // Mesh::destroy also frees every Material's textures — no more
         // per-placement teardown now that textures live on the mesh.
@@ -1831,6 +1836,7 @@ void event_cb(const sapp_event* ev) {
     // putting the F4 atlas grid viewer ahead of debug_panel.
     if (sprite_light_editor::handle_event(ev)) return;
     if (atlas_grid_viewer::handle_event(ev)) return;
+    if (sprite_generation_tool::handle_event(ev)) return;
     if (debug_panel::handle_event(ev)) return;
 
     switch (ev->type) {
