@@ -273,7 +273,9 @@ void init_cb() {
 
     // Clear color only shows if everything else fails to draw.
     g.scene_pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
-    g.scene_pass_action.colors[0].clear_value = { 0.02f, 0.02f, 0.06f, 1.0f };
+    g.scene_pass_action.colors[0].clear_value = g.capture_clean
+        ? sg_color{0.0f, 0.0f, 0.0f, 1.0f}
+        : sg_color{0.02f, 0.02f, 0.06f, 1.0f};
     g.scene_pass_action.depth.load_action     = SG_LOADACTION_CLEAR;
     g.scene_pass_action.depth.clear_value     = 1.0f;
 
@@ -388,7 +390,9 @@ void init_cb() {
 
     if (g.capture_clean) {
         apply_studio_sun(g.sun);
-        std::printf("[main] capture-clean studio sun enabled\n");
+        g.post.bloom_strength = 0.0f;
+        g.post.flare_strength = 0.0f;
+        std::printf("[main] capture-clean studio sun enabled; bloom/flare disabled\n");
     } else if (g.system.studio_lighting) {
         apply_studio_sun(g.sun);
         std::printf("[main] system studio_lighting=true: dim sun enabled\n");
@@ -1337,10 +1341,12 @@ void frame_cb() {
         //   3. asteroids — opaque, writes depth; covers dust where rocks are.
         //   4. sun sphere— opaque, writes depth.
         //   5. sun gas + corona — additive halos, depth test but no write.
-        g.skybox.draw(g.camera, aspect);
-        g.dust.draw(g.camera, aspect);
-        for (const auto& f : g.asteroid_fields) {
-            f.draw(g.camera, aspect, time_sec, g.sun.position, g.sun.core_color);
+        if (!g.capture_clean) {
+            g.skybox.draw(g.camera, aspect);
+            g.dust.draw(g.camera, aspect);
+            for (const auto& f : g.asteroid_fields) {
+                f.draw(g.camera, aspect, time_sec, g.sun.position, g.sun.core_color);
+            }
         }
         g.mesh_render.draw(g.placed_meshes, g.camera, aspect,
                            g.sun.position, g.sun.core_color);
@@ -1356,8 +1362,10 @@ void frame_cb() {
         // Combines projectile tracers + explosion FX (flash + shockwave)
         // into one tracer list and submits in one draw call. HDR color
         // values >1.0 are intentional — bloom catches them and blooms
-        // explosions look properly bright.
-        {
+        // explosions look properly bright. Capture-clean mode skips these
+        // dynamic effects so atlas reference renders contain only the
+        // target object on the cleared background.
+        if (!g.capture_clean) {
             std::vector<SpriteRenderer::Tracer> tracers;
             tracers.reserve(g.projectiles.size() + g.explosions.size() * 2);
 
@@ -1459,12 +1467,18 @@ void frame_cb() {
             g.sprite_render.draw_tracers(tracers, g.camera, aspect);
         }
 
-        g.sun.draw(g.camera, aspect, time_sec);
+        if (!g.capture_clean) {
+            g.sun.draw(g.camera, aspect, time_sec);
+        }
         sg_end_pass();
     }
 
     // Pass 2+3: bright-pass + separable gaussian into bloom_b.
-    g.post.apply_bloom(g.rt);
+    // Capture-clean atlas screenshots need deterministic object-only refs,
+    // not stale bloom texture ghosts or lens flare artifacts.
+    if (!g.capture_clean) {
+        g.post.apply_bloom(g.rt);
+    }
 
     // Build the ImGui frame OUTSIDE any pass. This is only widget state;
     // no draw calls are issued yet. Slider mutations feed back into the
