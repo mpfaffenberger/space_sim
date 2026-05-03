@@ -197,7 +197,14 @@ EXTRA_STYLE = (
 def resolve_canonical_refs(ship: str, repo_root: Path) -> tuple[Path, ...]:
     """Resolve per-ship canonical reference paths. Missing files are dropped
     with a one-line warning so the rest of the batch still runs — a ship
-    without canonical imagery just gets render-only conditioning."""
+    without canonical imagery just gets render-only conditioning.
+
+    Discovery order:
+      1. Hand-curated entries in CANONICAL_REFS (legacy + multi-file sheets)
+      2. Convention path: `assets/ships/<ship>/canonical_reference*.png`
+         (auto-picked up so a new ship just needs to drop files in the
+         right directory — no source edits required)
+    """
     out: list[Path] = []
     for rel in CANONICAL_REFS.get(ship, ()):
         p = (repo_root / rel).resolve()
@@ -205,34 +212,135 @@ def resolve_canonical_refs(ship: str, repo_root: Path) -> tuple[Path, ...]:
             out.append(p)
         else:
             print(f"  ! canonical ref missing for {ship!r}: {p}", file=sys.stderr)
+    # Convention fallback: if no entries in CANONICAL_REFS matched (or the
+    # ship has no entry at all), scan the ship's asset dir for canonical_*
+    # PNGs. Sorted glob keeps order deterministic — append numeric suffixes
+    # to control ordering when you want one ref weighted before another.
+    if not out:
+        ship_dir = (repo_root / "assets" / "ships" / ship).resolve()
+        if ship_dir.is_dir():
+            for p in sorted(ship_dir.glob("canonical_reference*.png")):
+                if p.is_file():
+                    out.append(p)
     return tuple(out)
 
 
 def _angle_orientation_hint(az: float, el: float) -> str:
     """Build a plain-English description of where the camera sits relative to
-    the ship at this (az, el). Hand-fed to the prompt because the AI
-    repeatedly collapses awkward 3/4 angles to the nearest cardinal view
-    (e.g. az=0 el=-60 -> always rendered as a side view) when the canonical
-    reference biases it. Explicit text + the per-angle render together force
-    the model to actually respect the requested orientation.
+    the ship at this (az, el), and explicitly call out what is/isn't visible.
+
+    The AI's biggest failure mode on view-sphere atlases is collapsing 3/4
+    angles to the nearest cardinal view (e.g. az=0 el=-60 → always rendered
+    as a side view) and confidently inventing parts that shouldn't be visible
+    (the infamous "cockpit visible from the ventral view" hallucination).
+    Explicit "WHAT IS VISIBLE / WHAT IS NOT VISIBLE" sections in the prompt,
+    paired with the per-angle clay render, force the model to respect the
+    actual orientation.
+
+    Convention (verified empirically against the rendered references — see
+    render_ship_atlas.py and the centurion atlas QA pass; the *math* in
+    that file matches the engine, but the docstring describing it was
+    wrong, leading to inverted prompts for several waves):
+
+        az = 0    →  camera IN FRONT of the ship (nose-on, looking back
+                     toward the engines along the ship's body)
+        az = 90   →  camera to the ship's PORT (left) side
+        az = 180  →  camera BEHIND the ship (looking at the rear/engines)
+        az = 270  →  camera to the ship's STARBOARD (right) side
+
+        el > 0    →  camera BELOW the ship — we look UP at the VENTRAL
+                     (underside) hull. The dorsal cockpit is HIDDEN by
+                     the body of the ship.
+        el < 0    →  camera ABOVE the ship — we look DOWN at the DORSAL
+                     (top) hull. The cockpit blister is fully visible.
+        el ≈ 0    →  side / horizontal view; cockpit visible in profile.
+
+    Engine-axis trivia: this is sokol's Y-down NDC + the centurion OBJ's
+    +Z-forward authoring talking. Either could flip independently per ship
+    if its mesh is authored with different axes — verify by eyeballing the
+    rendered references for that ship before generation, and update this
+    function (or add a per-ship axis override) if a new ship comes back
+    inverted.
     """
     az_norm = az % 360.0
-    if   abs(az_norm -   0.0) < 0.5: az_desc = "directly BEHIND the ship (looking at the rear/engines)"
-    elif abs(az_norm -  90.0) < 0.5: az_desc = "to the ship's STARBOARD side (right wing visible)"
-    elif abs(az_norm - 180.0) < 0.5: az_desc = "directly IN FRONT of the ship (looking at the nose/cockpit)"
-    elif abs(az_norm - 270.0) < 0.5: az_desc = "to the ship's PORT side (left wing visible)"
-    elif az_norm <  90.0: az_desc = f"behind-and-starboard (azimuth {az_norm:.0f}° around from rear)"
-    elif az_norm < 180.0: az_desc = f"front-and-starboard (azimuth {az_norm:.0f}° around from rear)"
-    elif az_norm < 270.0: az_desc = f"front-and-port (azimuth {az_norm:.0f}° around from rear)"
-    else:                  az_desc = f"behind-and-port (azimuth {az_norm:.0f}° around from rear)"
+    # ---- azimuth: camera-position description -----------------------------
+    if   abs(az_norm -   0.0) < 0.5:
+        az_desc   = "directly IN FRONT of the ship (looking at the nose head-on)"
+        az_visible   = "the ship's NOSE / cockpit blister, dorsal hull strip from above"
+        az_hidden    = "the rear engines (occluded by the body)"
+    elif abs(az_norm -  90.0) < 0.5:
+        az_desc   = "to the ship's PORT (left) side (the left flank fills the frame)"
+        az_visible   = "the LEFT side of the ship in full profile — left wing, port flank, cockpit silhouette"
+        az_hidden    = "the right (starboard) wing and right flank (occluded by the body)"
+    elif abs(az_norm - 180.0) < 0.5:
+        az_desc   = "directly BEHIND the ship (looking at the rear/engines head-on)"
+        az_visible   = "the ENGINE NOZZLES / rear hull, exhaust ports, aft profile of wings"
+        az_hidden    = "the nose / cockpit (occluded by the body of the ship)"
+    elif abs(az_norm - 270.0) < 0.5:
+        az_desc   = "to the ship's STARBOARD (right) side (the right flank fills the frame)"
+        az_visible   = "the RIGHT side of the ship in full profile — right wing, starboard flank, cockpit silhouette"
+        az_hidden    = "the left (port) wing and left flank (occluded by the body)"
+    elif az_norm <  90.0:
+        diag = az_norm
+        az_desc   = f"front-and-port (azimuth {az_norm:.0f}° = {diag:.0f}° rotated toward port from a head-on nose view)"
+        az_visible   = "the ship's nose AND its left (port) flank in 3/4 perspective"
+        az_hidden    = "the right flank and the rear engines (mostly occluded)"
+    elif az_norm < 180.0:
+        diag = 180.0 - az_norm
+        az_desc   = f"behind-and-port (azimuth {az_norm:.0f}° = {diag:.0f}° rotated toward port from a rear engine view)"
+        az_visible   = "the rear engines AND the ship's left (port) flank in 3/4 perspective"
+        az_hidden    = "the nose and the right flank (mostly occluded)"
+    elif az_norm < 270.0:
+        diag = az_norm - 180.0
+        az_desc   = f"behind-and-starboard (azimuth {az_norm:.0f}° = {diag:.0f}° rotated toward starboard from a rear engine view)"
+        az_visible   = "the rear engines AND the ship's right (starboard) flank in 3/4 perspective"
+        az_hidden    = "the nose and the left flank (mostly occluded)"
+    else:
+        diag = 360.0 - az_norm
+        az_desc   = f"front-and-starboard (azimuth {az_norm:.0f}° = {diag:.0f}° rotated toward starboard from a head-on nose view)"
+        az_visible   = "the ship's nose AND its right (starboard) flank in 3/4 perspective"
+        az_hidden    = "the left flank and the rear engines (mostly occluded)"
 
-    if   abs(el) < 0.5:  el_desc = "at the ship's vertical midline (horizontal view)"
-    elif el > 60.0:      el_desc = "HIGH ABOVE the ship, looking nearly straight down (top-down view)"
-    elif el >  0.0:      el_desc = f"ABOVE the ship by {el:.0f}° (looking down at the dorsal surface)"
-    elif el < -60.0:     el_desc = "FAR BELOW the ship, looking nearly straight up (bottom-up view)"
-    else:                el_desc = f"BELOW the ship by {abs(el):.0f}° (looking up at the ventral surface)"
+    # ---- elevation: camera-position + cockpit-visibility ------------------
+    if   abs(el) < 0.5:
+        el_desc    = "at the ship's vertical midline (horizontal/equator view)"
+        el_visible = "the silhouette in profile; cockpit blister visible as a side bump on the dorsal hull"
+        el_hidden  = ""
+    elif el >  60.0:
+        el_desc    = "FAR BELOW the ship, looking nearly straight UP at the underside (bottom-up / pure-ventral view)"
+        el_visible = "the VENTRAL (underside) hull dominates the entire image — ventral panel seams, weapon hardpoints, undercarriage"
+        el_hidden  = "THE COCKPIT IS COMPLETELY HIDDEN. The dorsal cockpit blister is on the OPPOSITE side of the ship from the camera. DO NOT draw a cockpit, canopy, or any dorsal feature in this frame."
+    elif el >   0.0:
+        el_desc    = (f"BELOW the ship by {el:.0f}° (looking UP at the VENTRAL underside, foreshortened from below)")
+        el_visible = ("the VENTRAL underside is the dominant feature — ventral hull panels, weapon hardpoints, "
+                      "the underside of the wings")
+        el_hidden  = ("THE COCKPIT IS HIDDEN by the body of the ship from this angle. The dorsal cockpit blister is "
+                      "on the FAR side of the hull. DO NOT draw a visible cockpit, canopy, or dorsal stripe.")
+    elif el < -60.0:
+        el_desc    = "HIGH ABOVE the ship, looking nearly straight DOWN at the dorsal hull (top-down / pure-dorsal view)"
+        el_visible = "the DORSAL (top) hull dominates the entire image — cockpit blister, dorsal panel seams, top of the wings, top of the engine pods"
+        el_hidden  = "the ventral underside is COMPLETELY hidden (we're directly above)"
+    else:
+        el_desc    = f"ABOVE the ship by {abs(el):.0f}° (looking DOWN at the DORSAL top hull, foreshortened from above)"
+        el_visible = ("the DORSAL top hull is the dominant feature — cockpit blister fully visible, dorsal panel "
+                      "seams, tops of the wings and engine pods")
+        el_hidden  = "the ventral underside is largely hidden (occluded by the body of the ship)"
 
-    return f"{az_desc}, {el_desc}"
+    parts = [
+        f"Camera position: {az_desc}, {el_desc}.",
+        "",
+        "WHAT IS VISIBLE FROM THIS ANGLE (the sprite must show these):",
+        f"  - {az_visible}",
+        f"  - {el_visible}",
+    ]
+    if az_hidden or el_hidden:
+        parts += [
+            "",
+            "WHAT IS *NOT* VISIBLE FROM THIS ANGLE (do NOT draw these):",
+        ]
+        if az_hidden: parts.append(f"  - {az_hidden}")
+        if el_hidden: parts.append(f"  - {el_hidden}")
+    return "\n".join(parts)
 
 
 def build_prompt(ship: str, reference: Path, canonical_refs: tuple[Path, ...] = (),
@@ -305,9 +413,11 @@ palette description below dictates the actual surface finish."""
 
 === POSE — HIGHEST PRIORITY ===
 This sprite shows the ship from a SPECIFIC 3D viewing angle. The reference
-image IS that angle. Your output MUST match the same orientation:
-  Camera position: {angle_hint}
+image IS that angle. Your output MUST match the same orientation.
+
   Azimuth = {az:.1f}°, Elevation = {el:+.1f}°
+
+{angle_hint}
 
 Do NOT collapse this view to a generic side-on or top-down perspective.
 Do NOT "fix" the angle to a more aesthetic one. The angle in the reference IS
@@ -354,6 +464,7 @@ def load_jobs(
     only_az: float | None = None,
     only_el: float | None = None,
     prompt_suffix: str = "",
+    symmetric: bool = False,
 ) -> list[SpriteJob]:
     render_dir = REPO / "assets" / "ships" / ship / "renders"
     sprite_dir = REPO / "assets" / "ships" / ship / "sprites"
@@ -377,6 +488,17 @@ def load_jobs(
             continue
         if only_el is not None and int(round(el)) != int(round(only_el)):
             continue
+
+        # Bilateral-symmetry shortcut: if `symmetric` is on, skip every
+        # non-pole frame whose camera azimuth lives in the (180, 360)
+        # half. Those views will be filled by horizontally flipping their
+        # primary partners (az' = 360 - az) at the end of the run via
+        # tools/mirror_symmetric_ship_frames.py. Saves ~43% of API calls
+        # for ships with a YZ symmetry plane (most of them).
+        if symmetric and abs(el) < 89.5:
+            az_norm = az % 360.0
+            if 180.5 < az_norm < 359.5:
+                continue
 
         ref = render_dir / sample["file"]
         stem = f"{ship}_az{az_tag(az)}_el{angle_tag(el)}_newmodel_512"
@@ -636,6 +758,12 @@ def main() -> None:
     ap.add_argument("--clean", action="store_true", help="Run alpha cleaner after generation")
     ap.add_argument("--preview", action="store_true", help="When cleaning, also write *_on_black.png")
     ap.add_argument("--force", action="store_true", help="Regenerate even if raw output exists")
+    ap.add_argument("--symmetric", action="store_true",
+                    help="Bilateral-symmetry shortcut: only generate primaries "
+                         "(az ∈ [0, 180]) and mirror the (180, 360) half from "
+                         "them via tools/mirror_symmetric_ship_frames.py at the "
+                         "end of the run. ~43%% fewer API calls. Use only for "
+                         "ships with a YZ symmetry plane (no asymmetric mounts).")
     args = ap.parse_args()
 
     prompt_suffix = args.prompt_suffix
@@ -648,6 +776,7 @@ def main() -> None:
         only_az=args.az,
         only_el=args.el,
         prompt_suffix=prompt_suffix,
+        symmetric=args.symmetric,
     )
     jobs_jsonl = args.jobs_jsonl or (REPO / "assets" / "ships" / args.ship / "sprites" / "jobs.jsonl")
     write_job_files(jobs, jobs_jsonl)
@@ -687,22 +816,31 @@ def main() -> None:
                 for job in jobs:
                     if job.raw_output.exists():
                         clean_sprite(job, args.preview)
-        return
-
-    for i, job in enumerate(jobs, 1):
-        print(f"\n[{i}/{len(jobs)}] az={job.az:03.0f} el={job.el:+05.1f}")
-        if job.raw_output.exists() and not args.force:
-            print(f"  skip existing: {job.raw_output}")
-        else:
-            if args.use_pixelart_tool:
-                run_pixelart_tool(job, args.quality)
+    else:
+        for i, job in enumerate(jobs, 1):
+            print(f"\n[{i}/{len(jobs)}] az={job.az:03.0f} el={job.el:+05.1f}")
+            if job.raw_output.exists() and not args.force:
+                print(f"  skip existing: {job.raw_output}")
             else:
-                run_generator(job, args.generator_cmd)
+                if args.use_pixelart_tool:
+                    run_pixelart_tool(job, args.quality)
+                else:
+                    run_generator(job, args.generator_cmd)
 
-        if args.clean:
-            if not job.raw_output.exists():
-                raise FileNotFoundError(f"generator did not create {job.raw_output}")
-            clean_sprite(job, args.preview)
+            if args.clean:
+                if not job.raw_output.exists():
+                    raise FileNotFoundError(f"generator did not create {job.raw_output}")
+                clean_sprite(job, args.preview)
+
+    # Bilateral-symmetry post-step. Only fires when the user opted into
+    # primaries-only generation; otherwise running mirror would silently
+    # overwrite user-generated mirror frames (the previous wave's full
+    # 82-frame output, hand-finetuned mirrors, etc).
+    if args.symmetric:
+        mirror_tool = REPO / "tools" / "mirror_symmetric_ship_frames.py"
+        cmd = [sys.executable, str(mirror_tool), "--ship", args.ship, "--force"]
+        print(f"\n[symmetric] running: {' '.join(shlex.quote(c) for c in cmd)}")
+        subprocess.run(cmd, check=True, cwd=REPO)
 
 
 if __name__ == "__main__":

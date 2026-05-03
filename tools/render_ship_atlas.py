@@ -10,8 +10,22 @@ Usage:
 
 The 32 samples are a uniform 8-azimuth × 4-elevation grid on the viewing
 sphere, matching the Privateer-grade sprite resolution discussed in design.
-Azimuth 0 = camera behind the ship (+Z side, seeing the stern); azimuth 180 =
-camera in front (seeing the nose). Elevation +67.5 = high above; -67.5 = below.
+Conventions (verified empirically against the rendered references — DO NOT
+trust intuition; the engine's coordinate system is sokol Y-down + ships
+authored with +Z forward, which inverts both axes vs typical OpenGL):
+
+    az = 0    →  camera IN FRONT of the ship  (looking at the nose head-on)
+    az = 90   →  camera to the ship's PORT side (left flank visible)
+    az = 180  →  camera BEHIND the ship       (looking at the rear engines)
+    az = 270  →  camera to the ship's STARBOARD side (right flank visible)
+    el > 0    →  camera BELOW the ship        (looking UP at the ventral hull)
+    el < 0    →  camera ABOVE the ship        (looking DOWN at the dorsal hull)
+
+For a long time the docstring claimed the OPPOSITE ("az=0 = stern view, el>0
+= above"), and the prompt code in batch_generate_ship_sprites.py inherited
+that lie. The first three centurion waves wasted real money before someone
+eyeballed an actual reference image and noticed the cockpit kept appearing
+on the underside. So: be empirical. Open a render. Look at it. Then prompt.
 """
 
 import argparse
