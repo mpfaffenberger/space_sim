@@ -659,9 +659,24 @@ void init_cb() {
     }
 
     int n_with_behavior = 0;
+    int n_inert         = 0;
     for (size_t i = 0; i < g.system.placed_ship_sprites.size(); ++i) {
         const auto& sd = g.system.placed_ship_sprites[i];
         if (i >= g.placed_ship_sprites.size()) break;   // atlas-load failure earlier
+
+        // Inert mode — visual-only mannequin for atlas/capture scenes.
+        // alive=false makes perception/AI/firing/projectile-collision all
+        // skip this Ship, so the sprite renders but the simulation
+        // pretends it isn't there. Indices stay aligned with
+        // placed_ship_sprites because we still push something.
+        if (sd.inert) {
+            Ship mannequin{};
+            mannequin.sprite = &g.placed_ship_sprites[i];
+            mannequin.alive  = false;
+            g.ships.push_back(mannequin);
+            ++n_inert;
+            continue;
+        }
 
         std::string class_name = sd.ship_class;
         if (class_name.empty()) {
@@ -747,8 +762,8 @@ void init_cb() {
 
         g.ships.push_back(inst);
     }
-    std::printf("[ship] %zu instances spawned (%d with active behavior)\n",
-                g.ships.size(), n_with_behavior);
+    std::printf("[ship] %zu instances spawned (%d with active behavior, %d inert)\n",
+                g.ships.size(), n_with_behavior, n_inert);
 
     // Fly-by-wire defaults OFF. Player toggles it with SPACE. This is much
     // friendlier for tools/capture scripts and prevents the camera from

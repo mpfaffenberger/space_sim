@@ -75,6 +75,7 @@ PlacedShipSpriteDef parse_ship_sprite(const json::Value& v) {
     // assets). Empty default lets main.cpp derive from the atlas path.
     if (auto* p = v.find("ship_class")) s.ship_class       = p->as_string();
     if (auto* p = v.find("faction"))    s.faction_override = p->as_string();
+    if (auto* p = v.find("inert"))      s.inert            = p->as_bool();
 
     // Optional `behavior` block. Drives the flight controller instead
     // of (or alongside) the legacy motion fields — see ship.h. When

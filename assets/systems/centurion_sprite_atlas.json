@@ -1,0 +1,45 @@
+{
+  "name": "Centurion Sprite Atlas Capture",
+  "description": "Inert Centurion at origin with a backdrop of one yellow sun and three planet billboards. The ship is non-combat (perception/AI/firing all skip alive=false placeholders), so the planets and sun are pure scenery for atlas review and screenshot work. Sun position is anchored by a single nav point off-axis (the nav-centroid path in main.cpp); planets are billboard sprites at varied distances and sizes for parallax during fly-by-wire orbit.",
+  "skybox_seed": "troy",
+  "star": { "preset": "yellow" },
+  "asteroid_fields": [],
+  "placed_sprites": [
+    {
+      "sprite":        "sprites/helen_planet",
+      "position":      [ 60000,  20000, -90000],
+      "length_meters": 14000
+    },
+    {
+      "sprite":        "sprites/helen_planet",
+      "position":      [-80000, -15000, -130000],
+      "length_meters": 9000
+    },
+    {
+      "sprite":        "sprites/helen_planet",
+      "position":      [ 30000, -25000, -180000],
+      "length_meters": 6000
+    }
+  ],
+  "placed_ship_sprites": [
+    {
+      "atlas":         "ships/centurion/atlas_manifest",
+      "position":      [0, 0, 0],
+      "length_meters": 120,
+      "inert":         true
+    }
+  ],
+  "placed_meshes": [],
+  "nav_points": [
+    {
+      "name":     "Centurion Atlas Star",
+      "kind":     "star",
+      "position": [-180000, 90000, 200000]
+    }
+  ],
+  "player_start": {
+    "position": [0, 0, 88]
+  },
+  "player_look_at":     [0, 0, 0],
+  "player_look_at_set": true
+}

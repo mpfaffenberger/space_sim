@@ -116,6 +116,14 @@ struct PlacedShipSpriteDef {
     std::string ai_initial_state;     // "idle" / "patrol" / "engage" / "flee"
     HMM_Vec3    ai_patrol_anchor      = { 0, 0, 0 };
     bool        ai_has_patrol_anchor  = false;
+
+    // Pure-art mode. When true, the engine still places the sprite + lights
+    // for visual review, but the matching Ship instance is created with
+    // alive=false so perception/AI/firing/projectile-collision all skip it.
+    // No faction stance, no autofire, no "id=2 just got killed at spawn"
+    // surprise. Use this for atlas-review and capture scenes where the ship
+    // is a mannequin, not a combatant.
+    bool        inert                 = false;
 };
 
 struct PlacedMeshDef {
