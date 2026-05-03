@@ -138,3 +138,15 @@ struct SpriteRenderer {
 // Returns false if the hull PNG is missing; a missing lights PNG is
 // allowed (the sprite renders with no emissive overlay).
 bool load_sprite_art(const std::string& base_path, SpriteArt& art);
+
+// Re-read the PNGs from disk for an already-loaded SpriteArt — destroys
+// the existing GPU images/views first, then calls load_sprite_art with
+// the cached `art.name` as the base path. Used by hot-reload tools (the
+// F4 atlas grid viewer's "Reload from disk" button) so the engine can
+// pick up newly generated/finetuned cells without a full restart.
+//
+// Safe to call from a UI button — sg_destroy_image is synchronous and
+// load_sprite_art is the same call path used at startup. Returns false
+// only if the hull PNG vanished off disk between the original load and
+// the reload (in which case the caller probably has bigger problems).
+bool reload_sprite_art(SpriteArt& art);

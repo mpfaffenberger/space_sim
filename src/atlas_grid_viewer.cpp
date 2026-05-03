@@ -5,6 +5,7 @@
 
 #include "atlas_grid_viewer.h"
 
+#include "json.h"
 #include "ship_sprite.h"
 #include "sprite.h"
 
@@ -19,6 +20,7 @@
 #include <filesystem>
 #include <fstream>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -41,6 +43,45 @@ static std::string g_selected_atlas_key;
 // stable across SWAP because we mutate the frame's az/el/dir fields in
 // place — the index points at the same memory either way.
 static int         g_selected_frame_idx = -1;
+
+// ---- regen-notes state -----------------------------------------------------
+//
+// Free-form review/regeneration comments — one optional per-frame string
+// plus one ship-wide "general" string. Keyed by atlas.key so notes for
+// Centurion don't bleed into Talon notes when the user flips the ship
+// combo. Stored on disk at
+//
+//    assets/ships/<ship>/sprites/regen_notes.json
+//
+// in a shape Mike's batch_generate_ship_sprites.py can read for surgical
+// re-runs:
+//
+//    {
+//      "ship":    "<ship>",
+//      "general": "...",
+//      "frames": {
+//        "az045_el+030": "swap top/bottom",
+//        "az000_el+000": "front view hallucinated 4 engines"
+//      }
+//    }
+//
+// frame_key uses the same az/el text shape the renders/sprites already
+// use on disk, so it's grep-friendly across the asset tree.
+static std::map<std::string, std::string> g_general_notes;            // atlas_key -> text
+static std::map<std::string,
+                std::map<std::string, std::string>> g_frame_notes;    // atlas_key -> frame_key -> text
+static std::set<std::string>             g_notes_loaded;              // atlas_keys whose JSON has been read
+
+// ImGui::InputTextMultiline is char[]-buffer-based, so we shuttle text
+// between std::string storage and these scratch buffers. 8 KB is more
+// than enough for human review notes; if anyone hits the limit they're
+// writing a novel, not a bug report. Frame buffer is sync'd to the map
+// whenever the selection changes (or on Save).
+static constexpr size_t kNoteBufBytes = 8192;
+static char g_general_buf[kNoteBufBytes];
+static char g_frame_buf  [kNoteBufBytes];
+static std::string g_buffered_atlas_key;     // which atlas g_general_buf is for
+static int         g_buffered_frame_idx = -1; // which frame  g_frame_buf   is for
 
 // ---- helpers ---------------------------------------------------------------
 
@@ -112,6 +153,267 @@ static void save_tuning(const ShipSpriteAtlas& atlas) {
     out << "  ]\n}\n";
     std::printf("[atlas_grid_viewer] wrote %s (%zu frames)\n",
                 path.string().c_str(), atlas.frames.size());
+}
+
+// ---- regen notes -----------------------------------------------------------
+
+// Stable per-frame key. Mirrors the on-disk filename convention used by
+// the renders/sprites pipeline ("az045_el+030") so a `grep regen_notes`
+// can be cross-referenced trivially with the asset tree. We round to the
+// nearest 0.5° and use 'p' for the half-step to match e.g.
+// `centurion_az022p5_el-060.png`.
+static std::string frame_key_az_el(float az_deg, float el_deg) {
+    auto az_part = [](float v) {
+        const float r = std::round(v * 2.0f) / 2.0f;
+        const int   whole = (int)std::floor(r);
+        const bool  half  = std::fabs(r - whole) > 0.25f;
+        char buf[32];
+        if (half) std::snprintf(buf, sizeof(buf), "az%03dp5", whole);
+        else      std::snprintf(buf, sizeof(buf), "az%03d",   whole);
+        return std::string(buf);
+    };
+    auto el_part = [](float v) {
+        const float r = std::round(v * 2.0f) / 2.0f;
+        const int   whole = (int)(r >= 0.0f ? std::floor(r) : std::ceil(r));
+        const bool  half  = std::fabs(r - (float)whole) > 0.25f;
+        char buf[32];
+        if (half) std::snprintf(buf, sizeof(buf), "el%+04dp5", whole);
+        else      std::snprintf(buf, sizeof(buf), "el%+04d",   whole);
+        return std::string(buf);
+    };
+    return az_part(az_deg) + "_" + el_part(el_deg);
+}
+
+// regen_notes.json lives next to the generated sprites because the
+// sprite generator already cd-friendly-keys all of its bookkeeping there
+// (jobs.jsonl, prompts/, pixelart_batch_specs.json). Keeps everything
+// one ship-deep and one tool-touchable.
+static std::filesystem::path notes_path_for(const ShipSpriteAtlas& atlas) {
+    return std::filesystem::path("assets/ships") /
+           ship_name_from_key(atlas.key) /
+           "sprites" / "regen_notes.json";
+}
+
+// Minimal JSON-string escape for our hand-rolled writer. The textareas
+// can include newlines, quotes, and backslashes; everything else stays
+// printable. Skips the \u00xx control-char branch deliberately because
+// no one is pasting NULs into a code review note. (If they do, the JSON
+// parser will tell them.)
+static std::string json_escape(const std::string& s) {
+    std::string out;
+    out.reserve(s.size() + 8);
+    for (char c : s) {
+        switch (c) {
+            case '"':  out += "\\\""; break;
+            case '\\': out += "\\\\"; break;
+            case '\n': out += "\\n";  break;
+            case '\r': out += "\\r";  break;
+            case '\t': out += "\\t";  break;
+            default:   out += c;      break;
+        }
+    }
+    return out;
+}
+
+// Read regen_notes.json (if present) into the in-memory maps. Called
+// the first time an atlas is selected so we don't pay disk I/O at
+// startup for atlases the user never opens. Missing file = no notes
+// yet, totally fine — leave maps empty.
+static void load_notes_for(const ShipSpriteAtlas& atlas) {
+    if (g_notes_loaded.count(atlas.key)) return;
+    g_notes_loaded.insert(atlas.key);
+
+    const auto path = notes_path_for(atlas);
+    if (!std::filesystem::exists(path)) return;
+
+    json::Value root = json::parse_file(path.string());
+    if (!root.is_object()) {
+        std::fprintf(stderr,
+            "[atlas_grid_viewer] %s is not a JSON object — ignoring\n",
+            path.string().c_str());
+        return;
+    }
+    if (auto* g = root.find("general"); g && g->is_string()) {
+        g_general_notes[atlas.key] = g->as_string();
+    }
+    if (auto* frames = root.find("frames"); frames && frames->is_object()) {
+        auto& bucket = g_frame_notes[atlas.key];
+        for (const auto& [k, v] : frames->as_object()) {
+            if (v.is_string()) bucket[k] = v.as_string();
+        }
+    }
+    std::printf("[atlas_grid_viewer] loaded notes from %s\n",
+                path.string().c_str());
+}
+
+// Write regen_notes.json. Pretty-printed so humans can hand-edit. Empty
+// frame entries get pruned so the file stays tidy after a user clears
+// a comment. (We keep the file even if the maps are empty — a present
+// `regen_notes.json` with empty objects is a clear "reviewed, no notes"
+// signal in git diffs.)
+static void save_notes_for(const ShipSpriteAtlas& atlas) {
+    const auto path = notes_path_for(atlas);
+    std::filesystem::create_directories(path.parent_path());
+
+    const std::string& general = g_general_notes[atlas.key];
+    auto& frames = g_frame_notes[atlas.key];
+    // Drop empties so re-saving doesn't accumulate junk.
+    for (auto it = frames.begin(); it != frames.end(); ) {
+        if (it->second.empty()) it = frames.erase(it);
+        else                    ++it;
+    }
+
+    std::ofstream out(path);
+    out << "{\n";
+    out << "  \"ship\": \""    << ship_name_from_key(atlas.key) << "\",\n";
+    out << "  \"general\": \"" << json_escape(general)           << "\",\n";
+    out << "  \"frames\": {";
+    bool first = true;
+    for (const auto& [k, v] : frames) {
+        if (!first) out << ",";
+        first = false;
+        out << "\n    \"" << k << "\": \"" << json_escape(v) << "\"";
+    }
+    out << (frames.empty() ? "}\n" : "\n  }\n");
+    out << "}\n";
+    std::printf("[atlas_grid_viewer] wrote %s (%zu frame note(s), %zu chars general)\n",
+                path.string().c_str(), frames.size(), general.size());
+}
+
+// Write a self-contained regeneration script to /tmp and return its path.
+//
+// Why a script file rather than a one-liner-in-the-clipboard? Two reasons:
+//   1. Earlier draft used printf-with-double-quotes for the suffix, which
+//      meant we had to hand-escape ", \, $, `, and crossed our fingers on
+//      anything else. Users put angle brackets and apostrophes in their
+//      regen notes. Predictably, that broke.
+//   2. macOS clipboard via ImGui::SetClipboardText hasn't been reliable
+//      for us in the past (`apply_swap_to_manifest` already migrated away
+//      from a heredoc-in-clipboard for that exact reason). A short
+//      `bash /tmp/regen_<ship>_<frame>.sh` is fine to clipboard — that's
+//      ASCII-only and 30 chars long.
+//
+// The script uses a single-quoted heredoc (<<'NP_REGEN_NOTE_END') for the
+// suffix body, which disables ALL shell expansion — quotes, backslashes,
+// dollar signs, backticks, every variety of fun character a human might
+// drop into a regen note all pass through verbatim. The only failure mode
+// is if the note contains the literal string "NP_REGEN_NOTE_END" on a
+// line of its own, which is sufficiently unlikely we will accept the risk
+// and instead use that complaint as evidence of unusually creative QA.
+static std::string write_regen_script(const ShipSpriteAtlas& atlas,
+                                      const ShipSpriteFrame& f) {
+    const std::string ship = ship_name_from_key(atlas.key);
+    const std::string fk   = frame_key_az_el(f.az_deg, f.el_deg);
+    const auto& fnotes = g_frame_notes[atlas.key];
+    const auto  fit    = fnotes.find(fk);
+    const std::string per_frame = (fit != fnotes.end()) ? fit->second : std::string();
+    const std::string general   = g_general_notes[atlas.key];
+
+    std::string suffix;
+    if (!general.empty())   suffix += general + "\n\n";
+    if (!per_frame.empty()) suffix += "Per-frame note for az="
+        + std::to_string((int)std::round(f.az_deg)) + ", el="
+        + std::to_string((int)std::round(f.el_deg)) + ":\n"
+        + per_frame + "\n";
+
+    const std::string script_path = "/tmp/regen_" + ship + "_" + fk + ".sh";
+    const std::string suffix_path = "/tmp/regen_" + ship + "_" + fk + ".txt";
+
+    char az_arg[32]; std::snprintf(az_arg, sizeof(az_arg), "%g", f.az_deg);
+    char el_arg[32]; std::snprintf(el_arg, sizeof(el_arg), "%g", f.el_deg);
+
+    std::string sh;
+    sh.reserve(suffix.size() + 1024);
+    sh += "#!/usr/bin/env bash\n";
+    sh += "# Auto-generated by F4 atlas grid viewer. Regenerates one\n";
+    sh += "# frame for ship='" + ship + "' at az=" + az_arg
+        + ", el=" + el_arg + " with the regen notes below as\n";
+    sh += "# additional prompt suffix.\n";
+    sh += "set -euo pipefail\n";
+    sh += "cd \"$(dirname \"$0\")/../\" 2>/dev/null || true   # noop fallback\n";
+    sh += "# Write the prompt suffix via single-quoted heredoc — no shell\n";
+    sh += "# expansion happens between the quoted markers, so any character\n";
+    sh += "# in the user's regen note passes through verbatim.\n";
+    sh += "cat > " + suffix_path + " <<'NP_REGEN_NOTE_END'\n";
+    sh += suffix;
+    if (suffix.empty() || suffix.back() != '\n') sh += "\n";
+    sh += "NP_REGEN_NOTE_END\n";
+    sh += "echo \"[regen] wrote suffix to " + suffix_path + "\"\n";
+    sh += "\n";
+    sh += "# Run from the repo root regardless of where bash is invoked.\n";
+    sh += "cd \"" + std::filesystem::current_path().string() + "\"\n";
+    // Finetune path: pass the prior sprite back into the model along with
+    // the user's regen note. This is iterate-on-existing, not
+    // generate-from-scratch — so it uses tools/finetune_ship_sprite.py
+    // (which prepends the prior raw.png to reference_image) instead of
+    // batch_generate. Same writes-and-cleans output paths so the refined
+    // sprite drops into the existing atlas pipeline.
+    sh += "exec python3 tools/finetune_ship_sprite.py \\\n";
+    sh += "  --ship "               + ship + " \\\n";
+    sh += "  --az "                 + std::string(az_arg) + " \\\n";
+    sh += "  --el "                 + std::string(el_arg) + " \\\n";
+    sh += "  --prompt-suffix-file " + suffix_path + " \\\n";
+    sh += "  --quality high --clean --preview\n";
+
+    if (FILE* fp = std::fopen(script_path.c_str(), "w")) {
+        std::fwrite(sh.data(), 1, sh.size(), fp);
+        std::fclose(fp);
+        // chmod +x so a curious paste of just the path runs it. (`bash <path>`
+        // works either way, but a +x bit makes the file friendlier to
+        // double-click / direct-execute usage.)
+        std::filesystem::permissions(script_path,
+            std::filesystem::perms::owner_all |
+            std::filesystem::perms::group_read |
+            std::filesystem::perms::group_exec |
+            std::filesystem::perms::others_read |
+            std::filesystem::perms::others_exec,
+            std::filesystem::perm_options::replace);
+    } else {
+        std::fprintf(stderr,
+            "[atlas_grid_viewer] failed to write %s\n",
+            script_path.c_str());
+    }
+    return script_path;
+}
+
+// macOS-flavoured clipboard helper: pipe the given text into pbcopy via
+// a popen so we don't rely on ImGui's clipboard bridge (which ships
+// inert on sokol-app builds unless wired manually). On non-macOS hosts
+// the launch silently fails, which is fine — the user can still copy
+// the path printed to stderr by hand.
+static void copy_to_pasteboard(const std::string& text) {
+#if defined(__APPLE__)
+    if (FILE* p = popen("pbcopy", "w")) {
+        std::fwrite(text.data(), 1, text.size(), p);
+        pclose(p);
+    } else {
+        std::fprintf(stderr,
+            "[atlas_grid_viewer] popen(pbcopy) failed; clipboard not updated\n");
+    }
+#else
+    (void)text;
+#endif
+}
+
+// Run the regen script in the background so the engine doesn't block on
+// the ~150 s API call. We append `&` and redirect output to the script's
+// own .log next to the .sh — engine returns immediately, generation
+// happens in a child shell, user can `tail -f` if they want progress.
+static void run_regen_script_background(const std::string& script_path) {
+    const std::string log_path = script_path + ".log";
+    const std::string cmd = "bash " + script_path
+        + " > " + log_path + " 2>&1 &";
+    std::printf("[atlas_grid_viewer] launching: %s\n", cmd.c_str());
+    const int rc = std::system(cmd.c_str());
+    if (rc != 0) {
+        std::fprintf(stderr,
+            "[atlas_grid_viewer] background launch returned rc=%d (script=%s)\n",
+            rc, script_path.c_str());
+    } else {
+        std::printf("[atlas_grid_viewer] regen running in background; "
+                    "tail -f %s for progress\n",
+                    log_path.c_str());
+    }
 }
 
 // Build a self-contained Python snippet that rewrites
@@ -254,6 +556,22 @@ void build(std::unordered_map<std::string, ShipSpriteAtlas>& atlases) {
 
     ShipSpriteAtlas& atlas = atlases.at(g_selected_atlas_key);
 
+    // Pull notes for this atlas off disk on first open. Cheap & lazy.
+    load_notes_for(atlas);
+
+    // Sync the general buffer to whichever atlas is on screen. Switching
+    // ships flushes the previous atlas's edits back to its map first so
+    // we don't lose typing-in-progress to a combo click.
+    if (g_buffered_atlas_key != g_selected_atlas_key) {
+        if (!g_buffered_atlas_key.empty()) {
+            g_general_notes[g_buffered_atlas_key] = g_general_buf;
+        }
+        const std::string& src = g_general_notes[g_selected_atlas_key];
+        std::snprintf(g_general_buf, kNoteBufBytes, "%s", src.c_str());
+        g_buffered_atlas_key  = g_selected_atlas_key;
+        g_buffered_frame_idx  = -1;     // force a re-sync of the frame buffer too
+    }
+
     // Index frames by elevation row. std::map keeps elevations sorted —
     // we then iterate in REVERSE so the highest-el row (camera looking
     // straight down at the ship) renders at the top of the grid, matching
@@ -366,6 +684,34 @@ void build(std::unordered_map<std::string, ShipSpriteAtlas>& atlases) {
     ImGui::SameLine();
 
     ImGui::BeginChild("##inspector", ImVec2(0, 0), true);
+
+    // Selection-change handling: if the user clicked a different cell,
+    // flush the previous cell's text buffer into the map first, then
+    // load the new cell's note (or a blank string). Without this, edits
+    // would be lost any time the selection shifted.
+    if (g_buffered_frame_idx != g_selected_frame_idx) {
+        if (g_buffered_frame_idx >= 0 &&
+            g_buffered_frame_idx <  (int)atlas.frames.size()) {
+            const ShipSpriteFrame& prev = atlas.frames[g_buffered_frame_idx];
+            const std::string fk = frame_key_az_el(prev.az_deg, prev.el_deg);
+            std::string text = g_frame_buf;
+            if (text.empty()) g_frame_notes[atlas.key].erase(fk);
+            else              g_frame_notes[atlas.key][fk] = text;
+        }
+        g_frame_buf[0] = '\0';
+        if (g_selected_frame_idx >= 0 &&
+            g_selected_frame_idx <  (int)atlas.frames.size()) {
+            const ShipSpriteFrame& cur = atlas.frames[g_selected_frame_idx];
+            const std::string fk = frame_key_az_el(cur.az_deg, cur.el_deg);
+            const auto& bucket = g_frame_notes[atlas.key];
+            const auto it = bucket.find(fk);
+            if (it != bucket.end()) {
+                std::snprintf(g_frame_buf, kNoteBufBytes, "%s", it->second.c_str());
+            }
+        }
+        g_buffered_frame_idx = g_selected_frame_idx;
+    }
+
     if (g_selected_frame_idx < 0 ||
         g_selected_frame_idx >= (int)atlas.frames.size()) {
         ImGui::TextDisabled("(click a cell to select it for inspection)");
@@ -394,7 +740,154 @@ void build(std::unordered_map<std::string, ShipSpriteAtlas>& atlases) {
         ImGui::SliderFloat("scale",       &f.scale,    0.3f,   2.5f, "%.3f");
         ImGui::SliderFloat("roll (deg)",  &f.roll_deg, -180.0f, 180.0f, "%.1f");
 
+        // Per-frame regen note. Edits stay in g_frame_buf until either
+        // selection changes or "Save notes" is clicked. Sized at ~6
+        // text rows so multiline feedback fits without scroll-fishing.
+        ImGui::Spacing();
+        ImGui::TextUnformatted("Regen note for this frame:");
+        ImGui::InputTextMultiline("##frame_note", g_frame_buf, kNoteBufBytes,
+                                  ImVec2(-FLT_MIN, ImGui::GetTextLineHeight() * 6.0f));
+
+        // Helper lambda — flush the live buffers into the in-memory note
+        // maps so any of the regen buttons below see the current screen
+        // content even if the user hasn't clicked Save yet. Both buttons
+        // need this, hence the lambda.
+        auto flush_buffers = [&]() {
+            const std::string fk = frame_key_az_el(f.az_deg, f.el_deg);
+            std::string text = g_frame_buf;
+            if (text.empty()) g_frame_notes[atlas.key].erase(fk);
+            else              g_frame_notes[atlas.key][fk] = text;
+            g_general_notes[atlas.key] = g_general_buf;
+        };
+
+        if (ImGui::Button("Copy regen command")) {
+            flush_buffers();
+            const std::string script_path = write_regen_script(atlas, f);
+            // Clipboard payload is the SHORT command, not the whole script.
+            // Reliable to copy + paste, ~30 chars of pure ASCII. The script
+            // contains the spicy heredoc and arg list.
+            const std::string clipboard_payload = "bash " + script_path;
+            ImGui::SetClipboardText(clipboard_payload.c_str()); // ImGui-internal
+            copy_to_pasteboard(clipboard_payload);              // OS clipboard (pbcopy)
+            std::printf("[atlas_grid_viewer] regen script: %s\n"
+                        "[atlas_grid_viewer] clipboard:    %s\n",
+                        script_path.c_str(), clipboard_payload.c_str());
+        }
+        ImGui::SameLine();
+        ImGui::TextDisabled("(?)");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip(
+                "Writes /tmp/regen_<ship>_<frame>.sh containing a self-contained\n"
+                "regenerate-this-frame command (with current notes baked in via\n"
+                "a single-quoted heredoc — survives any user-typed character).\n"
+                "Copies a short `bash /tmp/...sh` to the clipboard so you can\n"
+                "paste-and-run it in a separate terminal.");
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Regen now (bg)")) {
+            flush_buffers();
+            const std::string script_path = write_regen_script(atlas, f);
+            run_regen_script_background(script_path);
+        }
+        ImGui::SameLine();
+        ImGui::TextDisabled("(?)");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip(
+                "Writes the regen script and immediately fork-launches it as\n"
+                "a background bash process. Engine returns instantly; the\n"
+                "~150 s OpenAI image-edit API call runs out-of-process.\n"
+                "Tail /tmp/regen_<ship>_<frame>.sh.log for progress.");
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Reload from disk")) {
+            // f.art is `const SpriteArt*` per the runtime contract — the
+            // SpriteArt itself lives in main.cpp's `sprite_art` cache where
+            // it's mutable. We're the legitimate hot-reload path, so a
+            // const_cast is fine here (mirrors the pattern elsewhere in
+            // main.cpp around the sprite-light editor handoff).
+            if (f.art) {
+                SpriteArt* mut = const_cast<SpriteArt*>(f.art);
+                if (reload_sprite_art(*mut)) {
+                    std::printf("[atlas_grid_viewer] reloaded '%s' from disk\n",
+                                mut->name.c_str());
+                } else {
+                    std::fprintf(stderr,
+                        "[atlas_grid_viewer] reload failed for '%s'\n",
+                        mut->name.c_str());
+                }
+            }
+        }
+        ImGui::SameLine();
+        ImGui::TextDisabled("(?)");
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip(
+                "Re-reads this cell's PNGs (hull + lights sidecar) and\n"
+                "any *.lights.json animation sidecar from disk, replacing\n"
+                "the in-memory GPU textures. Use after a Regen finishes\n"
+                "to see the new sprite without restarting the engine.");
+        }
+        ImGui::SameLine();
         if (ImGui::Button("clear selection")) g_selected_frame_idx = -1;
+    }
+
+    // Ship-wide regen notes — always visible, regardless of selection.
+    // Useful for global directives like "keep nose extra long" that the
+    // copied per-frame regen command should fold into every prompt.
+    ImGui::Separator();
+    ImGui::TextUnformatted("Ship-wide regen notes:");
+    ImGui::InputTextMultiline("##general_note", g_general_buf, kNoteBufBytes,
+                              ImVec2(-FLT_MIN, ImGui::GetTextLineHeight() * 4.0f));
+
+    if (ImGui::Button("Save notes (regen_notes.json)")) {
+        // Flush both live buffers into the map before serialising —
+        // otherwise the user's most recent typing wouldn't make it.
+        if (g_selected_frame_idx >= 0 &&
+            g_selected_frame_idx <  (int)atlas.frames.size()) {
+            const ShipSpriteFrame& cur = atlas.frames[g_selected_frame_idx];
+            const std::string fk = frame_key_az_el(cur.az_deg, cur.el_deg);
+            std::string text = g_frame_buf;
+            if (text.empty()) g_frame_notes[atlas.key].erase(fk);
+            else              g_frame_notes[atlas.key][fk] = text;
+        }
+        g_general_notes[atlas.key] = g_general_buf;
+        save_notes_for(atlas);
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip(
+            "Writes assets/ships/%s/sprites/regen_notes.json with all\n"
+            "per-frame and ship-wide notes typed so far. Read by\n"
+            "batch_generate_ship_sprites.py for surgical regen runs.",
+            ship_name_from_key(atlas.key).c_str());
+    }
+
+    ImGui::Separator();
+    ImGui::TextUnformatted("Hot reload");
+    if (ImGui::Button("Reload all cells from disk")) {
+        // De-dup pointers — multiple ShipSpriteFrames can share one
+        // SpriteArt (the cache is keyed by stem path). Reloading the
+        // same SpriteArt twice would destroy a freshly-allocated GPU
+        // image, so collect unique pointers first.
+        std::set<SpriteArt*> uniq;
+        for (ShipSpriteFrame& f : atlas.frames) {
+            if (f.art) uniq.insert(const_cast<SpriteArt*>(f.art));
+        }
+        size_t ok = 0, fail = 0;
+        for (SpriteArt* a : uniq) {
+            if (reload_sprite_art(*a)) ++ok; else ++fail;
+        }
+        std::printf("[atlas_grid_viewer] reloaded %zu/%zu cells (failed=%zu) for atlas '%s'\n",
+                    ok, uniq.size(), fail, atlas.key.c_str());
+    }
+    ImGui::SameLine();
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip(
+            "Re-reads every cell PNG (hull + lights + animation sidecar)\n"
+            "in the current atlas from disk. Useful after running a\n"
+            "large batch regen or a feathering pass — same effect as\n"
+            "restarting the engine, without losing fly-by-wire state.");
     }
 
     ImGui::Separator();

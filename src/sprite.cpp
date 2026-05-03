@@ -109,6 +109,26 @@ void SpriteArt::destroy() {
     free_slot(lights);
 }
 
+bool reload_sprite_art(SpriteArt& art) {
+    // Capture the cached base path BEFORE destroy() — load_sprite_art
+    // overwrites `art.name` on the way back in, so reading it after
+    // would be racing against ourselves. (Almost certain to work since
+    // load_sprite_art assigns `art.name = base_path` first thing, but
+    // future-Mike will thank present-Mike for the explicit copy.)
+    const std::string base_path = art.name;
+    if (base_path.empty()) {
+        std::fprintf(stderr,
+            "[sprite] reload_sprite_art: art has no cached base path "
+            "(was it loaded via load_sprite_art()?)\n");
+        return false;
+    }
+    art.destroy();
+    art.light_spots.clear();   // load_sprite_art's sidecar load doesn't dedupe
+    art.hull_w = 0;
+    art.hull_h = 0;
+    return load_sprite_art(base_path, art);
+}
+
 // ---------------------------------------------------------------------------
 // SpriteRenderer — shared GPU state + two draw passes
 // ---------------------------------------------------------------------------
