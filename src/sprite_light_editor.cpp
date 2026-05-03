@@ -86,6 +86,31 @@ static bool lights_equal(const std::vector<LightSpot>& a,
 // tips, radar dish). Clamped to [1, 4].
 static float g_zoom = 1.0f;
 
+// ---- Sticky last-used spot properties ------------------------------------
+//
+// New light spots inherit colour/kind/hz/phase from the last placed-or-edited
+// spot, so authoring runs of identical lights (e.g. five green strobes on
+// the same radar dish, or twelve red nav-edges along a wing) doesn't require
+// re-picking the same colour + kind + hz + phase from scratch every click.
+// Size is intentionally NOT sticky — the user's existing workflow is to
+// place at the default 5 px and rescale globally with the python crush
+// tool, so changing size-default is a footgun (would silently bloat new
+// placements).
+//
+// Initialised to the historical defaults (red / steady / 0 / 0). Updated:
+//   - any time the user edits the selected spot's colour, kind, hz, or phase
+//   - any time a new spot is placed (so back-to-back placements stay
+//     identical without ever touching the right-column editor)
+//
+// Shift-click for blue is preserved for muscle-memory: it overrides the
+// sticky colour for that one placement (and updates the sticky to blue,
+// so the next plain click also gets blue — "shift = switch to the OTHER
+// colour, then keep going" matches what users naturally expect).
+static HMM_Vec3  g_sticky_color = HMM_V3(1.00f, 0.10f, 0.10f);   // hot red
+static float     g_sticky_hz    = 0.0f;
+static float     g_sticky_phase = 0.0f;
+static LightKind g_sticky_kind  = LightKind::Steady;
+
 // ---------------------------------------------------------------------------
 // Event handling
 // ---------------------------------------------------------------------------
@@ -450,20 +475,22 @@ void build(std::vector<SpriteObject>& sprites,
                 g_sel_light = hit_light;
             } else if (mouse_uv.x >= 0 && mouse_uv.x <= 1 &&
                        mouse_uv.y >= 0 && mouse_uv.y <= 1) {
-                // Shift-click → blue (port nav / cool accents); plain click
-                // → red (default warning/strobe colour). Color is the only
-                // axis the modifier flips — size/kind stay the same so the
-                // muscle-memory of "shift = the OTHER colour" stays simple.
+                // Shift-click → switch to blue (port nav / cool accents) AND
+                // make blue the new sticky colour for subsequent clicks; plain
+                // click → use whatever sticky colour is currently set
+                // (defaults to hot red on first launch). kind/hz/phase ALWAYS
+                // come from the sticky values so authoring runs of identical
+                // lights doesn't require re-picking everything per spot.
                 const bool shift = ImGui::GetIO().KeyShift;
+                if (shift) g_sticky_color = HMM_V3(0.20f, 0.55f, 1.00f);
                 LightSpot ls{};
                 ls.u = mouse_uv.x;
                 ls.v = mouse_uv.y;
-                ls.color = shift ? HMM_V3(0.20f, 0.55f, 1.00f)   // crisp blue
-                                 : HMM_V3(1.00f, 0.10f, 0.10f); // hot red
-                ls.size  = 5.0f;
-                ls.hz    = 0.0f;
-                ls.phase = 0.0f;
-                ls.kind  = LightKind::Steady;
+                ls.color = g_sticky_color;
+                ls.size  = 5.0f;     // see g_sticky_color comment re: size
+                ls.hz    = g_sticky_hz;
+                ls.phase = g_sticky_phase;
+                ls.kind  = g_sticky_kind;
                 cur_lights.push_back(ls);
                 g_sel_light = (int)cur_lights.size() - 1;
             }
@@ -490,15 +517,18 @@ void build(std::vector<SpriteObject>& sprites,
                     cur_lights.size() == 1 ? "" : "s");
         ImGui::SameLine();
         if (ImGui::Button("+ add")) {
-            // Same defaults as click-spawn (kept in sync so users get a
+            // Same sticky values as click-spawn (kept in sync so users get a
             // consistent first-time experience whichever entry path they
             // use). Shift-modifier intentionally not honoured here — the
             // button is for "give me a light I'll position later", not
             // "give me one in this colour".
             LightSpot ls{};
             ls.u = 0.5f; ls.v = 0.5f;
-            ls.color = HMM_V3(1.00f, 0.10f, 0.10f);
-            ls.size = 5.0f;
+            ls.color = g_sticky_color;
+            ls.size  = 5.0f;
+            ls.hz    = g_sticky_hz;
+            ls.phase = g_sticky_phase;
+            ls.kind  = g_sticky_kind;
             cur_lights.push_back(ls);
             g_sel_light = (int)cur_lights.size() - 1;
         }
@@ -563,21 +593,31 @@ void build(std::vector<SpriteObject>& sprites,
             ImGui::DragFloat("u", &ls.u, 0.002f, 0.0f, 1.0f, "%.3f");
             ImGui::DragFloat("v", &ls.v, 0.002f, 0.0f, 1.0f, "%.3f");
 
+            // Edits to colour / hz / phase / kind also update the
+            // module-static stickies so the next placed spot inherits the
+            // value the user just dialled in. Size is intentionally NOT
+            // sticky (see g_sticky_color comment).
             float rgb[3] = { ls.color.X, ls.color.Y, ls.color.Z };
             if (ImGui::ColorEdit3("color", rgb)) {
                 ls.color.X = rgb[0];
                 ls.color.Y = rgb[1];
                 ls.color.Z = rgb[2];
+                g_sticky_color = ls.color;
             }
 
             ImGui::SliderFloat("size",  &ls.size,  5.0f, 300.0f, "%.0f");
-            ImGui::SliderFloat("hz",    &ls.hz,    0.0f, 5.0f,   "%.2f");
-            ImGui::SliderFloat("phase", &ls.phase, 0.0f, 1.0f,   "%.2f");
+            if (ImGui::SliderFloat("hz",    &ls.hz,    0.0f, 5.0f,   "%.2f")) {
+                g_sticky_hz = ls.hz;
+            }
+            if (ImGui::SliderFloat("phase", &ls.phase, 0.0f, 1.0f,   "%.2f")) {
+                g_sticky_phase = ls.phase;
+            }
 
             int kind_i = (int)ls.kind;
             if (ImGui::Combo("kind", &kind_i, kKindLabels,
                              IM_ARRAYSIZE(kKindLabels))) {
                 ls.kind = (LightKind)kind_i;
+                g_sticky_kind = ls.kind;
             }
 
             ImGui::Separator();
