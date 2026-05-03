@@ -1,0 +1,69 @@
+Create a pixel-art spaceship sprite for the Centurion-class bounty-hunter heavy fighter from Wing Commander: Privateer.
+
+=== POSE — HIGHEST PRIORITY ===
+This sprite shows the ship from a SPECIFIC 3D viewing angle. The reference
+image IS that angle. Your output MUST match the same orientation:
+  Camera position: to the ship's PORT side (left wing visible), BELOW the ship by 60° (looking up at the ventral surface)
+  Azimuth = 270.0°, Elevation = -60.0°
+
+Do NOT collapse this view to a generic side-on or top-down perspective.
+Do NOT "fix" the angle to a more aesthetic one. The angle in the reference IS
+the angle the engine will sample at this slot in the view-sphere atlas — any
+deviation will cause the sprite to twist visibly when the player orbits the
+ship. Match the silhouette, foreshortening, and visible facets exactly.
+
+REFERENCE IMAGES:
+  PRIMARY (this exact angle — match silhouette and pose 1:1):
+  - /Users/mpfaffenberger/code/new_privateer/assets/ships/centurion/renders/centurion_az270_el-060.png
+  CANONICAL DESIGN SHEET (multiple angles — use ONLY for paint scheme,
+  hull colour, material finish, and overall design fidelity; do NOT
+  copy any specific angle from this sheet):
+  - /Users/mpfaffenberger/code/new_privateer/assets/ships/centurion/canonical_reference.png
+
+=== DESIGN — what this ship IS ===
+Distinguishing features (every cell must show these regardless of angle):
+sleek delta-wing fighter, sharply pointed nose extending well forward of the wings, twin large cylindrical engine pods flanking the rear hull on top of the wing roots, central raised cockpit blister, swept-back wings with weapon hardpoints underneath, low-slung side profile (wider than tall), aggressive predatory aerospace fighter — NOT a freighter, NOT blocky.
+
+Do not invent extra fins, wings, cockpits, or modules not implied by the
+reference. Do not delete features the reference shows.
+
+=== STYLE ===
+- 1993 DOS / Wing Commander: Privateer pixel art
+- chunky pixels, hand-authored sprite readability
+- dithered shading, limited palette
+- matte gunmetal-grey hull with darker panel seams and subtle red/yellow Confed-style accent stripes, clean polished aerospace-alloy finish, no weathering
+- transparent background
+- readable sprite first, texture detail second
+- pixel grid 512 on longest side, palette ~40 colours
+
+MATERIAL — READ THIS CAREFULLY:
+The PRIMARY reference is a low-fidelity 3D viewport screenshot with placeholder
+textures baked into the model (stone-block patterns, untextured cockpits, etc).
+Those patterns are a TEXTURING BUG, not a design choice. DO NOT REPRODUCE THEM.
+
+The CANONICAL DESIGN SHEET shows the correct surface finish:
+- glossy polished aerospace alloy — think F-22 Raptor, B-2 Spirit, X-wing,
+  Cylon Raider, mirrored chrome, brushed titanium
+- showroom-fresh painted military hull, clean off the production line
+- panel SEAMS are paper-thin scribed lines (1 pixel wide max) — NOT thick
+  mortar grooves between blocks
+- broad smooth metallic regions with gradient shading from directional lighting
+- specular highlights along edges and curved surfaces
+- a few crisp painted insignia / numbers / accent stripes (sparse, not
+  every panel)
+
+Use the PRIMARY reference for SILHOUETTE / POSE / PROPORTIONS only.
+Use the CANONICAL reference for MATERIAL / FINISH / PAINT JOB.
+These roles are non-negotiable — never let the primary's bricky textures
+leak into your output.
+
+=== AVOID ===
+- painterly blur, mushy silhouette
+- rounded organic forms (this is a hard-edged industrial spaceship)
+- inventing extra fins / wings / greebles
+- changing ship proportions
+- starfield or background artifacts
+- stone walls, brickwork, masonry, mortar lines, chiseled blocks
+- weathered/aged/medieval/fantasy styling
+- copying placeholder textures from the reference
+- collapsing the requested 3D angle to a more convenient flat view

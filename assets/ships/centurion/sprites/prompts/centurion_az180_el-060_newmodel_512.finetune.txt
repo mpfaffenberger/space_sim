@@ -1,0 +1,39 @@
+Subject: REFINE an existing pixel-art sprite of a bounty-hunter heavy fighter (Centurion)
+viewed from directly IN FRONT of the ship (looking at the nose/cockpit), BELOW the ship by 60° (looking up at the ventral surface).
+
+THIS IS A FINE-TUNE PASS, NOT A FROM-SCRATCH GENERATION.
+Your job is to take the FIRST reference image — the previously-generated
+sprite — and apply small targeted edits described below. Preserve everything
+that the user does not explicitly ask to change: silhouette, pose,
+palette, panel detailing, light placement, scale, framing.
+
+USER REGEN NOTE — apply these changes:
+Per-frame note for az=180, el=-60:
+This is supposed to be the underside of the ship. The cockpit should not be visible.
+
+
+REFERENCE IMAGES:
+  PRIMARY (the prior sprite — iterate on this; preserve unless explicitly
+  edited by the regen note above):
+  - /Users/mpfaffenberger/code/new_privateer/assets/ships/centurion/sprites/centurion_az180_el-060_newmodel_512.raw.png
+
+  POSE ANCHOR (low-fidelity 3D clay render of THIS exact (az, el); use only
+  to confirm the camera angle is correct and the silhouette hasn't drifted
+  — do NOT copy its placeholder textures):
+  - /Users/mpfaffenberger/code/new_privateer/assets/ships/centurion/renders/centurion_az180_el-060.png
+
+  CANONICAL DESIGN SHEET (paint scheme, hull colour, material finish; use
+  ONLY for material/colour fidelity, not pose):
+  - /Users/mpfaffenberger/code/new_privateer/assets/ships/centurion/canonical_reference.png
+
+DESIGN BRIEF (for context — the prior sprite already obeys this):
+  Silhouette: sleek delta-wing fighter, sharply pointed nose extending well forward of the wings, twin large cylindrical engine pods flanking the rear hull on top of the wing roots, central raised cockpit blister, swept-back wings with weapon hardpoints underneath, low-slung side profile (wider than tall), aggressive predatory aerospace fighter — NOT a freighter, NOT blocky
+  Palette:    matte gunmetal-grey hull with darker panel seams and subtle red/yellow Confed-style accent stripes, clean polished aerospace-alloy finish, no weathering
+
+OUTPUT REQUIREMENTS:
+- Same view angle as the prior sprite (az=180, el=-60).
+- Same canvas size and framing.
+- Same pixel-art style and palette as the prior sprite.
+- Apply the user's regen note edits surgically; leave everything else alone.
+
+sleek futuristic spaceship pixel art; glossy polished aerospace alloy hull (think F-22, B-2, mirrored chrome) with paper-thin panel seams; clean and showroom-fresh; NEVER stone, brick, mortar, masonry, granite, or sandstone; preserve silhouette from the primary reference exactly

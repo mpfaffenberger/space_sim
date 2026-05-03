@@ -2,9 +2,19 @@ Create a pixel-art spaceship sprite for the Centurion-class bounty-hunter heavy 
 
 === POSE — HIGHEST PRIORITY ===
 This sprite shows the ship from a SPECIFIC 3D viewing angle. The reference
-image IS that angle. Your output MUST match the same orientation:
-  Camera position: directly BEHIND the ship (looking at the rear/engines), FAR BELOW the ship, looking nearly straight up (bottom-up view)
+image IS that angle. Your output MUST match the same orientation.
+
   Azimuth = 0.0°, Elevation = -90.0°
+
+Camera position: directly IN FRONT of the ship (looking at the nose head-on), HIGH ABOVE the ship, looking nearly straight DOWN at the dorsal hull (top-down / pure-dorsal view).
+
+WHAT IS VISIBLE FROM THIS ANGLE (the sprite must show these):
+  - the ship's NOSE / cockpit blister, dorsal hull strip from above
+  - the DORSAL (top) hull dominates the entire image — cockpit blister, dorsal panel seams, top of the wings, top of the engine pods
+
+WHAT IS *NOT* VISIBLE FROM THIS ANGLE (do NOT draw these):
+  - the rear engines (occluded by the body)
+  - the ventral underside is COMPLETELY hidden (we're directly above)
 
 Do NOT collapse this view to a generic side-on or top-down perspective.
 Do NOT "fix" the angle to a more aesthetic one. The angle in the reference IS
@@ -67,3 +77,12 @@ leak into your output.
 - weathered/aged/medieval/fantasy styling
 - copying placeholder textures from the reference
 - collapsing the requested 3D angle to a more convenient flat view
+
+Additional per-frame art direction:
+Preserve the Centurion's exact silhouette and proportions from the primary reference angle.
+The Centurion is a heavy fighter with: a long sharp spear-like nose, broad delta wings, twin raised rear engine pods on top of the rear hull, a dorsal cockpit blister, and a glossy gunmetal-gray polished military hull with sparse black panel seams.
+Keep every angle consistent as the same spacecraft rotating through the atlas.
+Use the canonical reference only for paint, material finish, and markings. Do not copy the canonical sheet's specific angle.
+Do not add extra wings, fins, antennae, weapon pods, or modules not visible in the reference.
+Do not collapse the requested 3D view into a generic side, top, or front view.
+Do not turn it into a generic X-wing, Star Wars fighter, modern jet, or organic alien ship.
