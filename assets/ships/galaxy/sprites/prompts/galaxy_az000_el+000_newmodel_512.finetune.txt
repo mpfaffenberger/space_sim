@@ -1,0 +1,46 @@
+Subject: REFINE an existing pixel-art sprite of a heavy merchant freighter (Galaxy)
+viewed from Camera position: directly IN FRONT of the ship (looking at the nose head-on), at the ship's vertical midline (horizontal/equator view).
+
+WHAT IS VISIBLE FROM THIS ANGLE (the sprite must show these):
+  - the ship's NOSE / cockpit blister, dorsal hull strip from above
+  - the silhouette in profile; cockpit blister visible as a side bump on the dorsal hull
+
+WHAT IS *NOT* VISIBLE FROM THIS ANGLE (do NOT draw these):
+  - the rear engines (occluded by the body).
+
+THIS IS A FINE-TUNE PASS, NOT A FROM-SCRATCH GENERATION.
+Your job is to take the FIRST reference image — the previously-generated
+sprite — and apply small targeted edits described below. Preserve everything
+that the user does not explicitly ask to change: silhouette, pose,
+palette, panel detailing, light placement, scale, framing.
+
+USER REGEN NOTE — apply these changes:
+Per-frame note for az=0, el=0:
+This frame is supposed to be elevation 0 azimuth 0, which is looking directly at hte ship dead on. We should see all 4 engine intakes, the front of the cockpit, and on the bottom the radar dish facing forwards.
+
+
+REFERENCE IMAGES:
+  PRIMARY (the prior sprite — iterate on this; preserve unless explicitly
+  edited by the regen note above):
+  - /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/sprites/galaxy_az000_el+000_newmodel_512.raw.png
+
+  POSE ANCHOR (low-fidelity 3D clay render of THIS exact (az, el); use only
+  to confirm the camera angle is correct and the silhouette hasn't drifted
+  — do NOT copy its placeholder textures):
+  - /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/renders/galaxy_az000_el+000.png
+
+  CANONICAL DESIGN SHEET (paint scheme, hull colour, material finish; use
+  ONLY for material/colour fidelity, not pose):
+  - /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/canonical_reference.png
+
+DESIGN BRIEF (for context — the prior sprite already obeys this):
+  Silhouette: long forward fuselage tapering to a pointed cockpit nose (roughly 60% of total length), wide rectangular rear hull with two large cylindrical engine pods slung beneath, squared-off cargo modules and dorsal turret housings on the top of the aft section, industrial freighter proportions — NOT a fighter
+  Palette:    matte gunmetal-grey industrial hull with darker panel seams, slightly weathered freighter look — match the canonical reference top-down render exactly
+
+OUTPUT REQUIREMENTS:
+- Same view angle as the prior sprite (az=0, el=0).
+- Same canvas size and framing.
+- Same pixel-art style and palette as the prior sprite.
+- Apply the user's regen note edits surgically; leave everything else alone.
+
+sleek futuristic spaceship pixel art; glossy polished aerospace alloy hull (think F-22, B-2, mirrored chrome) with paper-thin panel seams; clean and showroom-fresh; NEVER stone, brick, mortar, masonry, granite, or sandstone; preserve silhouette from the primary reference exactly

@@ -1,0 +1,52 @@
+[11:30:52] === Batch starting: 1 specs -> /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/sprites ===
+[11:30:52] === Batch starting: 1 specs -> /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/sprites ===
+[11:30:52] === Batch starting: 1 specs -> /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/sprites ===
+[11:30:52] [1/1] galaxy_az022p5_el+000_newmodel_512.png generating: Create a pixel-art spaceship sprite for the Galaxy-class heavy merchan...
+[11:30:52] [1/1] galaxy_az045_el+000_newmodel_512.png generating: Create a pixel-art spaceship sprite for the Galaxy-class heavy merchan...
+[11:30:52] [1/1] galaxy_az000_el+000_newmodel_512.png generating: Create a pixel-art spaceship sprite for the Galaxy-class heavy merchan...
+[11:33:13] [1/1] galaxy_az045_el+000_newmodel_512.png OK (141.4s)
+[11:33:13] === Batch done in 141.4s: 1 generated, 0 skipped, 0 failed ===
+[11:33:42] [1/1] galaxy_az022p5_el+000_newmodel_512.png OK (169.8s)
+[11:33:42] === Batch done in 169.8s: 1 generated, 0 skipped, 0 failed ===
+[11:33:42] [1/1] galaxy_az000_el+000_newmodel_512.png OK (170.6s)
+[11:33:42] === Batch done in 170.6s: 1 generated, 0 skipped, 0 failed ===
+[11:44:00] === Batch starting: 1 specs -> /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/sprites ===
+[11:44:00] === Batch starting: 1 specs -> /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/sprites ===
+[11:44:00] === Batch starting: 1 specs -> /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/sprites ===
+[11:44:00] [1/1] galaxy_az022p5_el+000_newmodel_512.png generating: Create a pixel-art spaceship sprite for the Galaxy-class heavy merchan...
+[11:44:00] [1/1] galaxy_az045_el+000_newmodel_512.png generating: Create a pixel-art spaceship sprite for the Galaxy-class heavy merchan...
+[11:44:00] [1/1] galaxy_az000_el+000_newmodel_512.png generating: Create a pixel-art spaceship sprite for the Galaxy-class heavy merchan...
+[11:46:44] [1/1] galaxy_az000_el+000_newmodel_512.png OK (164.1s)
+[11:46:44] === Batch done in 164.1s: 1 generated, 0 skipped, 0 failed ===
+[11:47:00] [1/1] galaxy_az045_el+000_newmodel_512.png FAIL: ReadTimeout: The read operation timed out
+[11:47:00] [1/1] galaxy_az022p5_el+000_newmodel_512.png FAIL: ReadTimeout: The read operation timed out
+[11:47:00] === Batch done in 180.1s: 0 generated, 0 skipped, 1 failed ===
+[11:47:00] === Batch done in 180.1s: 0 generated, 0 skipped, 1 failed ===
+[11:47:37] === Batch starting: 1 specs -> /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/sprites ===
+[11:47:37] === Batch starting: 1 specs -> /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/sprites ===
+[11:47:37] [1/1] galaxy_az045_el+000_newmodel_512.png generating: Create a pixel-art spaceship sprite for the Galaxy-class heavy merchan...
+[11:47:37] [1/1] galaxy_az022p5_el+000_newmodel_512.png generating: Create a pixel-art spaceship sprite for the Galaxy-class heavy merchan...
+[11:50:25] [1/1] galaxy_az045_el+000_newmodel_512.png OK (167.2s)
+[11:50:25] === Batch done in 167.2s: 1 generated, 0 skipped, 0 failed ===
+[11:50:38] [1/1] galaxy_az022p5_el+000_newmodel_512.png FAIL: ReadTimeout: The read operation timed out
+[11:50:38] === Batch done in 180.1s: 0 generated, 0 skipped, 1 failed ===
+[11:51:13] === Batch starting: 1 specs -> /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/sprites ===
+[11:51:13] [1/1] galaxy_az022p5_el+000_newmodel_512.png generating: Create a pixel-art spaceship sprite for the Galaxy-class heavy merchan...
+[11:54:14] [1/1] galaxy_az022p5_el+000_newmodel_512.png FAIL: ReadTimeout: The read operation timed out
+[11:54:14] === Batch done in 180.1s: 0 generated, 0 skipped, 1 failed ===
+[11:55:36] === Batch starting: 1 specs -> /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/sprites ===
+[11:55:36] [1/1] galaxy_az022p5_el+000_newmodel_512.png generating: Create a pixel-art spaceship sprite for the Galaxy-class heavy merchan...
+[11:59:31] [1/1] galaxy_az022p5_el+000_newmodel_512.png OK (234.3s)
+[11:59:31] === Batch done in 234.3s: 1 generated, 0 skipped, 0 failed ===
+[12:07:08] === Batch starting: 1 specs -> /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/sprites ===
+[12:07:08] [1/1] galaxy_az000_el+000_newmodel_512.png generating: Create a pixel-art spaceship sprite for the Galaxy-class heavy merchan...
+[12:10:08] [1/1] galaxy_az000_el+000_newmodel_512.png OK (180.0s)
+[12:10:08] === Batch done in 180.0s: 1 generated, 0 skipped, 0 failed ===
+[12:13:41] === Batch starting: 1 specs -> /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/sprites ===
+[12:13:41] [1/1] galaxy_az067p5_el+000_newmodel_512.png generating: Create a pixel-art spaceship sprite for the Galaxy-class heavy merchan...
+[12:16:47] [1/1] galaxy_az067p5_el+000_newmodel_512.png OK (185.8s)
+[12:16:47] === Batch done in 185.9s: 1 generated, 0 skipped, 0 failed ===
+[12:25:34] === Batch starting: 1 specs -> /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/sprites ===
+[12:25:34] [1/1] galaxy_az022p5_el+000_newmodel_512.png generating: Create a pixel-art spaceship sprite for the Galaxy-class heavy merchan...
+[12:28:28] [1/1] galaxy_az022p5_el+000_newmodel_512.png OK (173.8s)
+[12:28:28] === Batch done in 173.8s: 1 generated, 0 skipped, 0 failed ===

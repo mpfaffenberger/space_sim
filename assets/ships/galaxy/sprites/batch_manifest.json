@@ -1,0 +1,23 @@
+{
+  "total": 1,
+  "generated": 1,
+  "skipped": 0,
+  "failed": 0,
+  "elapsed_seconds": 173.8,
+  "output_dir": "/Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/sprites",
+  "log_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/sprites/batch_log.txt",
+  "results": [
+    {
+      "index": 1,
+      "status": "generated",
+      "filename": "galaxy_az022p5_el+000_newmodel_512.png",
+      "output_path": "/Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/sprites/galaxy_az022p5_el+000_newmodel_512.png",
+      "elapsed_seconds": 173.85,
+      "reference_images": [
+        "/Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/renders/galaxy_az022p5_el+000.png",
+        "/Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/canonical_reference.png"
+      ],
+      "used_endpoint": "edits"
+    }
+  ]
+}

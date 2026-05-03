@@ -3,6 +3,11 @@
   "samples": [
     {
       "az": 0.0,
+      "el": -90.0,
+      "file": "galaxy_az000_el-090.png"
+    },
+    {
+      "az": 0.0,
       "el": -60.0,
       "file": "galaxy_az000_el-060.png"
     },
@@ -400,9 +405,14 @@
       "az": 337.5,
       "el": 60.0,
       "file": "galaxy_az337p5_el+060.png"
+    },
+    {
+      "az": 0.0,
+      "el": 90.0,
+      "file": "galaxy_az000_el+090.png"
     }
   ],
-  "orbit_radius": 150.0,
+  "orbit_radius": 170.0,
   "azimuths": [
     0.0,
     22.5,
@@ -422,11 +432,13 @@
     337.5
   ],
   "elevations": [
+    -90.0,
     -60.0,
     -30.0,
     0.0,
     30.0,
-    60.0
+    60.0,
+    90.0
   ],
-  "count": 80
+  "count": 82
 }

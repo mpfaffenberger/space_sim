@@ -2,9 +2,19 @@ Create a pixel-art spaceship sprite for the Galaxy-class heavy merchant freighte
 
 === POSE — HIGHEST PRIORITY ===
 This sprite shows the ship from a SPECIFIC 3D viewing angle. The reference
-image IS that angle. Your output MUST match the same orientation:
-  Camera position: directly BEHIND the ship (looking at the rear/engines), BELOW the ship by 60° (looking up at the ventral surface)
+image IS that angle. Your output MUST match the same orientation.
+
   Azimuth = 0.0°, Elevation = -60.0°
+
+Camera position: directly IN FRONT of the ship (looking at the nose head-on), ABOVE the ship by 60° (looking DOWN at the DORSAL top hull, foreshortened from above).
+
+WHAT IS VISIBLE FROM THIS ANGLE (the sprite must show these):
+  - the ship's NOSE / cockpit blister, dorsal hull strip from above
+  - the DORSAL top hull is the dominant feature — cockpit blister fully visible, dorsal panel seams, tops of the wings and engine pods
+
+WHAT IS *NOT* VISIBLE FROM THIS ANGLE (do NOT draw these):
+  - the rear engines (occluded by the body)
+  - the ventral underside is largely hidden (occluded by the body of the ship)
 
 Do NOT collapse this view to a generic side-on or top-down perspective.
 Do NOT "fix" the angle to a more aesthetic one. The angle in the reference IS
@@ -12,9 +22,13 @@ the angle the engine will sample at this slot in the view-sphere atlas — any
 deviation will cause the sprite to twist visibly when the player orbits the
 ship. Match the silhouette, foreshortening, and visible facets exactly.
 
-REFERENCE IMAGE (use directly as image conditioning — this is the ONLY
-image and it dictates BOTH pose and design):
-/Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/renders/galaxy_az000_el-060.png
+REFERENCE IMAGES:
+  PRIMARY (this exact angle — match silhouette and pose 1:1):
+  - /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/renders/galaxy_az000_el-060.png
+  CANONICAL DESIGN SHEET (multiple angles — use ONLY for paint scheme,
+  hull colour, material finish, and overall design fidelity; do NOT
+  copy any specific angle from this sheet):
+  - /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/canonical_reference.png
 
 === DESIGN — what this ship IS ===
 Distinguishing features (every cell must show these regardless of angle):
@@ -33,11 +47,25 @@ reference. Do not delete features the reference shows.
 - pixel grid 512 on longest side, palette ~40 colours
 
 MATERIAL — READ THIS CAREFULLY:
-The reference is a low-fidelity 3D viewport screenshot. It may have placeholder
+The PRIMARY reference is a low-fidelity 3D viewport screenshot with placeholder
 textures baked into the model (stone-block patterns, untextured cockpits, etc).
 Those patterns are a TEXTURING BUG, not a design choice. DO NOT REPRODUCE THEM.
-Use the reference STRICTLY for silhouette, pose, and proportions; the textual
-palette description below dictates the actual surface finish.
+
+The CANONICAL DESIGN SHEET shows the correct surface finish:
+- glossy polished aerospace alloy — think F-22 Raptor, B-2 Spirit, X-wing,
+  Cylon Raider, mirrored chrome, brushed titanium
+- showroom-fresh painted military hull, clean off the production line
+- panel SEAMS are paper-thin scribed lines (1 pixel wide max) — NOT thick
+  mortar grooves between blocks
+- broad smooth metallic regions with gradient shading from directional lighting
+- specular highlights along edges and curved surfaces
+- a few crisp painted insignia / numbers / accent stripes (sparse, not
+  every panel)
+
+Use the PRIMARY reference for SILHOUETTE / POSE / PROPORTIONS only.
+Use the CANONICAL reference for MATERIAL / FINISH / PAINT JOB.
+These roles are non-negotiable — never let the primary's bricky textures
+leak into your output.
 
 === AVOID ===
 - painterly blur, mushy silhouette
@@ -49,3 +77,12 @@ palette description below dictates the actual surface finish.
 - weathered/aged/medieval/fantasy styling
 - copying placeholder textures from the reference
 - collapsing the requested 3D angle to a more convenient flat view
+
+Additional per-frame art direction:
+Preserve the Galaxy's exact silhouette and proportions from the primary reference angle.
+The Galaxy is a heavy merchant freighter with: a long forward fuselage tapering to a small pointed cockpit nose (about 60% of total length), a wide rectangular rear hull, two large cylindrical engine pods slung beneath the rear, squared-off cargo modules and dorsal turret housings on top of the aft section, and weathered industrial freighter proportions — NOT a fighter, NOT sleek, NOT delta-winged.
+Keep every angle consistent as the same spacecraft rotating through the atlas.
+Use the canonical reference only for paint, material finish, and markings. Do not copy the canonical sheet's specific angle.
+Do not add extra wings, fins, antennae, weapon pods, or modules not visible in the reference.
+Do not collapse the requested 3D view into a generic side, top, or front view.
+Do not turn it into a fighter, X-wing, modern jet, organic alien ship, or compact military shuttle. The Galaxy is a BIG industrial cargo hauler.

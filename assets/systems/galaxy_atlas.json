@@ -13,10 +13,11 @@
       "position": [0, 0, 0],
       "euler_deg": [0, 0, 180],
       "length_meters": 60,
-      "tint": [1.35, 1.35, 1.35],
+      "tint": [1.0, 1.0, 1.0],
       "double_sided": true,
-      "ambient_floor": 1.0,
-      "spec": 0.2
+      "ambient_floor": 0.4,
+      "spec": 0.5,
+      "clay_mode": false
     }
   ],
   "nav_points": [],

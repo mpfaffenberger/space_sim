@@ -1,0 +1,46 @@
+Subject: REFINE an existing pixel-art sprite of a heavy merchant freighter (Galaxy)
+viewed from Camera position: front-and-port (azimuth 68° = 68° rotated toward port from a head-on nose view), at the ship's vertical midline (horizontal/equator view).
+
+WHAT IS VISIBLE FROM THIS ANGLE (the sprite must show these):
+  - the ship's nose AND its left (port) flank in 3/4 perspective
+  - the silhouette in profile; cockpit blister visible as a side bump on the dorsal hull
+
+WHAT IS *NOT* VISIBLE FROM THIS ANGLE (do NOT draw these):
+  - the right flank and the rear engines (mostly occluded).
+
+THIS IS A FINE-TUNE PASS, NOT A FROM-SCRATCH GENERATION.
+Your job is to take the FIRST reference image — the previously-generated
+sprite — and apply small targeted edits described below. Preserve everything
+that the user does not explicitly ask to change: silhouette, pose,
+palette, panel detailing, light placement, scale, framing.
+
+USER REGEN NOTE — apply these changes:
+Per-frame note for az=68, el=0:
+We accidentally added an extra nacelle pair on the bottom. We can remove those.
+
+
+REFERENCE IMAGES:
+  PRIMARY (the prior sprite — iterate on this; preserve unless explicitly
+  edited by the regen note above):
+  - /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/sprites/galaxy_az067p5_el+000_newmodel_512.raw.png
+
+  POSE ANCHOR (low-fidelity 3D clay render of THIS exact (az, el); use only
+  to confirm the camera angle is correct and the silhouette hasn't drifted
+  — do NOT copy its placeholder textures):
+  - /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/renders/galaxy_az067p5_el+000.png
+
+  CANONICAL DESIGN SHEET (paint scheme, hull colour, material finish; use
+  ONLY for material/colour fidelity, not pose):
+  - /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/canonical_reference.png
+
+DESIGN BRIEF (for context — the prior sprite already obeys this):
+  Silhouette: long forward fuselage tapering to a pointed cockpit nose (roughly 60% of total length), wide rectangular rear hull, FOUR cube-shaped engine nacelles mounted on outboard pylons in a wide spread X/spider configuration (one nacelle at each upper-left, upper-right, lower-left, lower-right corner of the front-on silhouette — NOT slung beneath the rear, NOT two-engine), squared-off cargo modules and dorsal turret housings on the top of the aft section, industrial freighter proportions — NOT a fighter, NOT a TIE-bomber, NOT a chunky two-engine bulk hauler. The four-engine outboard pylon silhouette is THE defining feature: every angle must show the pylon-mounted engines clearly, even if they're foreshortened.
+  Palette:    matte gunmetal-grey industrial hull with darker panel seams, slightly weathered freighter look — match the canonical reference top-down render exactly
+
+OUTPUT REQUIREMENTS:
+- Same view angle as the prior sprite (az=67.5, el=0).
+- Same canvas size and framing.
+- Same pixel-art style and palette as the prior sprite.
+- Apply the user's regen note edits surgically; leave everything else alone.
+
+sleek futuristic spaceship pixel art; glossy polished aerospace alloy hull (think F-22, B-2, mirrored chrome) with paper-thin panel seams; clean and showroom-fresh; NEVER stone, brick, mortar, masonry, granite, or sandstone; preserve silhouette from the primary reference exactly

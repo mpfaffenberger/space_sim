@@ -183,6 +183,18 @@
     // hilarious, but it made the default Troy scene too noisy for normal
     // dev work. Re-add from git history if we want the furball benchmark.
 
+    // Galaxy — the big merchant freighter, dropped roughly dead ahead
+    // of the player_start look_at vector at ~3 km so it fills the screen
+    // at spawn. 120 m display (canonical Galaxy is ~60-120 m depending
+    // on which Privateer source you trust; we err big because the new
+    // textured sprite atlas reads as a chunky industrial hauler — "big
+    // and slow" is more diagetic than "fast cargo runabout"). Default
+    // merchant faction = pirates will hunt it, militia will defend it,
+    // player can decide their allegiance with the trigger.
+    { "atlas": "ships/galaxy/atlas_manifest", "length_meters": 120,
+      "position": [53000, -100000, 32300],
+      "ai": { "initial_state": "idle" } },
+
     // 4 additional merchant Tarsuses.
     { "atlas": "ships/tarsus/atlas_manifest", "length_meters": 100,
       "position": [48000, -100000, 32000],

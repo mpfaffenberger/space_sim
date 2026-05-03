@@ -1,31 +1,55 @@
-Create a pixel-art spaceship sprite using the attached reference image as a strict shape and pose guide.
+Create a pixel-art spaceship sprite for the Galaxy-class heavy merchant freighter from Wing Commander: Privateer.
 
-REFERENCE IMAGE (use directly as image conditioning):
-/Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/renders/galaxy_az090_el-060.png
+=== POSE — HIGHEST PRIORITY ===
+This sprite shows the ship from a SPECIFIC 3D viewing angle. The reference
+image IS that angle. Your output MUST match the same orientation.
 
-Subject: Galaxy-class spacecraft from Wing Commander: Privateer.
+  Azimuth = 90.0°, Elevation = -60.0°
 
-Requirements:
-- Preserve the silhouette, proportions, and exact viewing angle from the reference image.
-- Do NOT invent a different ship design.
-- Distinguishing features to preserve: the exact shape shown in the reference image — defer to the reference for every structural detail.
-- Preserve the outline exactly; do not overly simplify or blur the geometry.
-- Keep the ship centered and fully readable as a single clean silhouette.
-- Readable sprite first, texture detail second.
+Camera position: to the ship's PORT (left) side (the left flank fills the frame), ABOVE the ship by 60° (looking DOWN at the DORSAL top hull, foreshortened from above).
 
-Style:
-- 1993 DOS / Wing Commander: Privateer style pixel art
-- chunky pixels
-- hand-authored-looking sprite readability
-- dithered shading
-- limited palette
-- dark gunmetal hull
+WHAT IS VISIBLE FROM THIS ANGLE (the sprite must show these):
+  - the LEFT side of the ship in full profile — left wing, port flank, cockpit silhouette
+  - the DORSAL top hull is the dominant feature — cockpit blister fully visible, dorsal panel seams, tops of the wings and engine pods
+
+WHAT IS *NOT* VISIBLE FROM THIS ANGLE (do NOT draw these):
+  - the right (starboard) wing and right flank (occluded by the body)
+  - the ventral underside is largely hidden (occluded by the body of the ship)
+
+Do NOT collapse this view to a generic side-on or top-down perspective.
+Do NOT "fix" the angle to a more aesthetic one. The angle in the reference IS
+the angle the engine will sample at this slot in the view-sphere atlas — any
+deviation will cause the sprite to twist visibly when the player orbits the
+ship. Match the silhouette, foreshortening, and visible facets exactly.
+
+REFERENCE IMAGES:
+  PRIMARY (this exact angle — match silhouette and pose 1:1):
+  - /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/renders/galaxy_az090_el-060.png
+  CANONICAL DESIGN SHEET (multiple angles — use ONLY for paint scheme,
+  hull colour, material finish, and overall design fidelity; do NOT
+  copy any specific angle from this sheet):
+  - /Users/mpfaffenberger/code/new_privateer/assets/ships/galaxy/canonical_reference.png
+
+=== DESIGN — what this ship IS ===
+Distinguishing features (every cell must show these regardless of angle):
+long forward fuselage tapering to a pointed cockpit nose (roughly 60% of total length), wide rectangular rear hull with two large cylindrical engine pods slung beneath, squared-off cargo modules and dorsal turret housings on the top of the aft section, industrial freighter proportions — NOT a fighter.
+
+Do not invent extra fins, wings, cockpits, or modules not implied by the
+reference. Do not delete features the reference shows.
+
+=== STYLE ===
+- 1993 DOS / Wing Commander: Privateer pixel art
+- chunky pixels, hand-authored sprite readability
+- dithered shading, limited palette
+- matte gunmetal-grey industrial hull with darker panel seams, slightly weathered freighter look — match the canonical reference top-down render exactly
 - transparent background
+- readable sprite first, texture detail second
+- pixel grid 512 on longest side, palette ~40 colours
 
-MATERIAL — READ THIS CAREFULLY (most important section):
+MATERIAL — READ THIS CAREFULLY:
 The PRIMARY reference is a low-fidelity 3D viewport screenshot with placeholder
-stone-block textures baked into the model. Those grid-of-rectangles patterns
-are a TEXTURING BUG, not a design choice. DO NOT REPRODUCE THEM.
+textures baked into the model (stone-block patterns, untextured cockpits, etc).
+Those patterns are a TEXTURING BUG, not a design choice. DO NOT REPRODUCE THEM.
 
 The CANONICAL DESIGN SHEET shows the correct surface finish:
 - glossy polished aerospace alloy — think F-22 Raptor, B-2 Spirit, X-wing,
@@ -43,22 +67,22 @@ Use the CANONICAL reference for MATERIAL / FINISH / PAINT JOB.
 These roles are non-negotiable — never let the primary's bricky textures
 leak into your output.
 
-Avoid:
-- painterly blur
-- mushy silhouette
-- rounded organic forms
+=== AVOID ===
+- painterly blur, mushy silhouette
+- rounded organic forms (this is a hard-edged industrial spaceship)
 - inventing extra fins / wings / greebles
-- changing the ship proportions
-- smearing thin structures
-- starfield background or background artifacts
-- stone walls, brickwork, masonry, cobblestones, castle/fortress textures
-- mortar lines, grout, chiseled stone blocks, ashlar masonry
-- weathered/aged/medieval/fantasy/wood-grain styling — this is a SLEEK SPACESHIP
-- copying the PRIMARY's surface texture pattern (it is a known bad input)
+- changing ship proportions
+- starfield or background artifacts
+- stone walls, brickwork, masonry, mortar lines, chiseled blocks
+- weathered/aged/medieval/fantasy styling
+- copying placeholder textures from the reference
+- collapsing the requested 3D angle to a more convenient flat view
 
-Target:
-- master sprite quality
-- pixel grid 512 on longest side
-- palette around 40 colors
-- transparent background
-- large source sprite suitable for later downsampling into in-game atlas frames
+Additional per-frame art direction:
+Preserve the Galaxy's exact silhouette and proportions from the primary reference angle.
+The Galaxy is a heavy merchant freighter with: a long forward fuselage tapering to a small pointed cockpit nose (about 60% of total length), a wide rectangular rear hull, two large cylindrical engine pods slung beneath the rear, squared-off cargo modules and dorsal turret housings on top of the aft section, and weathered industrial freighter proportions — NOT a fighter, NOT sleek, NOT delta-winged.
+Keep every angle consistent as the same spacecraft rotating through the atlas.
+Use the canonical reference only for paint, material finish, and markings. Do not copy the canonical sheet's specific angle.
+Do not add extra wings, fins, antennae, weapon pods, or modules not visible in the reference.
+Do not collapse the requested 3D view into a generic side, top, or front view.
+Do not turn it into a fighter, X-wing, modern jet, organic alien ship, or compact military shuttle. The Galaxy is a BIG industrial cargo hauler.

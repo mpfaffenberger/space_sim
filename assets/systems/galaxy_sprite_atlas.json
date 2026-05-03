@@ -1,0 +1,45 @@
+{
+  "name": "Galaxy Sprite Atlas Capture",
+  "description": "Inert Galaxy at origin with a backdrop of one yellow sun and three planet billboards. Mirrors centurion_sprite_atlas.json — the Galaxy is non-combat (alive=false skips perception/AI/firing) so the planets and sun are pure scenery for sprite-atlas review (F4) and screenshot work. Galaxy is canonically larger than the Centurion (240 m display vs 120 m), so player_start sits proportionally further out (175 m vs 88 m) to keep the ship comfortably framed.",
+  "skybox_seed": "troy",
+  "star": { "preset": "yellow" },
+  "asteroid_fields": [],
+  "placed_sprites": [
+    {
+      "sprite":        "sprites/helen_planet",
+      "position":      [ 60000,  20000, -90000],
+      "length_meters": 14000
+    },
+    {
+      "sprite":        "sprites/helen_planet",
+      "position":      [-80000, -15000, -130000],
+      "length_meters": 9000
+    },
+    {
+      "sprite":        "sprites/helen_planet",
+      "position":      [ 30000, -25000, -180000],
+      "length_meters": 6000
+    }
+  ],
+  "placed_ship_sprites": [
+    {
+      "atlas":         "ships/galaxy/atlas_manifest",
+      "position":      [0, 0, 0],
+      "length_meters": 240,
+      "inert":         true
+    }
+  ],
+  "placed_meshes": [],
+  "nav_points": [
+    {
+      "name":     "Galaxy Atlas Star",
+      "kind":     "star",
+      "position": [-180000, 90000, 200000]
+    }
+  ],
+  "player_start": {
+    "position": [0, 0, 175]
+  },
+  "player_look_at":     [0, 0, 0],
+  "player_look_at_set": true
+}
