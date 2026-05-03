@@ -124,11 +124,17 @@ SHIP_DESIGN_BRIEFS: dict[str, dict[str, str]] = {
         "role": "heavy merchant freighter",
         "silhouette": (
             "long forward fuselage tapering to a pointed cockpit nose "
-            "(roughly 60% of total length), wide rectangular rear hull "
-            "with two large cylindrical engine pods slung beneath, "
-            "squared-off cargo modules and dorsal turret housings on the "
-            "top of the aft section, industrial freighter proportions — "
-            "NOT a fighter"
+            "(roughly 60% of total length), wide rectangular rear hull, "
+            "FOUR cube-shaped engine nacelles mounted on outboard pylons "
+            "in a wide spread X/spider configuration (one nacelle at each "
+            "upper-left, upper-right, lower-left, lower-right corner of "
+            "the front-on silhouette — NOT slung beneath the rear, NOT "
+            "two-engine), squared-off cargo modules and dorsal turret "
+            "housings on the top of the aft section, industrial freighter "
+            "proportions — NOT a fighter, NOT a TIE-bomber, NOT a chunky "
+            "two-engine bulk hauler. The four-engine outboard pylon "
+            "silhouette is THE defining feature: every angle must show "
+            "the pylon-mounted engines clearly, even if they're foreshortened."
         ),
         "palette": (
             "matte gunmetal-grey industrial hull with darker panel seams, "
