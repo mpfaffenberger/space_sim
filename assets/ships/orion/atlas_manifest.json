@@ -1,0 +1,779 @@
+{
+  "ship": "orion",
+  "kind": "view_sphere_sprite_atlas",
+  "forward_axis": "+Z",
+  "up_axis": "+Y",
+  "azimuth_degrees": [
+    0.0,
+    22.5,
+    45.0,
+    67.5,
+    90.0,
+    112.5,
+    135.0,
+    157.5,
+    180.0,
+    202.5,
+    225.0,
+    247.5,
+    270.0,
+    292.5,
+    315.0,
+    337.5
+  ],
+  "elevation_degrees": [
+    -90.0,
+    -60.0,
+    -30.0,
+    0.0,
+    30.0,
+    60.0,
+    90.0
+  ],
+  "pixel_grid": 512,
+  "palette_size": 40,
+  "samples": [
+    {
+      "az": 0.0,
+      "el": -90.0,
+      "sprite": "ships/orion/sprites/orion_az000_el-090_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az000_el-090_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az000_el-090_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az000_el-090_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az000_el-090_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 0.0,
+      "el": -60.0,
+      "sprite": "ships/orion/sprites/orion_az000_el-060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az000_el-060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az000_el-060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az000_el-060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az000_el-060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 22.5,
+      "el": -60.0,
+      "sprite": "ships/orion/sprites/orion_az022p5_el-060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az022p5_el-060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az022p5_el-060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az022p5_el-060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az022p5_el-060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 45.0,
+      "el": -60.0,
+      "sprite": "ships/orion/sprites/orion_az045_el-060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az045_el-060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az045_el-060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az045_el-060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az045_el-060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 67.5,
+      "el": -60.0,
+      "sprite": "ships/orion/sprites/orion_az067p5_el-060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az067p5_el-060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az067p5_el-060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az067p5_el-060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az067p5_el-060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 90.0,
+      "el": -60.0,
+      "sprite": "ships/orion/sprites/orion_az090_el-060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az090_el-060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az090_el-060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az090_el-060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az090_el-060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 112.5,
+      "el": -60.0,
+      "sprite": "ships/orion/sprites/orion_az112p5_el-060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az112p5_el-060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az112p5_el-060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az112p5_el-060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az112p5_el-060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 135.0,
+      "el": -60.0,
+      "sprite": "ships/orion/sprites/orion_az135_el-060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az135_el-060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az135_el-060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az135_el-060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az135_el-060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 157.5,
+      "el": -60.0,
+      "sprite": "ships/orion/sprites/orion_az157p5_el-060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az157p5_el-060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az157p5_el-060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az157p5_el-060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az157p5_el-060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 180.0,
+      "el": -60.0,
+      "sprite": "ships/orion/sprites/orion_az180_el-060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az180_el-060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az180_el-060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az180_el-060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az180_el-060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 202.5,
+      "el": -60.0,
+      "sprite": "ships/orion/sprites/orion_az202p5_el-060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az202p5_el-060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az202p5_el-060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az202p5_el-060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az202p5_el-060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 225.0,
+      "el": -60.0,
+      "sprite": "ships/orion/sprites/orion_az225_el-060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az225_el-060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az225_el-060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az225_el-060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az225_el-060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 247.5,
+      "el": -60.0,
+      "sprite": "ships/orion/sprites/orion_az247p5_el-060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az247p5_el-060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az247p5_el-060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az247p5_el-060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az247p5_el-060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 270.0,
+      "el": -60.0,
+      "sprite": "ships/orion/sprites/orion_az270_el-060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az270_el-060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az270_el-060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az270_el-060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az270_el-060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 292.5,
+      "el": -60.0,
+      "sprite": "ships/orion/sprites/orion_az292p5_el-060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az292p5_el-060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az292p5_el-060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az292p5_el-060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az292p5_el-060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 315.0,
+      "el": -60.0,
+      "sprite": "ships/orion/sprites/orion_az315_el-060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az315_el-060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az315_el-060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az315_el-060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az315_el-060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 337.5,
+      "el": -60.0,
+      "sprite": "ships/orion/sprites/orion_az337p5_el-060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az337p5_el-060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az337p5_el-060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az337p5_el-060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az337p5_el-060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 0.0,
+      "el": -30.0,
+      "sprite": "ships/orion/sprites/orion_az000_el-030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az000_el-030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az000_el-030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az000_el-030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az000_el-030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 22.5,
+      "el": -30.0,
+      "sprite": "ships/orion/sprites/orion_az022p5_el-030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az022p5_el-030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az022p5_el-030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az022p5_el-030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az022p5_el-030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 45.0,
+      "el": -30.0,
+      "sprite": "ships/orion/sprites/orion_az045_el-030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az045_el-030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az045_el-030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az045_el-030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az045_el-030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 67.5,
+      "el": -30.0,
+      "sprite": "ships/orion/sprites/orion_az067p5_el-030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az067p5_el-030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az067p5_el-030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az067p5_el-030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az067p5_el-030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 90.0,
+      "el": -30.0,
+      "sprite": "ships/orion/sprites/orion_az090_el-030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az090_el-030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az090_el-030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az090_el-030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az090_el-030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 112.5,
+      "el": -30.0,
+      "sprite": "ships/orion/sprites/orion_az112p5_el-030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az112p5_el-030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az112p5_el-030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az112p5_el-030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az112p5_el-030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 135.0,
+      "el": -30.0,
+      "sprite": "ships/orion/sprites/orion_az135_el-030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az135_el-030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az135_el-030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az135_el-030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az135_el-030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 157.5,
+      "el": -30.0,
+      "sprite": "ships/orion/sprites/orion_az157p5_el-030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az157p5_el-030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az157p5_el-030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az157p5_el-030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az157p5_el-030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 180.0,
+      "el": -30.0,
+      "sprite": "ships/orion/sprites/orion_az180_el-030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az180_el-030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az180_el-030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az180_el-030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az180_el-030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 202.5,
+      "el": -30.0,
+      "sprite": "ships/orion/sprites/orion_az202p5_el-030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az202p5_el-030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az202p5_el-030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az202p5_el-030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az202p5_el-030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 225.0,
+      "el": -30.0,
+      "sprite": "ships/orion/sprites/orion_az225_el-030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az225_el-030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az225_el-030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az225_el-030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az225_el-030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 247.5,
+      "el": -30.0,
+      "sprite": "ships/orion/sprites/orion_az247p5_el-030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az247p5_el-030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az247p5_el-030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az247p5_el-030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az247p5_el-030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 270.0,
+      "el": -30.0,
+      "sprite": "ships/orion/sprites/orion_az270_el-030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az270_el-030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az270_el-030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az270_el-030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az270_el-030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 292.5,
+      "el": -30.0,
+      "sprite": "ships/orion/sprites/orion_az292p5_el-030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az292p5_el-030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az292p5_el-030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az292p5_el-030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az292p5_el-030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 315.0,
+      "el": -30.0,
+      "sprite": "ships/orion/sprites/orion_az315_el-030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az315_el-030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az315_el-030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az315_el-030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az315_el-030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 337.5,
+      "el": -30.0,
+      "sprite": "ships/orion/sprites/orion_az337p5_el-030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az337p5_el-030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az337p5_el-030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az337p5_el-030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az337p5_el-030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 0.0,
+      "el": 0.0,
+      "sprite": "ships/orion/sprites/orion_az000_el+000_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az000_el+000_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az000_el+000_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az000_el+000_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az000_el+000_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 22.5,
+      "el": 0.0,
+      "sprite": "ships/orion/sprites/orion_az022p5_el+000_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az022p5_el+000_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az022p5_el+000_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az022p5_el+000_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az022p5_el+000_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 45.0,
+      "el": 0.0,
+      "sprite": "ships/orion/sprites/orion_az045_el+000_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az045_el+000_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az045_el+000_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az045_el+000_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az045_el+000_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 67.5,
+      "el": 0.0,
+      "sprite": "ships/orion/sprites/orion_az067p5_el+000_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az067p5_el+000_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az067p5_el+000_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az067p5_el+000_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az067p5_el+000_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 90.0,
+      "el": 0.0,
+      "sprite": "ships/orion/sprites/orion_az090_el+000_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az090_el+000_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az090_el+000_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az090_el+000_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az090_el+000_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 112.5,
+      "el": 0.0,
+      "sprite": "ships/orion/sprites/orion_az112p5_el+000_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az112p5_el+000_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az112p5_el+000_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az112p5_el+000_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az112p5_el+000_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 135.0,
+      "el": 0.0,
+      "sprite": "ships/orion/sprites/orion_az135_el+000_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az135_el+000_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az135_el+000_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az135_el+000_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az135_el+000_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 157.5,
+      "el": 0.0,
+      "sprite": "ships/orion/sprites/orion_az157p5_el+000_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az157p5_el+000_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az157p5_el+000_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az157p5_el+000_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az157p5_el+000_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 180.0,
+      "el": 0.0,
+      "sprite": "ships/orion/sprites/orion_az180_el+000_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az180_el+000_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az180_el+000_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az180_el+000_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az180_el+000_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 202.5,
+      "el": 0.0,
+      "sprite": "ships/orion/sprites/orion_az202p5_el+000_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az202p5_el+000_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az202p5_el+000_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az202p5_el+000_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az202p5_el+000_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 225.0,
+      "el": 0.0,
+      "sprite": "ships/orion/sprites/orion_az225_el+000_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az225_el+000_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az225_el+000_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az225_el+000_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az225_el+000_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 247.5,
+      "el": 0.0,
+      "sprite": "ships/orion/sprites/orion_az247p5_el+000_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az247p5_el+000_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az247p5_el+000_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az247p5_el+000_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az247p5_el+000_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 270.0,
+      "el": 0.0,
+      "sprite": "ships/orion/sprites/orion_az270_el+000_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az270_el+000_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az270_el+000_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az270_el+000_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az270_el+000_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 292.5,
+      "el": 0.0,
+      "sprite": "ships/orion/sprites/orion_az292p5_el+000_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az292p5_el+000_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az292p5_el+000_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az292p5_el+000_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az292p5_el+000_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 315.0,
+      "el": 0.0,
+      "sprite": "ships/orion/sprites/orion_az315_el+000_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az315_el+000_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az315_el+000_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az315_el+000_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az315_el+000_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 337.5,
+      "el": 0.0,
+      "sprite": "ships/orion/sprites/orion_az337p5_el+000_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az337p5_el+000_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az337p5_el+000_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az337p5_el+000_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az337p5_el+000_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 0.0,
+      "el": 30.0,
+      "sprite": "ships/orion/sprites/orion_az000_el+030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az000_el+030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az000_el+030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az000_el+030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az000_el+030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 22.5,
+      "el": 30.0,
+      "sprite": "ships/orion/sprites/orion_az022p5_el+030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az022p5_el+030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az022p5_el+030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az022p5_el+030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az022p5_el+030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 45.0,
+      "el": 30.0,
+      "sprite": "ships/orion/sprites/orion_az045_el+030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az045_el+030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az045_el+030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az045_el+030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az045_el+030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 67.5,
+      "el": 30.0,
+      "sprite": "ships/orion/sprites/orion_az067p5_el+030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az067p5_el+030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az067p5_el+030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az067p5_el+030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az067p5_el+030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 90.0,
+      "el": 30.0,
+      "sprite": "ships/orion/sprites/orion_az090_el+030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az090_el+030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az090_el+030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az090_el+030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az090_el+030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 112.5,
+      "el": 30.0,
+      "sprite": "ships/orion/sprites/orion_az112p5_el+030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az112p5_el+030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az112p5_el+030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az112p5_el+030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az112p5_el+030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 135.0,
+      "el": 30.0,
+      "sprite": "ships/orion/sprites/orion_az135_el+030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az135_el+030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az135_el+030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az135_el+030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az135_el+030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 157.5,
+      "el": 30.0,
+      "sprite": "ships/orion/sprites/orion_az157p5_el+030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az157p5_el+030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az157p5_el+030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az157p5_el+030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az157p5_el+030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 180.0,
+      "el": 30.0,
+      "sprite": "ships/orion/sprites/orion_az180_el+030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az180_el+030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az180_el+030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az180_el+030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az180_el+030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 202.5,
+      "el": 30.0,
+      "sprite": "ships/orion/sprites/orion_az202p5_el+030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az202p5_el+030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az202p5_el+030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az202p5_el+030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az202p5_el+030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 225.0,
+      "el": 30.0,
+      "sprite": "ships/orion/sprites/orion_az225_el+030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az225_el+030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az225_el+030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az225_el+030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az225_el+030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 247.5,
+      "el": 30.0,
+      "sprite": "ships/orion/sprites/orion_az247p5_el+030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az247p5_el+030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az247p5_el+030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az247p5_el+030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az247p5_el+030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 270.0,
+      "el": 30.0,
+      "sprite": "ships/orion/sprites/orion_az270_el+030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az270_el+030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az270_el+030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az270_el+030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az270_el+030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 292.5,
+      "el": 30.0,
+      "sprite": "ships/orion/sprites/orion_az292p5_el+030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az292p5_el+030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az292p5_el+030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az292p5_el+030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az292p5_el+030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 315.0,
+      "el": 30.0,
+      "sprite": "ships/orion/sprites/orion_az315_el+030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az315_el+030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az315_el+030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az315_el+030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az315_el+030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 337.5,
+      "el": 30.0,
+      "sprite": "ships/orion/sprites/orion_az337p5_el+030_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az337p5_el+030_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az337p5_el+030_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az337p5_el+030_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az337p5_el+030_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 0.0,
+      "el": 60.0,
+      "sprite": "ships/orion/sprites/orion_az000_el+060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az000_el+060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az000_el+060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az000_el+060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az000_el+060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 22.5,
+      "el": 60.0,
+      "sprite": "ships/orion/sprites/orion_az022p5_el+060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az022p5_el+060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az022p5_el+060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az022p5_el+060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az022p5_el+060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 45.0,
+      "el": 60.0,
+      "sprite": "ships/orion/sprites/orion_az045_el+060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az045_el+060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az045_el+060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az045_el+060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az045_el+060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 67.5,
+      "el": 60.0,
+      "sprite": "ships/orion/sprites/orion_az067p5_el+060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az067p5_el+060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az067p5_el+060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az067p5_el+060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az067p5_el+060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 90.0,
+      "el": 60.0,
+      "sprite": "ships/orion/sprites/orion_az090_el+060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az090_el+060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az090_el+060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az090_el+060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az090_el+060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 112.5,
+      "el": 60.0,
+      "sprite": "ships/orion/sprites/orion_az112p5_el+060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az112p5_el+060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az112p5_el+060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az112p5_el+060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az112p5_el+060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 135.0,
+      "el": 60.0,
+      "sprite": "ships/orion/sprites/orion_az135_el+060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az135_el+060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az135_el+060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az135_el+060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az135_el+060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 157.5,
+      "el": 60.0,
+      "sprite": "ships/orion/sprites/orion_az157p5_el+060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az157p5_el+060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az157p5_el+060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az157p5_el+060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az157p5_el+060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 180.0,
+      "el": 60.0,
+      "sprite": "ships/orion/sprites/orion_az180_el+060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az180_el+060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az180_el+060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az180_el+060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az180_el+060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 202.5,
+      "el": 60.0,
+      "sprite": "ships/orion/sprites/orion_az202p5_el+060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az202p5_el+060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az202p5_el+060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az202p5_el+060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az202p5_el+060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 225.0,
+      "el": 60.0,
+      "sprite": "ships/orion/sprites/orion_az225_el+060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az225_el+060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az225_el+060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az225_el+060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az225_el+060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 247.5,
+      "el": 60.0,
+      "sprite": "ships/orion/sprites/orion_az247p5_el+060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az247p5_el+060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az247p5_el+060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az247p5_el+060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az247p5_el+060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 270.0,
+      "el": 60.0,
+      "sprite": "ships/orion/sprites/orion_az270_el+060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az270_el+060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az270_el+060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az270_el+060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az270_el+060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 292.5,
+      "el": 60.0,
+      "sprite": "ships/orion/sprites/orion_az292p5_el+060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az292p5_el+060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az292p5_el+060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az292p5_el+060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az292p5_el+060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 315.0,
+      "el": 60.0,
+      "sprite": "ships/orion/sprites/orion_az315_el+060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az315_el+060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az315_el+060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az315_el+060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az315_el+060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 337.5,
+      "el": 60.0,
+      "sprite": "ships/orion/sprites/orion_az337p5_el+060_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az337p5_el+060_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az337p5_el+060_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az337p5_el+060_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az337p5_el+060_newmodel_512_clean_on_black.png"
+    },
+    {
+      "az": 0.0,
+      "el": 90.0,
+      "sprite": "ships/orion/sprites/orion_az000_el+090_newmodel_512_clean_cell.png",
+      "raw": "ships/orion/sprites/orion_az000_el+090_newmodel_512.png",
+      "preview": "ships/orion/sprites/orion_az000_el+090_newmodel_512_clean_cell_on_black.png",
+      "sprite_uncropped": "ships/orion/sprites/orion_az000_el+090_newmodel_512_clean.png",
+      "preview_uncropped": "ships/orion/sprites/orion_az000_el+090_newmodel_512_clean_on_black.png"
+    }
+  ],
+  "notes": "Generated by tools/build_ship_atlas_manifest.py from renders/manifest.json + sprites/*. Run tools/center_ship_atlas_cells.py afterwards to normalise frame sizes.",
+  "cell_width": 962,
+  "cell_height": 897,
+  "framing": "fixed transparent cell; each clean sprite centered in max width/height across atlas"
+}

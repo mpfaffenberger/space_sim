@@ -195,6 +195,17 @@
       "position": [53000, -100000, 32300],
       "ai": { "initial_state": "idle" } },
 
+    // Orion — heavy mercenary gunship escorting the convoy. 60 m display
+    // (canonical Orion is ~30-50 m, the textured atlas reads as a chunky
+    // gunship and we want it visibly bigger than a Tarsus but smaller than
+    // the Galaxy it's protecting). Stationed off the Galaxy's port-aft
+    // quarter, between it and the Tarsus cluster, to read as a hired
+    // muscle role visually. Default merchant faction (same as the rest
+    // of the convoy) so it acts as a wingman, not a separate faction.
+    { "atlas": "ships/orion/atlas_manifest", "length_meters": 60,
+      "position": [50500, -100000, 33100],
+      "ai": { "initial_state": "idle" } },
+
     // 4 additional merchant Tarsuses.
     { "atlas": "ships/tarsus/atlas_manifest", "length_meters": 100,
       "position": [48000, -100000, 32000],

@@ -158,6 +158,51 @@ SHIP_DESIGN_BRIEFS: dict[str, dict[str, str]] = {
             "aerospace-alloy finish, no weathering"
         ),
     },
+    "orion": {
+        # 2026-05-03 mesh swap: replaced the original WCU orion.bfxm (5712 "
+        # tris, monolithic textures, featureless renders) with a Wing "
+        # Commander fan-archive 'DD_TUG' model (24050 tris, 12 distinct "
+        # material zones with proper distinct paint). The brief below "
+        # describes the NEW silhouette — see canonical_reference.png "
+        # (Red Baron 6-view turntable) and canonical_reference_2.png "
+        # (HUD top-down schematic) for the visual ground truth.
+        "role": "heavy mercenary gunship",
+        "silhouette": (
+            "chunky industrial heavy gunship with a CENTRAL WEDGE "
+            "FUSELAGE flanked by FOUR LARGE OUTBOARD ENGINE PODS on "
+            "long pylon-like booms — the engines are mounted in a wide "
+            "X-pattern, two on each side at the rear, all stout "
+            "cylindrical pods with prominent ribbed paneling running "
+            "fore-to-aft (Saturn-V booster strakes). Engine bell "
+            "INTERIORS at the rear glow tan/copper-brown (oxidised brass, "
+            "NOT orange, NOT red). On TOP of the central fuselage, just "
+            "behind the cockpit, sits a small DORSAL SENSOR SPHERE on a "
+            "short post. The cockpit is a forward-mounted angular "
+            "canopy block with a horizontal viewport (red-eye sight visible "
+            "head-on). Forward fuselage steps down to a stubby wedge prow "
+            "with a drop-down cargo door / landing gear assembly hanging "
+            "underneath. Hull plating is gunmetal grey with TAN / KHAKI "
+            "trim panels around the engine collars and dorsal greebles, "
+            "a YELLOW + BLACK HAZARD STRIPE PANEL on the upper hull "
+            "behind the cockpit, and small RED nav lights along the side "
+            "flanks. Overall proportions: WIDE (engine pods give it a "
+            "broad horizontal stance) but with clear nose-to-tail length, "
+            "definitively NOT a fighter, NOT a sleek racer, NOT a Y-wing "
+            "— a CHUNKY MULTI-ENGINE MERCENARY GUNSHIP that looks built "
+            "to haul cargo through hostile space and shoot back"
+        ),
+        "palette": (
+            "matte gunmetal-grey industrial hull with darker engine pod "
+            "bodies, TAN / KHAKI accent trim around engine collars and "
+            "upper hull greebles, glowing TAN / COPPER-BROWN engine bell "
+            "interiors at the rear (oxidised brass, NOT orange/red), one "
+            "prominent diagonal YELLOW-AND-BLACK HAZARD STRIPE PANEL on "
+            "the upper hull behind the cockpit, scattered small bright "
+            "RED running lights along the side flanks and cockpit rim, "
+            "weathered industrial-tug finish — mercenary surplus, not "
+            "pristine"
+        ),
+    },
 }
 
 DEFAULT_BRIEF: dict[str, str] = {
@@ -182,6 +227,14 @@ DEFAULT_BRIEF: dict[str, str] = {
 CANONICAL_REFS: dict[str, tuple[str, ...]] = {
     "talon":     ("assets/ships/talon/canonical_reference.png",),
     "centurion": ("assets/ships/centurion/canonical_reference.png",),
+    # orion: explicit list orders the refs by importance. The Red Baron
+    # 6-view turntable goes first (richest paint/structure ground truth);
+    # the HUD top-down schematic goes second (architectural backup that
+    # nails the engine-pod arrangement).
+    "orion":     (
+        "assets/ships/orion/canonical_reference.png",     # redbaron 3D turntable
+        "assets/ships/orion/canonical_reference_2.png",   # HUD top-down
+    ),
     # "galaxy" deliberately omitted: the wcnews 2-view sheet (top + side)
     # overrode the per-angle render's pose — the AI rendered every cell
     # as a side view regardless of az/el. With no canonical, the AI uses

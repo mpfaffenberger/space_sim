@@ -1,0 +1,45 @@
+{
+  "name": "Orion Sprite Atlas Capture",
+  "description": "Inert Orion at origin with a backdrop of one yellow sun and three planet billboards. Mirrors centurion_sprite_atlas.json + galaxy_sprite_atlas.json — the Orion is non-combat (alive=false skips perception/AI/firing) so the planets and sun are pure scenery for sprite-light authoring without the ship spawning hostile or getting attacked. 60 m display (matches the Troy convoy length); player parked 100 m back along +Z so the gunship fills ~40% of the screen at spawn for clean F2 light-spot placement. Three Helen planet billboards in the background give the eye a sense of scale and let dorsal/ventral camera angles still have something to look at. F4 atlas viewer reads the same atlas_manifest the in-system Orion uses — edits to one cell propagate everywhere.",
+  "skybox_seed": "troy",
+  "star": { "preset": "yellow" },
+  "asteroid_fields": [],
+  "placed_sprites": [
+    {
+      "sprite":        "sprites/helen_planet",
+      "position":      [ 60000,  20000, -90000],
+      "length_meters": 14000
+    },
+    {
+      "sprite":        "sprites/helen_planet",
+      "position":      [-80000, -15000, -130000],
+      "length_meters": 9000
+    },
+    {
+      "sprite":        "sprites/helen_planet",
+      "position":      [ 30000, -25000, -180000],
+      "length_meters": 6000
+    }
+  ],
+  "placed_ship_sprites": [
+    {
+      "atlas":         "ships/orion/atlas_manifest",
+      "position":      [0, 0, 0],
+      "length_meters": 60,
+      "inert":         true
+    }
+  ],
+  "placed_meshes": [],
+  "nav_points": [
+    {
+      "name":     "Orion Atlas Star",
+      "kind":     "star",
+      "position": [-180000, 90000, 200000]
+    }
+  ],
+  "player_start": {
+    "position": [0, 0, 100]
+  },
+  "player_look_at":     [0, 0, 0],
+  "player_look_at_set": true
+}

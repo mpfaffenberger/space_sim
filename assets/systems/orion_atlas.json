@@ -1,0 +1,45 @@
+{
+  "name": "Orion Atlas Capture",
+  "description": "Atlas-capture scene for the Orion (heavy mercenary gunship). Mesh adopted 2026-05-03 from a Wing Commander fan-archive 'DD_TUG' model after the original WCU orion mesh produced featureless blob renders. New mesh: 24050 tris, 12 distinct material zones (REDLIGHT nav lights, DARKENGINE engine pods, MERCHGREY hull, DKER_3 tan trim, JTUGYBLK yellow/black hazard stripes, etc.) — gives the studio sun something to bite against and gives the AI sprite generator high-information per-pixel signal. euler_deg [0, 172.5, 180] = yaw 172.5 deg + roll 180 deg to align the mesh's native nose-tail axis with the canonical orion orientation (rear at az 0). length_meters 60 matches Galaxy so the ship fills the same FOV at radius 120. ambient_floor 0.45 + spec 0.5 are the same defaults Galaxy/Centurion use. clay_mode false because we want the textured render (per-material colour zones + planar-UV hazard stripes) for the AI to copy. Capture via tools/render_ship_atlas.py --ship orion.",
+  "skybox_seed": "troy",
+  "star": {
+    "preset": "yellow"
+  },
+  "studio_lighting": true,
+  "asteroid_fields": [],
+  "placed_sprites": [],
+  "placed_ship_sprites": [],
+  "placed_meshes": [
+    {
+      "obj": "meshes/ships/orion.obj",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "euler_deg": [
+        0,
+        172.5,
+        180
+      ],
+      "length_meters": 60,
+      "tint": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "double_sided": true,
+      "ambient_floor": 0.45,
+      "spec": 0.5,
+      "clay_mode": false
+    }
+  ],
+  "nav_points": [],
+  "player_start": {
+    "position": [
+      0,
+      0,
+      80
+    ]
+  }
+}

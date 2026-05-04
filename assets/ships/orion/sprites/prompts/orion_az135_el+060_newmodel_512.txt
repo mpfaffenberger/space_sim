@@ -1,0 +1,61 @@
+Create a pixel-art spaceship sprite for the Orion-class heavy mercenary gunship from Wing Commander: Privateer.
+
+=== POSE — HIGHEST PRIORITY ===
+This sprite shows the ship from a SPECIFIC 3D viewing angle. The reference
+image IS that angle. Your output MUST match the same orientation.
+
+  Azimuth = 135.0°, Elevation = +60.0°
+
+Camera position: behind-and-port (azimuth 135° = 45° rotated toward port from a rear engine view), BELOW the ship by 60° (looking UP at the VENTRAL underside, foreshortened from below).
+
+WHAT IS VISIBLE FROM THIS ANGLE (the sprite must show these):
+  - the rear engines AND the ship's left (port) flank in 3/4 perspective
+  - the VENTRAL underside is the dominant feature — ventral hull panels, weapon hardpoints, the underside of the wings
+
+WHAT IS *NOT* VISIBLE FROM THIS ANGLE (do NOT draw these):
+  - the nose and the right flank (mostly occluded)
+  - THE COCKPIT IS HIDDEN by the body of the ship from this angle. The dorsal cockpit blister is on the FAR side of the hull. DO NOT draw a visible cockpit, canopy, or dorsal stripe.
+
+Do NOT collapse this view to a generic side-on or top-down perspective.
+Do NOT "fix" the angle to a more aesthetic one. The angle in the reference IS
+the angle the engine will sample at this slot in the view-sphere atlas — any
+deviation will cause the sprite to twist visibly when the player orbits the
+ship. Match the silhouette, foreshortening, and visible facets exactly.
+
+REFERENCE IMAGE (use directly as image conditioning — this is the ONLY
+image and it dictates BOTH pose and design):
+/Users/mpfaffenberger/code/new_privateer/assets/ships/orion/renders/orion_az135_el+060.png
+
+=== DESIGN — what this ship IS ===
+Distinguishing features (every cell must show these regardless of angle):
+compact heavy military gunship with FIVE engine pods total — NOT two, NOT four, EXACTLY FIVE. The arrangement is the defining feature and must be clearly visible at every angle: FOUR engines clustered on TOP of the fuselage in a wide horizontal spread (left-outer SMALL, left-inner LARGE, right-inner LARGE, right-outer SMALL — like a galaxy-class freighter's outboard pylons but tighter and on top, not on the corners), PLUS one additional smaller engine mounted ventrally underneath the rear hull dead-center. Every engine is a stout cylindrical pod covered in dense vertical paneling and ribs running fore-to-aft (like Saturn-V booster strakes). On TOP of the main hull, between the upper engine cluster, sits a prominent DORSAL RADOME — a large grey sensor sphere on a short stub post (NOT a whip antenna, NOT small — a basketball-sized sensor dome). Forward fuselage is a wedge-shaped angled hull block with a flat slanted prow (stubby, NOT a pointed fighter nose). REAR FACE of the ship is dominated by a HEXAGONAL cargo bay door panel painted with diagonal yellow-and-black hazard chevrons, with one small blue running-light at each of the four corners of the hexagon. Underside has angular landing-gear / pylon structures flanking the ventral engine. Overall proportions: short and compact, roughly as wide as it is long, definitively NOT a fighter, NOT a freighter, NOT sleek, NOT a TIE-bomber, NOT a Y-wing, NOT a hauler — a CHUNKY MERCENARY GUNSHIP.
+
+Do not invent extra fins, wings, cockpits, or modules not implied by the
+reference. Do not delete features the reference shows.
+
+=== STYLE ===
+- 1993 DOS / Wing Commander: Privateer pixel art
+- chunky pixels, hand-authored sprite readability
+- dithered shading, limited palette
+- matte gunmetal-grey industrial hull with darker panel seams, engine pod bodies painted the same gunmetal-grey but with glowing TAN / COPPER-BROWN exhaust nozzle interiors at the rear (NOT orange, NOT red — copper / amber-brown like oxidised brass), prominent diagonal yellow + black hazard chevron stripes inside the hexagonal rear cargo bay door, four small bright blue running lights at the corners of the cargo bay hexagon, weathered military gunship finish — mercenary surplus, not pristine
+- transparent background
+- readable sprite first, texture detail second
+- pixel grid 512 on longest side, palette ~40 colours
+
+MATERIAL — READ THIS CAREFULLY:
+The reference is a low-fidelity 3D viewport screenshot. It may have placeholder
+textures baked into the model (stone-block patterns, untextured cockpits, etc).
+Those patterns are a TEXTURING BUG, not a design choice. DO NOT REPRODUCE THEM.
+Use the reference STRICTLY for silhouette, pose, and proportions; the textual
+palette description below dictates the actual surface finish.
+
+=== AVOID ===
+- painterly blur, mushy silhouette
+- rounded organic forms (this is a hard-edged industrial spaceship)
+- inventing extra fins / wings / greebles
+- changing ship proportions
+- starfield or background artifacts
+- stone walls, brickwork, masonry, mortar lines, chiseled blocks
+- weathered/aged/medieval/fantasy styling
+- copying placeholder textures from the reference
+- collapsing the requested 3D angle to a more convenient flat view
